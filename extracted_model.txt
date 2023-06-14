@@ -1,0 +1,188 @@
+Here is an AADL model that describes the architecture of the drone application with the four main components:
+
+```
+package DroneApp
+public
+    with Data_Model;
+    with Deployment;
+
+    system DroneApp_System
+    end DroneApp_System;
+
+    system Connection_Component
+        features
+            Conn_URL: in Data_Model::Data;
+            Conn_Status: out Data_Model::Data;
+        properties
+            Data_Model::Token = "Connection_Component";
+        end Conneciton_Component;
+    
+        system System_Component
+            features
+                System_Object: out Data_Model::Data;
+                Telemetry_Plugin: out Data_Model::Data;
+                Action_Plugin: out Data_Model::Data;
+            properties
+                Data_Model::Token = "System_Component";
+            end System_Component;
+    
+            system Control_Component
+                features
+                    Telemetry_Data: in Data_Model::Data;
+                    Arm_Command: out Data_Model::Data;
+                    Takeoff_Command: out Data_Model::Data;
+                    Hover_Command: out Data_Model::Data;
+                    Land_Command: out Data_Model::Data;
+                    Disarm_Command: out Data_Model::Data;
+                properties
+                    Data_Model::Token = "Control_Component";
+                end Control_Component;
+    
+                system Mavlink_Passthrough_Component
+                    features
+                        Incoming_Msg: in Data_Model::Data;
+                        Outgoing_Msg: in Data_Model::Data;
+                        Message_Info: out Data_Model::Data;
+                    properties
+                        Data_Model::Token = "Mavlink_Passthrough_Component";
+                    end Mavlink_Passthrough_Component;
+                
+                end Control_Component;
+        
+            end System_Component;
+    
+        end Connection_Component;
+
+    end DroneApp_System;
+
+    system implementation DroneApp_System.impl
+        subcomponents
+            Conn: connection Conneciton_Component;
+            System: system System_Component.impl;
+            Control: system Control_Component.impl;
+            Passthrough: system Mavlink_Passthrough_Component.impl;
+        end DroneApp_System.impl;
+
+        connection Connection
+            port Conn_URL: requires Data_Model::Data;
+            port Conn_Status: provides Data_Model::Data;
+        end Connection;
+
+        system implementation Connection_Component.impl
+            subcomponents
+                Connect: { MAVSDK_Connection.impl };
+            end Connection_Component.impl;
+
+            connection Conn_Connection
+                port Conn_URL: requires Data_Model::Data;
+                port Connection_Info: provides Data_Model::Data;
+            end Conn_Connection;
+
+            feature group Connection_Port
+                Data_Model::Data
+                    provides Conn_URL
+                    requires Conn_Status;
+            end Connection_Port;
+
+            feature group System_Port
+                Data_Model::Data
+                    provides System_Object
+                    provides Telemetry_Plugin
+                    provides Action_Plugin;
+                end System_Port;
+            
+            end Connection_Interface;
+
+            system implementation System_Component.impl
+                subcomponents
+                    Discover: { MAVSDK_Discovery.impl };
+                    Init_Telemetry_Plugin: { MAVSDK_Telemetry_Plugin.impl };
+                    Init_Action_Plugin: { MAVSDK_Action_Plugin.impl };
+                    System_Object: { MAVSDK_System_Object.impl };
+                end System_Component.impl;
+
+                connection System_Connection
+                    port System_Object: provides Data_Model::Data;
+                    port Telemetry_Plugin: provides Data_Model::Data;
+                    port Action_Plugin: provides Data_Model::Data;
+                    port System_Discovery: requires Data_Model::Data;
+                end System_Connection;
+
+                feature group Connection_Port
+                    Data_Model::Data
+                        requires Conn_Status;
+                    end Connection_Port;
+
+                feature group System_Port
+                    Data_Model::Data
+                        requires System_Object
+                        requires Telemetry_Plugin
+                        requires Action_Plugin;
+                end System_Port;
+            
+            end System_Interface;
+
+            system implementation Control_Component.impl
+                subcomponents
+                    Subscribe_Telemetry: { MAVSDK_Subscribe_Telemetry.impl };
+                    Takeoff_Command: { MAVSDK_Takeoff.impl };
+                    Hover_Command: { MAVSDK_Hover.impl };
+                    Land_Command: { MAVSDK_Land.impl };
+                    Disarm_Command: { MAVSDK_Disarm.impl };
+                end Control_Component.impl;
+
+                connection Control_Connection
+                    port Telemetry_Data: requires Data_Model::Data;
+                    port Arm_Command: provides Data_Model::Data;
+                    port Takeoff_Command: provides Data_Model::Data;
+                    port Hover_Command: provides Data_Model::Data;
+                    port Land_Command: provides Data_Model::Data;
+                    port Disarm_Command: provides Data_Model::Data;
+                    port Control_System_Object: requires Data_Model::Data;
+                    port Control_Telemetry_Plugin: requires Data_Model::Data;
+                end Control_Connection;
+
+                feature group System_Port
+                    Data_Model::Data
+                        provides System_Object
+                        provides Telemetry_Plugin;
+                    end System_Port;
+
+                feature group Control_Port
+                    Data_Model::Data
+                        requires Telemetry_Data
+                        provides Arm_Command
+                        provides Takeoff_Command
+                        provides Hover_Command
+                        provides Land_Command
+                        provides Disarm_Command;
+                end Control_Port;
+            
+            end Control_Interface;
+    
+            system implementation Mavlink_Passthrough_Component.impl
+                subcomponents
+                    Message_Interceptor: { MAVSDK_Message_Interceptor.impl };
+                end Mavlink_Passthrough_Component.impl;
+
+                connection Passthrough_Connection
+                    port Incoming_Msg: requires Data_Model::Data;
+                    port Outgoing_Msg: requires Data_Model::Data;
+                    port Message_Info: provides Data_Model::Data;
+                end Passthrough_Connection;
+
+                feature group Passthrough_Port
+                    Data_Model::Data
+                        provides Incoming_Msg
+                        provides Outgoing_Msg
+                        requires Message_Info;
+                end Passthrough_Port;
+
+            end Mavlink_Passthrough_Interface;
+
+        end DroneApp_System.impl;
+
+end DroneApp;
+```
+
+Note: this is a high-level AADL model and may require further refinement based on specific implementation details.

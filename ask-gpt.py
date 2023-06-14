@@ -1,3 +1,4 @@
+import sys
 import json
 import openai
 import signal
@@ -10,10 +11,8 @@ import traceback
 class TimeoutError(Exception):
     pass
 
-
 def timeout_handler(signum, frame):
     raise TimeoutError()
-
 
 class ChatGPTCall(object):
     def __init__(self, api_key_file="api_key.txt", model_name="gpt-3.5-turbo"):
@@ -24,7 +23,7 @@ class ChatGPTCall(object):
     def load_api(api_key_file):
         if not os.path.exists(api_key_file):
             raise ValueError(
-                f"The API Key File Is Not Found: {api_key_file}. Please Create It And Store Your API Key Here.")
+                f"API key not found: {api_key_file}.")
         with open(api_key_file, "r") as file:
             api_key = file.read().split("\n")[0]
         return api_key
@@ -38,16 +37,18 @@ class ChatGPTCall(object):
                     # {"role": "system", "content": "You are a helpful assistant."},
                     # {"role": "user", "content": "Previous Prompts"},
                     # {"role": "user", "content": "Previous Queries"},
+                    {"role": "system", "content": "You are a helpful assistant that understands C++ code."},
                     {"role": "user", "content": f"{query}"},
-                ]
+                ],
+                # temperature=0
             )
             res = res.choices[0].message.content
         except TimeoutError:
             signal.alarm(0)  # reset alarm
-            return "TIMEOUT, No Response From GPT For 5 minutes"
+            return "TIMEOUT, No response from GPT for 5 minutes"
         except Exception:
             print(traceback.format_exc())
-            print("Error During Querying, Sleep For One Minute")
+            print("Error during querying, sleep for one minute")
             time.sleep(60)  # sleep for 1 minute
             res = self.ask_gpt(query)
         return res
@@ -77,11 +78,11 @@ def test_timeout():
     assert res is None
     print("Test Timeout Pass!")
 
-def test_query(q):
+def get_answer(q):
     chatGPTCall = ChatGPTCall()
     res = chatGPTCall.query(q)
     # assert res is None
-    print(res)
+    return res
 
 
 def test_api_key():
@@ -100,10 +101,35 @@ def load_query(path):
             query = file.read()
         return query
 
+def write_to_file(file_path, text):
+    try:
+        with open(file_path, "w") as file:
+            file.write(text)
+        print("Saved to file.")
+    except IOError:
+        print("An error occurred while writing to the file.")
+
 if __name__ == "__main__":
+    arguments = sys.argv
+
+    if len(arguments) > 1:
+        uav_code = arguments[1]
+    else:
+        print("No argument provided.")
+
     # test class constructor
     # test_timeout()
     # test_api_key()
-    query = load_query('q.txt')
-    # print(query)
-    test_query(query)
+
+    arch_cmd = 'Write an architecture for the following drone application code.\n'
+    code = load_query(uav_code)
+    print('Generating description ...')
+    arch_desc = get_answer(arch_cmd + code)
+    write_to_file("arch_desc.txt", arch_desc)
+
+    arch_cmd = 'Write an AADL model (.aadl) for the following architecture description of a drone application:\n'
+    print('Generating AADL ...')
+    aadl_model = get_answer(arch_cmd + arch_desc)
+    write_to_file("extracted_model.txt", aadl_model)
+
+

@@ -1,0 +1,15 @@
+The given drone application code demonstrates takeoff and landing using MAVSDK. The architecture of this application can be divided into 4 main components:
+
+1. Connection Component:
+This component handles the connection of the drone with the MAVSDK. It accepts a connection URL as a command line argument, and uses this to establish a connection with the drone.
+
+2. System Component:
+The system component discovers the drone autopilot and retrieves the system object. It also initializes the telemetry and action plugins of MAVSDK that are used to arm and control the drone.
+
+3. Control Component:
+The control component is responsible for controlling the drone. It takes off, hovers for a while, and then lands the drone. It also subscribes to the drone’s telemetry data and prints the altitude of the drone at regular time intervals. It also checks the telemetry data to verify if the drone is ready to takeoff, and then initiates the takeoff action. Similarly, it checks if the drone has landed and eventually disarms the drone after a few seconds.
+
+4. Mavlink Passthrough Component:
+This component allows for Message interception with the MAVLink telemetry sent from the drone to the ground station. It captures the incoming and outgoing messages sent and received by the drone and prints their message ID, system ID, component ID, and sequence number.
+
+Overall, the architecture follows a modular structure with each component handling a specific task. The connection component establishes the connection with the drone, the system component provides access to the drone's system object, and the control component performs the actual drone takeoff, hovering, and landing. The Mavlink Passthrough component allows the user to monitor the incoming and outgoing messages from the drone.
