@@ -11,8 +11,8 @@ Follow these steps to create a virtual environment.
 2. Run this on command line to create a virtual environment:
 
 ```
-python3 -m venv fenv
-source fenv/bin/activate
+python3 -m venv llmenv
+source llmenv/bin/activate
 ```
 Run the following command to update pip on Python: `python3 -m pip install --upgrade pip`.
 
