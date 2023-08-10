@@ -1,4 +1,4 @@
-# Architecture Recovery using LLM
+# Model Extraction using LLM
 
 This repository contains the source code that use OpenAI API to generate models from implementation code. Give an implementation of UAV application (e.g., C++ code), we generate an intermediate representation (IR) of the code using LLM. Then the IR is again used to generate the model using LLM. 
 
