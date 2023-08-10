@@ -1,0 +1,38 @@
+The UML architecture for the given drone application code can be described as follows:
+
+1. Main class:
+   - The main class is responsible for initializing the MAVSDK library, connecting to the drone system, discovering the camera, and executing the required camera operations.
+   - This class interacts with the MAVSDK library and the Camera and Telemetry plugins.
+
+2. MAVSDK library:
+   - The MAVSDK library is responsible for connecting to the drone and providing various plugins for communication and control.
+   - This library acts as an interface for accessing the drone system and its components.
+
+3. Camera plugin:
+   - The Camera plugin is responsible for interacting with the camera of the drone, such as switching to photo mode, taking a photo, and capturing photo information.
+   - This plugin communicates with the Drone system to execute camera operations.
+
+4. Telemetry plugin:
+   - The Telemetry plugin is responsible for providing real-time telemetry information about the drone, such as position, altitude, and battery status.
+   - This plugin communicates with the Drone system to retrieve telemetry data.
+
+5. System:
+   - The System represents the drone system and its components.
+   - It is responsible for maintaining the connection with the drone and providing access to its plugins.
+
+6. CaptureInfo:
+   - The CaptureInfo class represents information about a captured photo, such as the file URL where it is stored.
+   - It is used to pass captured photo information from the Camera plugin to the main class for display.
+
+7. Future and Promise:
+   - The Future and Promise classes are used for asynchronous communication and synchronization between threads.
+   - They are used to wait for the discovery of a system with a camera and obtain the discovered system asynchronously.
+
+8. sleep_for():
+   - The sleep_for() function is used to pause the execution of the program for a specified duration.
+   - It is used to introduce a delay before displaying the captured photo information.
+
+9. Console I/O:
+   - The code uses console I/O to display error messages, usage instructions, and information about the captured photo.
+
+Note: The UML architecture does not show the standard C++ libraries included in the code.

@@ -2,4 +2,5 @@
 .ipynb_checkpoints/
 __pycache__/
 ~$*
-llm-env/
+llmenv/
+api_key.txt

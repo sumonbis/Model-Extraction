@@ -1,0 +1,106 @@
+Here is an AADL model for the given architecture description:
+
+```
+FEATURES
+  -- MAVSDK library
+  Mavsdk : DATA ACCESS READ { add_any_connection, systems };
+
+  -- Action plugin module
+  Action : DATA ACCESS READ { arm, return_to_launch };
+
+  -- MissionRaw plugin module
+  MissionRaw : DATA ACCESS READ { import_qgroundcontrol_mission, upload_mission, start_mission };
+
+  -- Telemetry plugin module
+  Telemetry : DATA ACCESS READ { health_all_ok };
+
+SYSTEM DroneApp
+END DroneApp
+
+SUBPROGRAM CONNECTION
+  CONNECTION
+    Mavsdk.add_any_connection -> DroneApp.add_any_connection;
+    Mavsdk.systems -> DroneApp.systems;
+  END CONNECTION
+END CONNECTION
+
+SUBPROGRAM ACTION
+  CONNECTION
+    MissionRaw.import_qgroundcontrol_mission -> DroneApp.import_qgroundcontrol_mission;
+    MissionRaw.upload_mission -> DroneApp.upload_mission;
+    MissionRaw.start_mission -> DroneApp.start_mission;
+  END CONNECTION
+END CONNECTION
+
+SUBPROGRAM TELEMETRY
+  CONNECTION
+    Action.arm -> DroneApp.arm;
+    Action.return_to_launch -> DroneApp.return_to_launch;
+    Telemetry.health_all_ok -> DroneApp.health_all_ok;
+  END CONNECTION
+END CONNECTION
+
+SUBPROGRAM MAIN
+  ACCESS Mavsdk.read;
+  ACCESS Action.read;
+  ACCESS MissionRaw.read;
+  ACCESS Telemetry.read;
+
+  DATA
+    url : STRING;
+    mission_plan : STRING;
+    system : SYSTEM;
+    progress : INTEGER;
+
+  CALL get_system() : SYSTEM;
+  CALL import_mission_plan() : MISSION_PLAN;
+  CALL upload_mission() : MISSION;
+  CALL arm_drone() : ACTION;
+  CALL subscribe_to_mission_progress();
+  CALL start_mission() : MISSION;
+  CALL wait_until_mission_finishes();
+  CALL return_to_launch() : ACTION;
+  CALL exit_program();
+
+  THREAD MainThread(
+    PERIOD = 1.0,
+    PRIORITY = 1, 
+    DISPATCH_PROTOCOL = BACKGROUND 
+  )
+  PROPERTIES
+    DISPATCH_PROTOCOL => (PERIODIC(1Hz));
+    PRIORITY => 1;
+  END MainThread;
+  
+  PROCESS SYSTEM.initialization
+    SUBPROGRAM MAIN();
+
+    CONNECTIONS
+      DroneApp.add_any_connection -> Mavsdk.add_any_connection;
+      DroneApp.systems -> Mavsdk.systems;
+
+      DroneApp.import_qgroundcontrol_mission -> MissionRaw.import_qgroundcontrol_mission;
+      DroneApp.upload_mission -> MissionRaw.upload_mission;
+      DroneApp.start_mission -> MissionRaw.start_mission;
+
+      DroneApp.arm -> Action.arm;
+      DroneApp.return_to_launch -> Action.return_to_launch;
+      DroneApp.health_all_ok -> Telemetry.health_all_ok;
+    END CONNECTIONS
+
+    PROPERTIES
+      MAIN_THREAD => MainThread;
+    END PROPERTIES
+  END SYSTEM.initialization
+END SUBPROGRAM MAIN
+```
+
+This AADL model represents the MAVSDK library, along with its Action, MissionRaw, and Telemetry plugin modules, as separate features of the DroneApp system. The `CONNECTION` sections define the data access connections between the modules.
+
+The `SUBPROGRAM MAIN` represents the main function of the drone application code. It contains subprograms for connecting to the drone, importing and uploading the mission plan, arming the drone, subscribing to mission progress updates, starting the mission, waiting for the mission to finish, returning to launch, and exiting the program.
+
+The `THREAD MainThread` represents the main thread of the program, which executes the `SUBPROGRAM MAIN` periodically with a frequency of 1 Hz.
+
+The `PROCESS SYSTEM.initialization` initializes the DroneApp system and defines the connections between the features. The `MAIN_THREAD` property is set to the `MainThread` thread.
+
+Please note that this AADL model provides a high-level representation of the architecture and may require further refinement and specification to accurately capture the behaviors and interactions of the components.

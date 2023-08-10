@@ -1,0 +1,120 @@
+Here is an AADL model for the given architecture description:
+
+```
+package Drone_Application_Code
+public
+	with Data_Model;
+
+system Drone_Application_System
+	feature
+		main_function : out event port;
+	data
+		argc : in event port Data_Model::integer;
+		argv : in event port Data_Model::char_array;
+end Drone_Application_System;
+
+system Main_Component
+	subcomponents
+		main_function_handler : process Main_Function_Handler;
+		command_line_parser : process Command_Line_Parser;
+		error_handler : process Error_Handler;
+		drone_connection : process Drone_Connection;
+		drone_discovery : process Drone_Discovery;
+		log_files : process Log_Files;
+end Main_Component;
+
+process Main_Function_Handler
+	features
+		main_function : out event port;
+	data
+		argc : in event port Data_Model::integer;
+		argv : in event port Data_Model::char_array;
+end Main_Function_Handler;
+
+process Command_Line_Parser
+	features
+		input_arguments : in event port Data_Model::char_array;
+	data
+		parsed_arguments : out event port Data_Model::parsed_arguments;
+end Command_Line_Parser;
+
+process Error_Handler
+	features
+		error_messages : in event port Data_Model::char_array;
+	data
+		error_codes : out event port Data_Model::integer;
+end Error_Handler;
+
+process Drone_Connection
+	features
+		connection_status : in event port Data_Model::connection_status;
+	data
+		drone_sdk_connection : out event port Data_Model::drone_sdk_connection;
+end Drone_Connection;
+
+process Drone_Discovery
+	features
+		system_discovered : out event port Data_Model::system;
+	data
+		drone_sdk_connection : in event port Data_Model::drone_sdk_connection;
+end Drone_Discovery;
+
+process Log_Files
+	features
+		action_request : in event port Data_Model::action_request;
+	data
+		log_operations : out event port Data_Model::log_operations;
+end Log_Files;
+
+system Mavsdk_Component
+	subcomponents
+		mavsdk_library : process MAVSDK_Library;
+		connection_manager : process Connection_Manager;
+		drone_discovery : process Drone_Discovery;
+end Mavsdk_Component;
+
+process MAVSDK_Library
+	features
+		library_configuration : in event port Data_Model::library_configuration;
+	data
+		library_initialization : out event port Data_Model::library_initialization;
+end MAVSDK_Library;
+
+process Connection_Manager
+	features
+		add_connection : in event port Data_Model::add_connection;
+		connection_status : out event port Data_Model::library_connection_status;
+	data
+		library_initialization : in event port Data_Model::library_initialization;
+		drone_sdk_connection : out event port Data_Model::drone_sdk_connection;
+end Connection_Manager;
+
+process Drone_Discovery
+	features
+		drone_discovered : out event port Data_Model::system;
+	data
+		drone_sdk_connection : in event port Data_Model::drone_sdk_connection;
+end Drone_Discovery;
+
+system LogFiles_Component
+	subcomponents
+		log_files_plugin : process Log_Files_Plugin;
+end LogFiles_Component;
+
+process Log_Files_Plugin
+	features
+		action_request : in event port Data_Model::action_request;
+	data
+		log_operations : out event port Data_Model::log_operations;
+end Log_Files_Plugin;
+
+data subcomponents
+	system : Data_Model::system;
+end;
+
+system System_Component
+end System_Component;
+end Drone_Application_Code;
+```
+
+You can extend this AADL model by adding additional ports, events, and data elements as needed to capture the full behavior of the drone application code.

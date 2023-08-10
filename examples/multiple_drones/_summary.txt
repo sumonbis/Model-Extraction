@@ -1,0 +1,26 @@
+The UML architecture for the drone application code can be described as follows:
+
+Components:
+1. Main: This is the main component that initializes the MAVSDK, adds connections, waits for system discovery, and creates threads to command each system.
+2. Thread: Each thread represents a system and is responsible for taking off and landing the drone.
+3. Telemetry: This component provides access to telemetry data such as altitude and health status of the drone.
+4. Action: This component provides actions such as arming, taking off, and landing the drone.
+
+Interfaces and Connections:
+- The main component uses the MAVSDK library to interact with the drone systems.
+- The thread component uses the Telemetry and Action components to access telemetry data and control the drone's actions.
+- The main component creates a thread for each system and passes the system reference to the thread.
+- The thread component subscribes to the telemetry position updates to monitor the altitude and checks the health status of the drone.
+- The thread component uses the Action component to arm, take off, and land the drone.
+
+Code Syntax Explanation:
+- The code uses the MAVSDK C++ library to communicate with the drone systems. The MAVSDK provides plugins for accessing telemetry and action functionalities.
+- The code initializes the MAVSDK object and adds connections specified by the user (command line arguments).
+- The code uses atomic variables and sleeps to wait for system discovery and ensure that all systems are found before proceeding.
+- The code creates a thread for each system and passes the system reference to the `takeoff_and_land` function.
+- The `takeoff_and_land` function initializes the Telemetry and Action objects for the given system.
+- The `takeoff_and_land` function sets the telemetry position update rate to 1Hz and subscribes to position updates to monitor the altitude.
+- The `takeoff_and_land` function waits for the drone to be ready to arm, arms the drone, takes off, hovers for 20 seconds, lands the drone, and waits for the drone to land completely before finishing.
+- The `takeoff_and_land` function relies on auto-disarming but waits for 5 seconds before finishing to keep watching telemetry for a bit longer.
+
+Note: The UML architecture diagram shows the high-level structure of the drone application code. It does not include all the details of individual methods and properties.

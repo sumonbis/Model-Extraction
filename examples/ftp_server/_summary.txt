@@ -1,0 +1,62 @@
+The UML architecture diagram for the given drone application code is as follows:
+
+```
+                     +-------------------+
+                     |    Mavsdk         |
+                     +-------------------+
+                             |
+                             |
+                             |
+                      +----------------------------+
+                      |         Ftp              |
+                      +----------------------------+
+                             |
+                             |
+                             |
+                    +----------------------+
+                    |     Mavsdk::System   |
+                    +----------------------+
+                             |
+                             |
+                             |
+                      +------------------------+
+                      |     Mavsdk::Connection  |
+                      +------------------------+
+
+```
+
+Explanation of the code syntax:
+
+1. `#include <mavsdk/mavsdk.h>` and `#include <mavsdk/plugins/ftp/ftp.h>`: These are the header files to include the necessary classes and functions from the MAVSDK library.
+
+2. `using namespace mavsdk;`: This line brings the `mavsdk` namespace into scope, making it easier to use the classes and functions defined in that namespace.
+
+3. `void usage(const std::string& bin_name)`: This is a helper function that prints out the usage information of the application.
+
+4. `int main(int argc, char** argv)`: This is the main entry point of the application.
+
+5. `if (argc != 4)`: This checks if the number of command line arguments is not equal to 4 (the program name, remote IP, remote port, and root directory).
+
+6. `Mavsdk mavsdk;`: This creates an instance of the `Mavsdk` class.
+
+7. `Mavsdk::Configuration configuration(Mavsdk::Configuration::UsageType::CompanionComputer);`: This creates a configuration object with the usage type set as `CompanionComputer`.
+
+8. `mavsdk.set_configuration(configuration);`: This sets the configuration of the `Mavsdk` instance.
+
+9. `ConnectionResult connection_result = mavsdk.setup_udp_remote(argv[1], std::stoi(argv[2]));`: This sets up a UDP connection with the remote IP and port provided as command line arguments.
+
+10. `if (connection_result != ConnectionResult::Success)`: This checks if the connection setup was successful.
+
+11. `auto system_cc = mavsdk.systems().at(0);`: This gets the first system from the `mavsdk` instance.
+
+12. `auto ftp_server = Ftp{system_cc};`: This creates an instance of the `Ftp` class using the `system_cc` object.
+
+13. `ftp_server.set_root_directory(argv[3]);`: This sets the root directory for the FTP server to the provided command line argument.
+
+14. `while (true)`: This creates an infinite loop.
+
+15. `std::this_thread::sleep_for(std::chrono::seconds(1));`: This pauses the execution of the program for 1 second in each iteration of the loop.
+
+16. `return 0;`: This ends the execution of the program.
+
+Note: The UML diagram represents the components and their connections. The actual code shown here is just a snippet and does not depict the complete implementation of the components.

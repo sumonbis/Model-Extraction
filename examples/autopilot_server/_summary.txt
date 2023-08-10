@@ -1,0 +1,57 @@
+The UML architecture description for the drone application code is as follows:
+
+Components:
+- Main Thread
+- Autopilot Thread
+- Mavsdk
+- MavsdkTester
+- System
+- Action
+- Param
+- Telemetry
+- Mission
+- ParamServer
+- TelemetryServer
+- ActionServer
+- MissionRawServer
+
+- Main Thread component is responsible for running client plugins to act as the Ground Control Station(GCS) and communicate with the autopilot server plugins.
+- The Autopilot Thread component runs server plugins on a separate thread. It utilizes two MAVSDK instances, one for the GCS and one for the autopilot. It handles telemetry, parameters, missions, and actions.
+- Mavsdk component is the main interface for MAVSDK library.
+- MavsdkTester component is used to test the MAVSDK server side plugins.
+- System component represents a MAVSDK system that can include multiple components like autopilot, gimbal, camera, etc.
+- Action component is responsible for controlling actions related to the vehicle like arming, taking off, landing, etc.
+- Param component is responsible for handling parameters of the vehicle.
+- Telemetry component is responsible for handling telemetry data from the vehicle like GPS position, velocity, altitude, etc.
+- Mission component is responsible for handling missions like uploading mission plans, executing mission items, etc.
+- TelemetryServer component is responsible for publishing telemetry data from the autopilot thread.
+- ParamServer component is responsible for providing and handling parameters from the autopilot thread.
+- ActionServer component is responsible for handling and triggering actions from the autopilot thread.
+- MissionRawServer component is responsible for handling missions received from the GCS.
+
+Interfaces:
+- Main Thread uses the Mavsdk, Action, Param, Telemetry, and Mission components to communicate with the autopilot thread.
+- Autopilot Thread uses the MavsdkTester, System, ParamServer, TelemetryServer, ActionServer, and MissionRawServer components to handle various operations.
+- MavsdkTester subscribes to the new system discovery event using the subscribe_on_new_system() method of Mavsdk component.
+- MissionRawServer subscribes to incoming mission, current item changed, and clear all mission events using the corresponding methods of MissionRawServer component.
+- ActionServer subscribes to the takeoff event using the subscribe_takeoff() method of ActionServer component.
+- TelemetryServer publishes telemetry data using the publish_position(), publish_home(), publish_position_velocity_ned(), and publish_raw_gps() methods of TelemetryServer component.
+- Main Thread and Autopilot Thread communicate with each other using shared variables, promises, and futures.
+- Autopilot Thread and MavsdkTester communicate with each other using the functions provided by the components like add_any_connection(), systems(), etc.
+
+Explanation of Code Syntax:
+- The include directive is used to include necessary libraries and MAVSDK plugins headers.
+- The main() function is the entry point of the application. It runs the autopilot thread on a separate thread and runs the client plugins on the main thread.
+- The make_mission_item() function is a helper function to create a mission item with specific parameters.
+- The main thread creates an instance of Mavsdk class and sets its configuration to be used as a GCS.
+- The add_any_connection() method of Mavsdk class is used to add a connection to the autopilot server.
+- The subscribe_on_new_system() method of Mavsdk class is used to subscribe to the new system discovery event.
+- The systems() method of Mavsdk class is used to get the list of systems discovered.
+- The set_rate_position() method of Telemetry class is used to set the rate of publishing position telemetry.
+- The subscribe_position() method of Telemetry class is used to subscribe to position telemetry updates.
+- The health_all_ok() method of Telemetry class is used to check if the vehicle is ready to arm.
+- The arm() method of Action class is used to arm the vehicle.
+- The takeoff() method of Action class is used to take off the vehicle.
+- The mission.upload_mission_async() method is used to upload a mission plan asynchronously.
+- The mission.clear_mission_async() method is used to clear the mission plan asynchronously.
+- The main thread and autopilot thread use promises and futures to communicate with each other asynchronously.

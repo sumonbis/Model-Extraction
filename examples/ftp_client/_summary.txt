@@ -1,0 +1,45 @@
+The UML architecture for the given drone application code can be described as follows:
+
+Component: Main
+- This component represents the main function of the program.
+- It interacts with other components to carry out FTP operations on the drone.
+
+Component: Mavsdk
+- This component represents the MAVSDK library, which provides high-level API for controlling MAVLink enabled drones.
+- It is responsible for initializing the connection with the drone and discovering the system.
+
+Component: Ftp
+- This component represents the FTP plugin of MAVSDK.
+- It provides methods to perform various FTP operations such as uploading, downloading, renaming, creating directories, etc.
+
+Interface: Ftp::Result
+- This interface represents the result of an FTP operation.
+- It provides different result values such as Success, Failure, FileDoesNotExist, etc.
+
+Interface: Ftp::ProgressData
+- This interface represents the progress data of an FTP operation.
+- It provides information about the number of bytes transferred, total bytes, etc.
+
+Connection: Main -> Mavsdk
+- The main component interacts with the Mavsdk component to initialize the connection with the drone and discover the system.
+
+Connection: Main -> Ftp
+- The main component interacts with the Ftp component to perform various FTP operations on the drone.
+
+Explanation of the code syntax:
+
+- The code includes necessary headers for MAVSDK and FTP plugin.
+- It uses various standard C++ libraries for input/output, promises, futures, etc.
+- The 'usage' function displays the usage instructions for the application.
+- The 'reset_server' function sends an asynchronous reset command to the FTP server on the drone.
+- The 'create_directory' function sends an asynchronous command to create a directory on the drone.
+- The 'remove_file' function sends an asynchronous command to remove a file from the drone.
+- The 'remove_directory' function recursively removes a directory and its contents from the drone.
+- The 'list_directory' function sends an asynchronous command to list the contents of a directory on the drone.
+- The 'download_file' function downloads a file from the drone to a local directory.
+- The 'upload_file' function uploads a file from a local directory to the drone.
+- The 'rename_file' function renames a file on the drone.
+- The 'get_system' function waits for the drone system to be discovered and returns the system object.
+- The 'main' function is the entry point of the program.
+- It parses the command line arguments and initializes the connection with the drone.
+- It creates an instance of the FTP plugin and performs the requested FTP operation based on the command line arguments.

@@ -1,0 +1,39 @@
+The UML architecture for the given drone application code can be described as follows:
+
+1. Components:
+- Mavsdk: This component represents the Mavsdk library.
+- Action: This component represents the Action plugin, used for drone actions like arming and disarming.
+- Offboard: This component represents the Offboard plugin, used for offboard control of the drone.
+- Telemetry: This component represents the Telemetry plugin, used for receiving telemetry data from the drone.
+- System: This component represents the drone system.
+
+2. Interfaces:
+- Mavsdk communicates with System component to add a connection.
+- System communicates with Action, Offboard, and Telemetry components to instantiate their objects.
+- System communicates with Mavsdk to get the system.
+- Action communicates with System to arm the drone.
+- Offboard communicates with System to get the drone system.
+- Offboard communicates with System to start and stop offboard control.
+- Offboard communicates with Action, Telemetry, and sleep_for functions to perform offboard control with different coordinates.
+- Telemetry communicates with System to get the drone system.
+- Telemetry communicates with Offboard to get the GPS global origin.
+
+3. Connections:
+- Mavsdk is connected with System.
+- Action is connected with System.
+- Offboard is connected with System.
+- Telemetry is connected with System.
+- System is connected with Mavsdk, Action, Offboard, and Telemetry.
+
+The code syntax in detail:
+
+1. The code includes necessary headers for the Mavsdk library, plugins, and other C++ libraries.
+2. The "usage" function provides the usage instructions for the application.
+3. The "get_system" function waits for a new system to be discovered and returns the shared pointer to the system object.
+4. The "offb_ctrl_ned" function demonstrates offboard control using NED (North-East-Down) coordinates. It starts offboard control, performs a series of movements in the North and South directions, and stops offboard control.
+5. The "offb_ctrl_pos_global" function demonstrates offboard control using Global (Latitude, Longitude, relative altitude) coordinates. It starts offboard control, reads the GPS global origin, performs a series of movements in the North, East, and South directions, and stops offboard control.
+6. The "offb_ctrl_body" function demonstrates offboard control using body coordinates. It starts offboard control, performs a series of movements in clockwise and counterclockwise directions, and stops offboard control.
+7. The "offb_ctrl_attitude" function demonstrates offboard control using attitude commands. It starts offboard control, rolls the drone to the right, stays horizontal, rolls the drone to the left, stays horizontal, and stops offboard control.
+8. The "main" function takes the connection URL as a command-line argument, initializes the Mavsdk, adds a connection, gets the drone system, instantiates the Action, Offboard, and Telemetry plugins, waits for the system to be ready, and performs offboard control using different coordinate systems.
+
+Please note that the architecture design is subjective and can be modified based on specific requirements and constraints.

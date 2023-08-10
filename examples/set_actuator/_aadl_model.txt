@@ -1,0 +1,49 @@
+Here is an AADL model for the given architecture description:
+
+```
+-- Component Types --
+abstract implementation MAVSDK;
+abstract implementation Action_Plugin;
+abstract implementation System;
+abstract implementation Mavsdk_Interface;
+abstract implementation Action_Interface;
+
+-- Components --
+system Mavsdk_System is
+   features
+      Mavsdk : provides Mavsdk_Interface;
+      Action_Plugin : provides Action_Interface;
+      System : requires System;
+   end Mavsdk_System;
+
+subprogram Mavsdk_Plugin is
+   features
+      Action_Plugin : provides Action_Interface;
+   end Mavsdk_Plugin;
+
+-- Interfaces --
+data port Mavsdk_Port is
+   operations
+      add_connection(in connection_url : string);
+      subscribe_to_new_system(in callback : System_Callback);
+      get_system_list(out system_list : string array);
+   end Mavsdk_Port;
+
+data port Action_Port is
+   operations
+      set_actuator(in index : integer, in value : real);
+   end Action_Port;
+
+-- Connections --
+system Mavsdk_Plugin_System_Connection is
+   connection Mavsdk_Port -> Mavsdk_Plugin.Action_Plugin;
+end Mavsdk_Plugin_System_Connection;
+
+system Main_System_Connection is
+   connection Mavsdk_Port -> Main.Component1;
+   connection System -> Main.Component1;
+   connection Action_Port -> Main.Component1;
+end Main_System_Connection;
+
+```
+Note: This is a simplified AADL model that captures the high-level components and interfaces described in the UML architecture description. It does not include the details of internal components and interfaces of the MAVSDK library.

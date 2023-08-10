@@ -1,0 +1,122 @@
+AADL (Architecture Analysis and Design Language) is a modeling language primarily used for safety-critical systems, including software-intensive systems. AADL does not directly support modeling and analysis of C++ code or software architecture.
+
+However, I can help you create a high-level architecture diagram based on your given code. The AADL model will provide an abstract representation of the architecture. Here is the AADL model for the given architecture:
+
+```
+-- Drone Application Architecture
+
+package Drone_Application with
+public
+   -- Definitions
+   
+   thread Mavsdk_Thread
+     properties
+       Dispatch_Protocol => periodic;
+       Dispatch_Protocol_Period => 1ms;
+       Priority => 10;
+     end Mavsdk_Thread;
+
+   thread Ftp_Thread
+     properties
+       Dispatch_Protocol => periodic;
+       Dispatch_Protocol_Period => 1ms;
+       Priority => 10;
+     end Ftp_Thread;
+
+   process Mavsdk_Process
+     features
+       data Port : out event data port;
+     properties
+       Compute_Execution_Time => 5ms;
+     end Mavsdk_Process;
+
+   process Ftp_Process
+     features
+       data Port : out event data port;
+     properties
+       Compute_Execution_Time => 5ms;
+     end Ftp_Process;
+
+   process System_Process
+     features
+       data Port : out event data port;
+     properties
+       Compute_Execution_Time => 5ms;
+     end System_Process;
+
+   process Connection_Process
+     features
+       data Port : out event data port;
+     properties
+       Compute_Execution_Time => 5ms;
+     end Connection_Process;
+
+   thread Ftp_Handler_Thread
+     properties
+       Dispatch_Protocol => periodic;
+       Dispatch_Protocol_Period => 1ms;
+       Priority => 10;
+     end Ftp_Handler_Thread;
+
+   -- Connections and Component Instances
+
+   thread implementation Mavsdk_Thread.Impl
+     subcomponents
+       Mavsdk_Process_Inst : process Mavsdk_Process;
+     connections
+       Port -> Mavsdk_Process_Inst.Port;
+   end Mavsdk_Thread.Impl;
+
+   thread implementation Ftp_Thread.Impl
+     subcomponents
+       Ftp_Process_Inst : process Ftp_Process;
+     connections
+       Port -> Ftp_Process_Inst.Port;
+   end Ftp_Thread.Impl;
+
+   thread implementation Connection_Thread.Impl
+     subcomponents
+       Connection_Process_Inst : process Connection_Process;
+     connections
+       Port -> Connection_Process_Inst.Port;
+   end Connection_Thread.Impl;
+
+   thread implementation System_Thread.Impl
+     subcomponents
+       System_Process_Inst : process System_Process;
+     connections
+       Port -> System_Process_Inst.Port;
+   end System_Thread.Impl;
+
+   thread implementation Ftp_Handler_Thread.Impl
+     subcomponents
+       Ftp_Handler_Process_Inst : process Ftp_Process;
+     connections
+       Port -> Ftp_Handler_Process_Inst.Port;
+   end Ftp_Handler_Thread.Impl;
+   
+   system Drone_Application_Architecture
+     features
+       mavsdk Port : event data port;
+       ftp Port : event data port;
+       system Port : event data port;
+       connection Port : event data port;
+     properties
+       Deployment::Config_Source => ("runtime/system_deployment.impl");
+     subcomponents
+       Mavsdk_Thread_Inst : thread Mavsdk_Thread.Impl;
+       Ftp_Thread_Inst : thread Ftp_Thread.Impl;
+       Connection_Thread_Inst : thread Connection_Thread.Impl;
+       System_Thread_Inst : thread System_Thread.Impl;
+       Ftp_Handler_Thread_Inst : thread Ftp_Handler_Thread.Impl;
+     connections
+       mavsdk -> Mavsdk_Thread_Inst.Port;
+       ftp -> Ftp_Thread_Inst.Port;
+       system -> System_Thread_Inst.Port;
+       connection -> Connection_Thread_Inst.Port;
+   end Drone_Application_Architecture;
+
+end Drone_Application;
+```
+
+Please note that this AADL model is an approximation and does not fully capture all the details and functionality of the code provided. It provides a representation of the architecture and the connections between the components. You may need to provide more information and refine the model based on the specific requirements and characteristics of your drone application.

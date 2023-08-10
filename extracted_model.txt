@@ -1,188 +1,162 @@
-Here is an AADL model that describes the architecture of the drone application with the four main components:
+Here's an AADL model (.aadl) for the architecture description of the drone application:
 
 ```
-package DroneApp
+package Drone_Application
 public
-    with Data_Model;
-    with Deployment;
 
-    system DroneApp_System
-    end DroneApp_System;
+   system Drone_System
 
-    system Connection_Component
-        features
-            Conn_URL: in Data_Model::Data;
-            Conn_Status: out Data_Model::Data;
-        properties
-            Data_Model::Token = "Connection_Component";
-        end Conneciton_Component;
-    
-        system System_Component
-            features
-                System_Object: out Data_Model::Data;
-                Telemetry_Plugin: out Data_Model::Data;
-                Action_Plugin: out Data_Model::Data;
-            properties
-                Data_Model::Token = "System_Component";
-            end System_Component;
-    
-            system Control_Component
-                features
-                    Telemetry_Data: in Data_Model::Data;
-                    Arm_Command: out Data_Model::Data;
-                    Takeoff_Command: out Data_Model::Data;
-                    Hover_Command: out Data_Model::Data;
-                    Land_Command: out Data_Model::Data;
-                    Disarm_Command: out Data_Model::Data;
-                properties
-                    Data_Model::Token = "Control_Component";
-                end Control_Component;
-    
-                system Mavlink_Passthrough_Component
-                    features
-                        Incoming_Msg: in Data_Model::Data;
-                        Outgoing_Msg: in Data_Model::Data;
-                        Message_Info: out Data_Model::Data;
-                    properties
-                        Data_Model::Token = "Mavlink_Passthrough_Component";
-                    end Mavlink_Passthrough_Component;
-                
-                end Control_Component;
-        
-            end System_Component;
-    
-        end Connection_Component;
+      subcomponents
 
-    end DroneApp_System;
+         Core_SDK: subprogram access MAVSDK.Core_SDK
 
-    system implementation DroneApp_System.impl
-        subcomponents
-            Conn: connection Conneciton_Component;
-            System: system System_Component.impl;
-            Control: system Control_Component.impl;
-            Passthrough: system Mavlink_Passthrough_Component.impl;
-        end DroneApp_System.impl;
+         Action_Module: subprogram access Action_And_Telemetry.Action
 
-        connection Connection
-            port Conn_URL: requires Data_Model::Data;
-            port Conn_Status: provides Data_Model::Data;
-        end Connection;
+         Telemetry_Module: subprogram access Action_And_Telemetry.Telemetry
 
-        system implementation Connection_Component.impl
-            subcomponents
-                Connect: { MAVSDK_Connection.impl };
-            end Connection_Component.impl;
+         Mavlink_Passthrough: subprogram access Mavlink_Passthrough.Mavlink
 
-            connection Conn_Connection
-                port Conn_URL: requires Data_Model::Data;
-                port Connection_Info: provides Data_Model::Data;
-            end Conn_Connection;
+      connections
 
-            feature group Connection_Port
-                Data_Model::Data
-                    provides Conn_URL
-                    requires Conn_Status;
-            end Connection_Port;
+         shared_ptr_conn: feature group {
+            provided shared_ptr: data access Core_SDK.Shared_Ptr_Port;
+            required shared_ptr: data access Action_Module.Shared_Ptr_Port,
+                                  data access Telemetry_Module.Shared_Ptr_Port,
+                                  data access Mavlink_Passthrough.Shared_Ptr_Port;
+         }
 
-            feature group System_Port
-                Data_Model::Data
-                    provides System_Object
-                    provides Telemetry_Plugin
-                    provides Action_Plugin;
-                end System_Port;
-            
-            end Connection_Interface;
+         action_conn: feature group {
+            required action: data access Action_Module.Action_Port;
+            provided action: data access Core_SDK.Action_Port;
+         }
 
-            system implementation System_Component.impl
-                subcomponents
-                    Discover: { MAVSDK_Discovery.impl };
-                    Init_Telemetry_Plugin: { MAVSDK_Telemetry_Plugin.impl };
-                    Init_Action_Plugin: { MAVSDK_Action_Plugin.impl };
-                    System_Object: { MAVSDK_System_Object.impl };
-                end System_Component.impl;
+         telemetry_conn: feature group {
+            required telemetry: data access Telemetry_Module.Telemetry_Port;
+            provided telemetry: data access Core_SDK.Telemetry_Port;
+         }
 
-                connection System_Connection
-                    port System_Object: provides Data_Model::Data;
-                    port Telemetry_Plugin: provides Data_Model::Data;
-                    port Action_Plugin: provides Data_Model::Data;
-                    port System_Discovery: requires Data_Model::Data;
-                end System_Connection;
+         mavlink_conn: feature group {
+            required send_mavlink: data access Core_SDK.Send_Mavlink_Port,
+                                   data access Action_Module.Send_Mavlink_Port,
+                                   data access Telemetry_Module.Send_Mavlink_Port;
+            provided receive_mavlink: data access Mavlink_Passthrough.Receive_Mavlink_Port;
+            required receive_mavlink: data access Mavlink_Passthrough.Receive_Mavlink_Port;
+            provided send_mavlink: data access Mavlink_Passthrough.Send_Mavlink_Port;
+         }
 
-                feature group Connection_Port
-                    Data_Model::Data
-                        requires Conn_Status;
-                    end Connection_Port;
+   end Drone_System
 
-                feature group System_Port
-                    Data_Model::Data
-                        requires System_Object
-                        requires Telemetry_Plugin
-                        requires Action_Plugin;
-                end System_Port;
-            
-            end System_Interface;
+   subprogram MAVSDK
 
-            system implementation Control_Component.impl
-                subcomponents
-                    Subscribe_Telemetry: { MAVSDK_Subscribe_Telemetry.impl };
-                    Takeoff_Command: { MAVSDK_Takeoff.impl };
-                    Hover_Command: { MAVSDK_Hover.impl };
-                    Land_Command: { MAVSDK_Land.impl };
-                    Disarm_Command: { MAVSDK_Disarm.impl };
-                end Control_Component.impl;
+      features
 
-                connection Control_Connection
-                    port Telemetry_Data: requires Data_Model::Data;
-                    port Arm_Command: provides Data_Model::Data;
-                    port Takeoff_Command: provides Data_Model::Data;
-                    port Hover_Command: provides Data_Model::Data;
-                    port Land_Command: provides Data_Model::Data;
-                    port Disarm_Command: provides Data_Model::Data;
-                    port Control_System_Object: requires Data_Model::Data;
-                    port Control_Telemetry_Plugin: requires Data_Model::Data;
-                end Control_Connection;
+         Shared_Ptr_Port: out data access shared_ptr;
 
-                feature group System_Port
-                    Data_Model::Data
-                        provides System_Object
-                        provides Telemetry_Plugin;
-                    end System_Port;
+         Action_Port: in data access action;
 
-                feature group Control_Port
-                    Data_Model::Data
-                        requires Telemetry_Data
-                        provides Arm_Command
-                        provides Takeoff_Command
-                        provides Hover_Command
-                        provides Land_Command
-                        provides Disarm_Command;
-                end Control_Port;
-            
-            end Control_Interface;
-    
-            system implementation Mavlink_Passthrough_Component.impl
-                subcomponents
-                    Message_Interceptor: { MAVSDK_Message_Interceptor.impl };
-                end Mavlink_Passthrough_Component.impl;
+         Telemetry_Port: in data access telemetry;
 
-                connection Passthrough_Connection
-                    port Incoming_Msg: requires Data_Model::Data;
-                    port Outgoing_Msg: requires Data_Model::Data;
-                    port Message_Info: provides Data_Model::Data;
-                end Passthrough_Connection;
+         Send_Mavlink_Port: out data access send_mavlink;
 
-                feature group Passthrough_Port
-                    Data_Model::Data
-                        provides Incoming_Msg
-                        provides Outgoing_Msg
-                        requires Message_Info;
-                end Passthrough_Port;
+      subcomponents
 
-            end Mavlink_Passthrough_Interface;
+         Core_SDK: data MAVSDK.Core_SDK;
 
-        end DroneApp_System.impl;
+      connections
 
-end DroneApp;
-```
+         core_conn: feature group {
+            provided Core_SDK: data access Core_SDK;
+            required Shared_Ptr_Port: data access Shared_Ptr_Port;
+            required Action_Port: data access Action_Port;
+            required Telemetry_Port: data access Telemetry_Port;
+            required Send_Mavlink_Port: data access Send_Mavlink_Port;
+         }
 
-Note: this is a high-level AADL model and may require further refinement based on specific implementation details.
+   end MAVSDK
+
+   subprogram Action_And_Telemetry
+
+      features
+
+         Shared_Ptr_Port: in data access shared_ptr;
+
+         Action_Port: out data access action;
+
+         Telemetry_Port: out data access telemetry;
+
+         Send_Mavlink_Port: in data access send_mavlink;
+
+      subcomponents
+
+         Action: data MAVSDK.Action;
+
+         Telemetry: data MAVSDK.Telemetry;
+
+      connections
+
+         shared_ptr_conn: feature group {
+            required Shared_Ptr_Port: data access Shared_Ptr_Port;
+            provided Shared_Ptr_Port: data access Action.Shared_Ptr_Port,
+                                        data access Telemetry.Shared_Ptr_Port;
+         }
+
+         action_conn: feature group {
+            provided Action_Port: data access Action.Perform_Action_Port;
+            required Action_Port: data access Action_Port;
+         }
+
+         telemetry_conn: feature group {
+            provided Telemetry_Port: data access Telemetry.Get_Telemetry_Port;
+            required Telemetry_Port: data access Telemetry_Port;
+         }
+
+         mavlink_conn: feature group {
+            required Send_Mavlink_Port: data access Send_Mavlink_Port;
+            provided Send_Mavlink_Port: data access Action.Send_Mavlink_Port,
+                                          data access Telemetry.Send_Mavlink_Port;
+         }
+
+   end Action_And_Telemetry
+
+   subprogram Mavlink_Passthrough
+
+      features
+
+         Shared_Ptr_Port: in data access shared_ptr;
+
+         Receive_Mavlink_Port: out data access receive_mavlink;
+
+         Send_Mavlink_Port: in data access send_mavlink;
+
+      subcomponents
+
+         Mavlink: data MAVSDK.Mavlink_Passthrough;
+
+      connections
+
+         shared_ptr_conn: feature group {
+            required Shared_Ptr_Port: data access Shared_Ptr_Port;
+            provided Shared_Ptr_Port: data access Mavlink.Shared_Ptr_Port;
+         }
+
+         mavlink_conn: feature group {
+            required Send_Mavlink_Port: data access Send_Mavlink_Port;
+            provided Send_Mavlink_Port: data access Mavlink.Send_Mavlink_Port;
+            required Receive_Mavlink_Port: data access Receive_Mavlink_Port;
+            provided Receive_Mavlink_Port: data access Mavlink.Receive_Mavlink_Port;
+         }
+
+   end Mavlink_Passthrough
+
+end Drone_Application
+``` 
+
+The `Drone_System` system contains four subcomponents: `Core_SDK`, `Action_Module`, `Telemetry_Module`, and `Mavlink_Passthrough`. 
+
+The `Core_SDK` module has an output port called `Shared_Ptr_Port` which provides shared_ptr to the other subcomponents (`Action_Module`, `Telemetry_Module`, and `Mavlink_Passthrough`). It also has an input port called `Action_Port` and `Telemetry_Port` for receiving command. The `Core_SDK` subcomponent has a connection to all these subcomponents that use the shared_ptr to create their respective plugins.
+
+The `Action_Module` and `Telemetry_Module` modules have an input port called `Shared_Ptr_Port`, which they use to get the shared_ptr to the system. These modules provide an output port called `Action_Port` and `Telemetry_Port`, respectively. They connect to the `Core_SDK` module's input ports, which have the system's action and telemetry commands to control the drone.
+
+The `Mavlink_Passthrough` module has input ports called `Shared_Ptr_Port` and `Send_Mavlink_Port` and an output port called `Receive_Mavlink_Port`. It connects to the `Core_SDK`, `Action_Module`, and `Telemetry_Module` module's `Send_Mavlink_Port` and provides its own version of the communication link. The `Mavlink_Passthrough` subcomponent intercepts incoming and outgoing MAVLINK messages and returns the status of these messages through its receive and output ports.
+
+Finally, the `MAVSDK` subprogram has all the data related to the MAVSDK, which consists of `Core_SDK` subcomponent. The inputs and outputs of `MAVSDK` connect to the inputs and outputs of the respective components.

@@ -1,0 +1,32 @@
+The UML architecture diagram for the given drone application code would consist of the following components:
+
+1. Mavsdk: This component represents the MAVSDK library, which provides the necessary functionality for the application to communicate with the drone's autopilot system.
+
+2. System: This component represents the drone system and is an abstraction provided by MAVSDK. It allows the application to interact with the drone's autopilot and retrieve information about its state.
+
+3. Telemetry: This component is a plugin provided by MAVSDK and is used for receiving telemetry information from the drone. It allows the application to monitor various aspects of the drone, such as its position, velocity, attitude, and health status.
+
+4. Geofence: This component is another plugin provided by MAVSDK and is used for managing geofence missions. It allows the application to define geofence polygons and upload them to the drone for safe flying operations.
+
+The connections between the components are as follows:
+- The Mavsdk component is connected to the System component.
+- The Telemetry component is connected to the System component.
+- The Geofence component is connected to the System component.
+
+Explanation of Syntax:
+
+1. The `#include` directives are used to include the required MAVSDK libraries.
+
+2. The `using` statement is used to bring the `mavsdk` namespace into the current scope.
+
+3. The `using` statement is also used to bring the `std::chrono::seconds` and `std::this_thread::sleep_for` functions into the current scope.
+
+4. The `static` keyword before the `Geofence::Point add_point(double latitude_deg, double longitude_deg)` function declaration defines the function as a static member function.
+
+5. The `void usage(const std::string& bin_name)` function is a helper function that prints the usage message for the application.
+
+6. The `std::shared_ptr<System> get_system(Mavsdk& mavsdk)` function is a helper function that waits for a drone system to be discovered and returns a shared pointer to it. It uses promises and futures to synchronize the discovery process.
+
+7. The `int main(int argc, char** argv)` function is the entry point of the application. It accepts the connection URL from the command line argument and initializes the MAVSDK library. It then gets the drone system, initializes the Telemetry and Geofence plugins, waits for the system to be ready, and finally creates and uploads a geofence mission.
+
+8. The `Geofence::Point add_point(double latitude_deg, double longitude_deg)` function is a helper function that creates a geofence point with the given latitude and longitude values and returns it.

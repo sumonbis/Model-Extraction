@@ -1,0 +1,103 @@
+Here is an AADL model representing the provided architecture description:
+
+```aadl
+package Drone_Application_Code
+public
+  with SEI {
+    properties (Decoder_Path => (literal "
+           decoderPaths[Ada] => (["gnatDecoderPath", "gnatCasePath"]),
+           decoderPaths[C++] => (["cxxDecoderPath"]).")));
+  };
+
+package UML_Architecture_Diagram
+public
+  with Data_Model;
+  with System_Model;
+  with SEI {
+    properties (Decoder_Path => (literal "
+           decoderPaths[Ada] => (["gnatDecoderPath", "gnatCasePath"]),
+           decoderPaths[C++] => (["cxxDecoderPath"]).")));
+  };
+
+  systemtype Mavsdk {
+    flows {
+      data_flow Propagation;
+    };
+  };
+
+  systemtype System {
+    flows {
+      data_flow Propagation;
+    };
+  };
+
+  systemtype Telemetry {
+    flows {
+      data_flow Propagation;
+    };
+  };
+
+  systemtype Geofence {
+    flows {
+      data_flow Propagation;
+    };
+  };
+
+  system UML_Architecture {
+    deployment {
+      process MAVSDK_Process {
+        properties {
+          MAVSDK_Plugin  => Mavsdk;
+        };
+      };
+
+      process System_Process {
+        properties {
+          MAVSDK_Plugin  => System;
+        };
+      };
+
+      process Telemetry_Process {
+        properties {
+          MAVSDK_Plugin  => Telemetry;
+        };
+      };
+
+      process Geofence_Process {
+        properties {
+          MAVSDK_Plugin  => Geofence;
+        };
+      };
+    };
+
+    connection connection_Mavsdk_System {
+      properties {
+        data_flow Propagation;
+      };
+
+      source Mavsdk;
+      destination System;
+    };
+
+    connection connection_System_Telemetry {
+      properties {
+        data_flow Propagation;
+      };
+
+      source System;
+      destination Telemetry;
+    };
+
+    connection connection_System_Geofence {
+      properties {
+        data_flow Propagation;
+      };
+
+      source System;
+      destination Geofence;
+    };
+  };
+end UML_Architecture_Diagram;
+```
+
+Please note that this AADL model represents the architecture of the software. It does not include the actual implementation of the components and their functionalities. The AADL model describes the system's structure and the connections between the components.

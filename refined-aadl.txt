@@ -1,0 +1,85 @@
+To add actions like arm, takeoff, and land, we need to modify the `Action_Module` subprogram. We can add a new input port called `Command_Port` to receive the commands from ground control. We can also create a new output port called `Status_Port` that provides the status of the executed command back to ground control. 
+
+Here's the updated `Action_Module` subprogram with added ports and components:
+
+```
+subprogram Action_Module
+
+  features
+
+    Shared_Ptr_Port: in data access shared_ptr;
+
+    Action_Port: out data access action;
+
+    Telemetry_Port: in data access telemetry;
+
+    Send_Mavlink_Port: in data access send_mavlink;
+
+    Command_Port: in event data port command;
+
+    Status_Port: out event data port status;
+
+  subcomponents
+
+    Action: data MAVSDK.Action;
+
+    Telemetry: data MAVSDK.Telemetry;
+
+  connections
+
+    shared_ptr_conn: feature group {
+      required Shared_Ptr_Port: data access Shared_Ptr_Port;
+      provided Shared_Ptr_Port: data access Action.Shared_Ptr_Port,
+                                  data access Telemetry.Shared_Ptr_Port;
+    }
+
+    action_conn: feature group {
+      provided Action_Port: data access Action.Perform_Action_Port;
+      required Action_Port: data access Action_Port;
+    }
+
+    telemetry_conn: feature group {
+      provided Telemetry_Port: data access Telemetry.Get_Telemetry_Port;
+      required Telemetry_Port: data access Telemetry_Port;
+    }
+
+    mavlink_conn: feature group {
+      required Send_Mavlink_Port: data access Send_Mavlink_Port;
+      provided Send_Mavlink_Port: data access Action.Send_Mavlink_Port,
+                                    data access Telemetry.Send_Mavlink_Port;
+    }
+
+    command_conn: feature group {
+      required Command_Port: event data port command;
+      provided Command_Port: event data port command;
+      required Action_Port: data access Action_Port;
+      provided Status_Port: event data port status;
+    }
+
+    status_conn: feature group {
+      required Status_Port: event data port status;
+      provided Status_Port: event data port status;
+    }
+
+end Action_Module
+```
+
+Now, whenever a command is sent from the ground control, it will trigger an event on the `Command_Port` of the `Action_Module`. This event will execute the necessary command through the `Action` subcomponent and provide the status of the executed command back to the ground control via the `Status_Port`.
+
+We can define the commands that the `Action_Module` accepts and perform the corresponding action in the `Action` subcomponent. For example:
+
+```
+command accept(e: arm);
+Action.arm();
+Status_Port.event(armed);
+
+command accept(e: takeoff);
+Action.takeoff();
+Status_Port.event(took_off);
+
+command accept(e: land);
+Action.land();
+Status_Port.event(landed);
+```
+
+These commands `arm`, `takeoff`, and `land` will be executed by the `Action` subcomponent through the connection between `Command_Port` and `Action_Port`. Once the action is performed, the corresponding status event will be set on the `Status_Port` and sent back to the ground control.

@@ -1,0 +1,26 @@
+The UML architecture description for the given drone application code is as follows:
+
+1. Components:
+   - Mavsdk: This component represents the MAVSDK library that provides the API for communicating with drones.
+   - Action Plugin: This component is a plugin of MAVSDK that provides functionalities for actions such as setting actuators.
+   - System: This component represents the discovered drone system.
+   
+2. Interfaces:
+   - Mavsdk interface: This interface provides methods to add connections, subscribe to new systems, and get the list of systems.
+   - Action interface: This interface provides methods for performing actions on the drone system, such as setting an actuator.
+   
+3. Connections:
+   - The main function connects to the MAVSDK library and adds a connection using the provided connection URL.
+   - The main function subscribes to new system events and waits for a new system with an autopilot to be discovered.
+   - Once a system with an autopilot is discovered, the main function sets the actuator value using the Action plugin.
+
+4. Code Syntax Explanation:
+   - `mavsdk.add_any_connection(connection_url)` adds a connection to the MAVSDK library.
+   - `mavsdk.subscribe_on_new_system(callback)` subscribes to new system events and invokes the provided callback function when a new system is discovered.
+   - `system->has_autopilot()` checks if the discovered system has an autopilot.
+   - `prom.set_value(system)` sets the value of the promise to the discovered system.
+   - `fut.get()` retrieves the value of the future (i.e., the discovered system).
+   - `auto action = Action{system}` instantiates the Action plugin with the discovered system.
+   - `action.set_actuator(index, value)` sets the actuator value with the provided index and value.
+   
+Note: The UML architecture description does not cover the details of MAVSDK library, including its internal components and interfaces. It only represents the high-level components and interfaces involved in the given drone application code.

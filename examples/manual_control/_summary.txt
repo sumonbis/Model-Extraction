@@ -1,0 +1,44 @@
+The UML architecture description for the given drone application code is as follows:
+
+Components:
+- Joystick: This component is responsible for initializing, connecting, and managing the joystick input for the drone. It also provides functions to set and get the button and axis values.
+
+Interfaces:
+- Joystick(): The constructor of the Joystick component.
+- ~Joystick(): The destructor of the Joystick component.
+- create(): Creates and initializes a new Joystick object, and starts the joystick event polling loop.
+- init(): Initializes the SDL joystick library.
+- connect(): Connects to the first available joystick and sets initial values for buttons and axes.
+- disconnect(): Disconnects from the currently connected joystick.
+- deinit(): Deinitializes the SDL joystick library.
+- start_poll_loop(): Starts the joystick event polling loop in a separate thread.
+- stop_poll_loop(): Stops the joystick event polling loop and joins the thread.
+- set_initial_values(): Sets the initial values for buttons and axes.
+- print_values(): Prints the current button and axis values to the console.
+- set_button(): Sets the value of a button based on its index.
+- set_axis(): Sets the value of an axis based on its index.
+- get_axis(): Retrieves the value of an axis based on its index.
+
+Connections:
+- The create() function is called to create a new Joystick object, and it is connected to init(), connect(), and start_poll_loop() functions.
+- The start_poll_loop() function is connected to the event handling switch-case statement, where the relevant joystick events are processed.
+- The stop_poll_loop() function is called when the event handling loop should be stopped.
+- The set_button() and set_axis() functions are called to update the button and axis values based on the SDL joystick events.
+
+Code Syntax Explanation:
+- The #include directives include the necessary header files for the code.
+- The Joystick class is implemented with various member functions that perform different actions related to joystick input handling.
+- The constructor and destructor are defined to initialize and deinitialize the Joystick object.
+- The create() function is a static factory function that creates and initializes a new Joystick object, and returns it as a unique_ptr.
+- The init() function initializes the SDL joystick library and checks for any errors.
+- The connect() function connects to the first available joystick, sets initial button and axis values, and handles various cases such as no joystick found or multiple joysticks found.
+- The disconnect() function closes the connection to the joystick.
+- The deinit() function deinitializes the SDL joystick library.
+- The start_poll_loop() function starts a separate thread to handle joystick events, such as axis motions, button presses, and device additions/removals.
+- The stop_poll_loop() function stops the joystick event handling loop and joins the thread.
+- The set_initial_values() function sets the initial button and axis values based on the connected joystick's capabilities.
+- The print_values() function prints the current button and axis values to the console.
+- The set_button() and set_axis() functions update the corresponding button and axis values based on the provided index and value.
+- The get_axis() function retrieves the value of a specific axis based on its index.
+
+Overall, the Joystick class provides a high-level interface to manage joystick input for a drone application, including initialization, connection, event handling, and value retrieval.

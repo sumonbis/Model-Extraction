@@ -1,0 +1,106 @@
+The AADL model for the given architecture description can be represented as follows:
+
+```
+-- Define the data types
+data ReceiverData
+end ReceiverData;
+
+data GimbalAttitude
+end GimbalAttitude;
+
+data GimbalLimits
+end GimbalLimits;
+
+data VehicleAttitude
+end VehicleAttitude;
+
+data AttitudeSetpoint
+end AttitudeSetpoint;
+
+data MavlinkMessage
+end MavlinkMessage;
+
+-- Define the components
+process MAVSDK
+end MAVSDK;
+
+process MavlinkPassthrough
+end MavlinkPassthrough;
+
+process AttitudeData
+end AttitudeData;
+
+process Sender
+end Sender;
+
+process Tester
+end Tester;
+
+-- Define the interfaces
+data port MavlinkPassthroughInterface
+  features
+    get_our_sysid : in event data port;
+    get_our_compid : in event data port;
+    send_message : in event data port;
+end MavlinkPassthroughInterface;
+
+data port AttitudeDataInterface
+  features
+    gimbal_attitude : out event data port;
+    gimbal_limits : out event data port;
+    vehicle_attitude : out event data port;
+    attitude_setpoint : out event data port;
+    change_gimbal_attitude : in event data port;
+    change_gimbal_limits : in event data port;
+    change_vehicle_attitude : in event data port;
+    change_attitude_setpoint : in event data port;
+end AttitudeDataInterface;
+
+data port SenderInterface
+  features
+    run : in event port;
+    send_autopilot_state_for_gimbal_device : in event port;
+    send_gimbal_device_set_attitude : in event port;
+end SenderInterface;
+
+data port TesterInterface
+  features
+    test_pitch_angle : in event port;
+    test_yaw_angle_follow : in event port;
+    test_yaw_angle_lock : in event port;
+end TesterInterface;
+
+-- Define the connections
+connection MavlinkPassthrough_Connection
+  port MavlinkPassthroughInterface.get_our_sysid -> MAVSDK.port;
+  port MavlinkPassthroughInterface.get_our_compid -> MAVSDK.port;
+  port MavlinkPassthroughInterface.send_message -> MAVSDK.port;
+end MavlinkPassthrough_Connection;
+
+connection AttitudeData_Connection
+  port AttitudeDataInterface.gimbal_attitude -> AttitudeData.port;
+  port AttitudeDataInterface.gimbal_limits -> AttitudeData.port;
+  port AttitudeDataInterface.vehicle_attitude -> AttitudeData.port;
+  port AttitudeDataInterface.attitude_setpoint -> AttitudeData.port;
+  port AttitudeDataInterface.change_gimbal_attitude -> AttitudeData.port;
+  port AttitudeDataInterface.change_gimbal_limits -> AttitudeData.port;
+  port AttitudeDataInterface.change_vehicle_attitude -> AttitudeData.port;
+  port AttitudeDataInterface.change_attitude_setpoint -> AttitudeData.port;
+end AttitudeData_Connection;
+
+connection Sender_Connection
+  port SenderInterface.run -> Sender.port;
+  port SenderInterface.send_autopilot_state_for_gimbal_device -> Sender.port;
+  port SenderInterface.send_gimbal_device_set_attitude -> Sender.port;
+  port AttitudeDataInterface.gimbal_attitude -> Sender.port;
+end Sender_Connection;
+
+connection Tester_Connection
+  port AttitudeDataInterface.gimbal_attitude -> Tester.port;
+  port TesterInterface.test_pitch_angle -> Tester.port;
+  port TesterInterface.test_yaw_angle_follow -> Tester.port;
+  port TesterInterface.test_yaw_angle_lock -> Tester.port;
+end Tester_Connection;
+```
+
+This AADL model defines the components `MAVSDK`, `MavlinkPassthrough`, `AttitudeData`, `Sender`, and `Tester`. It also defines the interfaces and connections between these components.

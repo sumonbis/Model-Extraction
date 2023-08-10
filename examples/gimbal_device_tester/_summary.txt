@@ -1,0 +1,48 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+Components:
+- `MAVSDK`: It is a library that provides a C++ interface for communicating with MAVLink systems and controlling them.
+- `MavlinkPassthrough`: It is a plugin provided by the MAVSDK library that allows direct access to the underlying MAVLink communication.
+- `AttitudeData`: It is a class that holds the attitude data of the drone, including gimbal attitude, vehicle attitude, attitude setpoint, and gimbal limits.
+- `Sender`: It is a class that sends MAVLink messages for controlling the gimbal device based on the attitude data.
+- `Tester`: It is a class that performs various tests on the gimbal device by manipulating the attitude data.
+
+Interfaces:
+- `MavlinkPassthrough` provides the following methods:
+  - `get_our_sysid()`: Returns the system ID.
+  - `get_our_compid()`: Returns the component ID.
+  - `send_message(message)`: Sends a MAVLink message.
+- `AttitudeData` provides the following methods:
+  - `gimbal_attitude()`: Returns the current gimbal attitude.
+  - `gimbal_limits()`: Returns the gimbal limits.
+  - `vehicle_attitude()`: Returns the current vehicle attitude.
+  - `attitude_setpoint()`: Returns the current attitude setpoint.
+  - `change_gimbal_attitude(change_function)`: Modifies the gimbal attitude using the given change function.
+  - `change_gimbal_limits(change_function)`: Modifies the gimbal limits using the given change function.
+  - `change_vehicle_attitude(change_function)`: Modifies the vehicle attitude using the given change function.
+  - `change_attitude_setpoint(change_function)`: Modifies the attitude setpoint using the given change function.
+- `Sender` provides the following methods:
+  - `run()`: Executes the sender thread that periodically sends MAVLink messages.
+  - `send_autopilot_state_for_gimbal_device()`: Sends the autopilot state message for the gimbal device.
+  - `send_gimbal_device_set_attitude()`: Sends the gimbal device set attitude message.
+- `Tester` provides the following methods:
+  - `test_pitch_angle()`: Performs tests on the pitch angle of the gimbal device.
+  - `test_yaw_angle_follow()`: Performs tests on the yaw angle of the gimbal device in follow mode.
+  - `test_yaw_angle_lock()`: Performs tests on the yaw angle of the gimbal device in lock mode.
+
+Connections:
+- `MAVSDK` is connected to `MavlinkPassthrough`.
+- `AttitudeData` is used by both `Sender` and `Tester`.
+- `Sender` is connected to `MavlinkPassthrough` and `AttitudeData`.
+- `Tester` is connected to `AttitudeData`.
+
+Code Syntax Explanation:
+- The code starts by including necessary libraries and headers.
+- It defines helper functions `degrees()` and `radians()` for converting between degrees and radians.
+- It defines a struct `ReceiverData` to hold information about the receiver.
+- It defines a class `AttitudeData` that holds various attitude-related data structures and provides methods to modify and access them.
+- It defines a class `Sender` that sends MAVLink messages for controlling the gimbal device based on the attitude data. It runs in a separate thread.
+- It defines a class `Tester` that performs various tests on the gimbal device by manipulating the attitude data.
+- The `Sender` and `Tester` classes use the `AttitudeData` class to access and modify the attitude data.
+- The `Tester` class defines methods for testing the pitch and yaw angles of the gimbal device in both follow and lock modes.
+- The `main()` function creates an instance of `MavlinkPassthrough`, `AttitudeData`, `Sender`, and `Tester`, and runs the tests using `Tester` methods.

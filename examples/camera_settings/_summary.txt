@@ -1,0 +1,52 @@
+The UML architecture description for the drone application code can be represented as follows:
+
+```
+          +-----------------+
+          |      Drone      |
+          +--------+--------+
+                   |
+          +--------+--------+
+          |    mavsdk       |
+          +--------+--------+
+                   |
+          +--------v--------+
+          |  Connection     |
+          +--------+--------+
+                   |
+   +------------+------------+
+   |                        |
++--v-------+          +------v---+
+|  Camera  |          | Telemetry |
++----------+          +-----------+
+
+```
+
+Explanation of the code syntax:
+
+- The code starts with including necessary libraries for drone development, such as `mavsdk/camera.h`, `mavsdk/telemetry.h`, and `mavsdk/mavsdk.h`.
+
+- The `usage` function is defined to display usage instructions for the drone application.
+
+- A structure `CurrentSettings` is defined to encapsulate the current camera settings. It holds a mutex lock and a vector of `Camera::Setting` objects.
+
+- An enumeration `Input` is defined to represent the possible user inputs for the drone application.
+
+- The `show_settings` function is defined to display the current camera settings to the user. It uses the `CurrentSettings` structure to retrieve the settings and display them on the console.
+
+- The `change_camera_mode` function is defined to change the camera mode between photo and video. It takes user input to select the desired mode and uses the `camera.set_mode()` function to set the mode.
+
+- The `choose_setting` function is defined to allow the user to choose a specific setting for the camera. It displays the available options for a given setting and takes user input to select the desired option. It uses the `camera.set_setting()` function to set the selected option.
+
+- The `change_camera_setting` function is defined to allow the user to change a camera setting. It displays the available settings and takes user input to select the desired setting. It then calls the `choose_setting` function to set the chosen option for the setting.
+
+- The `get_input` function is defined to get user input for the drone application. It displays the available options to the user and takes input as a string. It returns an `Input` enum value corresponding to the chosen option.
+
+- The `main` function is the entry point of the drone application. It takes a command-line argument as the connection URL for the drone. It initializes the `mavsdk` instance and adds a connection using the provided URL. It checks the connection result and subscribes to new systems to find a system with a camera.
+
+- Once a camera system is discovered, it subscribes to the camera's current settings and stores them in the `current_settings` object.
+
+- The main loop of the application calls different functions based on the user input received from `get_input`. It calls the `show_settings`, `change_camera_mode`, or `change_camera_setting` functions based on the chosen option. The loop continues until the user chooses to quit the application.
+
+- The application runs continuously until the `main` function returns.
+
+Note: The UML diagram does not show the implementation details of each function, such as the mutex locks, input validation, or error handling. It focuses on the high-level architecture and the relationships between the components.

@@ -1,0 +1,116 @@
+Here is an AADL model that represents the architecture description:
+
+```
+package Drone_Application
+public
+   with Physical_Unit => Standard_Metrics
+   with Abstract => (Gimbal, Telemetry);
+
+package Implementation_Setting
+public
+   with Units => Standard_Metrics;
+
+package ARINC653
+public
+
+   process type Application
+      requires PROCESSOR - Connection;
+
+      subcomponents
+         Main : subprogram Access main_model {Initial_Data_Parameter};
+         Gimbal : subprogram Access gimbal_model;
+         Telemetry : subprogram Access telemetry_model;
+
+      connections
+         connection Main_to_Gimbal : Subprogram_Entry.Gimbal_Model;
+
+         connection Main_to_Telemetry : Subprogram_Entry.Telemetry_Model;
+
+      properties
+         Deployment::Execution_Instance_Host = "Processor";
+
+   end Application;
+
+   processor type Processor
+      subcomponents
+         Mavsdk : system Mavsdk_Package.Mavsdk;
+
+      connections
+         connection Mavsdk_to_Main : Subprogram_Entry.Main_Model;
+
+      properties
+         Deployment::SW_Distribution = "Mavsdk";
+
+   end Processor;
+
+   system type Mavsdk_Package.Mavsdk
+      subcomponents
+         PX4 : device PX4_Autopilot_Package.PX4_Autopilot;
+         Gimbal_Plugin : subprogram_plugin Gimbal_Plugin;
+         Telemetry_Plugin : subprogram_plugin Telemetry_Plugin;
+
+      connections
+         connection Gimbal_Plugin_to_Gimbal : Subprogram_Entry.Gimbal_Model;
+
+         connection Telemetry_Plugin_to_Telemetry : Subprogram_Entry.Telemetry_Model;
+
+   end Mavsdk;
+
+   system type PX4_Autopilot_Package.PX4_Autopilot
+      port connection model
+   end PX4_Autopilot;
+
+   subprogram_plugin type Gimbal_Plugin;
+
+   subprogram_plugin type Telemetry_Plugin;
+
+   subprogram type Access
+      features
+         main_model : requires access protocol Subprogram_Entry.Main_Model;
+         gimbal_model : provides access protocol Subprogram_Entry.Gimbal_Model;
+         telemetry_model : provides access protocol Subprogram_Entry.Telemetry_Model;
+   end Access;
+
+   data subprogram protocol Subprogram_Entry.Main_Model
+      properties
+         Source_Text_Name => "main()";
+         Source_Text_Source_Language => "C++";
+      end Subprogram_Entry.Main_Model;
+
+   data subprogram protocol Subprogram_Entry.Gimbal_Model
+      properties
+         Source_Text_Name => "Gimbal";
+         Source_Text_Source_Language => "C++";
+      end Subprogram_Entry.Gimbal_Model;
+
+   data subprogram protocol Subprogram_Entry.Telemetry_Model
+      properties
+         Source_Text_Name => "Telemetry";
+         Source_Text_Source_Language => "C++";
+      end Subprogram_Entry.Telemetry_Model;
+
+end ARINC653;
+```
+
+In this AADL model:
+- The `Drone_Application` package defines the main components of the drone application, specifically the `Gimbal` and `Telemetry` plugins. It also specifies the physical units for measurement.
+
+- The `Implementation_Setting` package specifies the units for metric measurements.
+
+- The `ARINC653` package defines the application process (`Application`) that requires a connection to the processor (`Processor`). The process consists of three subprograms: `Main`, `Gimbal`, and `Telemetry`. The connections `Main_to_Gimbal` and `Main_to_Telemetry` connect the `Main` subprogram to the `Gimbal` and `Telemetry` subprograms respectively. The process is deployed to the `Processor`.
+
+- The `Processor` is a special type that represents the hardware or software processing resource. It contains the `Mavsdk` system.
+
+- The `Mavsdk` system represents the main SDK class (`Mavsdk`) that provides access to the autopilot and plugins. It contains the `PX4` device, `Gimbal_Plugin`, and `Telemetry_Plugin` subprogram plugins. The connections `Gimbal_Plugin_to_Gimbal` and `Telemetry_Plugin_to_Telemetry` connect the plugins to the `Gimbal` and `Telemetry` subprograms respectively.
+
+- The `PX4_Autopilot` system represents the PX4 Autopilot that connects to the `Mavsdk` system via the `model` port.
+
+- The `Gimbal_Plugin` subprogram plugin is used to control the gimbal and provides access to the `Gimbal` subprogram.
+
+- The `Telemetry_Plugin` subprogram plugin provides access to the `Telemetry` subprogram.
+
+- The `Access` subprogram type defines the interfaces required and provided by the main program and the plugins.
+
+- The `Subprogram_Entry` data subprogram protocols define the source code names and languages for the subprograms.
+
+Please note that this AADL model is a simplified representation of the architecture description and may require further refinement and details depending on the specific requirements of your system.

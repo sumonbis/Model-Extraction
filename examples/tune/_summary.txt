@@ -1,0 +1,54 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
+             +--------------+               +----------------+
+             |    Mavsdk    |               |     Tune       |
+             +--------------+               +----------------+
+             |              |               |                |
+             +--------------+               +----------------+
+             
+                       |                             |
+                       |                             |
+                       | instantiate                 |
+                       |                             |
+                       |-----------------------------|
+                       |                             |
+                       |         play_tune           |
+                       |-----------------------------|
+                       |                             |
+                       |                             |
+                       +                             +
+
+```
+
+Components:
+1. Mavsdk: It is the main component that provides the core functionality for interacting with the drone system. It is responsible for connecting to the drone, discovering systems, and managing the drone communication.
+
+2. Tune: It is a plugin component of Mavsdk that provides the functionality for playing tunes on the connected drone. It uses the system obtained from Mavsdk to send the tune play command to the drone.
+
+Interfaces:
+1. Mavsdk: It provides the `add_any_connection()` method to add a connection with the drone using the provided connection URL. It also provides the `subscribe_on_new_system()` method to subscribe to new system discovery events.
+
+2. Tune: It provides the `play_tune()` method to play the given tune on the connected drone. The tune is represented by a `TuneDescription` object containing the song elements and tempo.
+
+Connections:
+1. The main function instantiates an instance of the `Mavsdk` class and adds a connection with the drone using the provided connection URL.
+
+2. The `get_system()` function is called to retrieve the connected system from the Mavsdk instance. It subscribes to the new system discovery events and waits for a system with an autopilot to be discovered.
+
+3. Once the system is discovered, it is assigned to the `Tune` plugin for further use.
+
+4. The main function defines a tune using a vector of `Tune::SongElement` objects and sets the tempo.
+
+5. The `play_tune()` method of the `Tune` plugin is called with the tune description. The method sends the tune play command to the connected drone.
+
+Syntax explanation:
+1. The `#include` directives are used to include the required C++ libraries and header files for the code.
+
+2. The `using` statements are used to provide shorthand access to the namespaces used in the code. For example, `using namespace mavsdk;` allows using `Mavsdk` instead of `mavsdk::Mavsdk`.
+
+3. The `void usage(const std::string& bin_name)` function defines a helper function to display the usage instructions for running the code.
+
+4. The `std::shared_ptr<System> get_system(Mavsdk& mavsdk)` function is used to retrieve the connected system from the Mavsdk instance. It waits for a system with an autopilot to be discovered and returns the system.
+
+5. The `main()` function is the entry point of the code. It checks the command line arguments, adds a connection with the drone, retrieves the connected system, instantiates the `Tune` plugin, defines a tune, and plays the tune on the connected drone.

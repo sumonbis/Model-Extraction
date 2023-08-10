@@ -1,11 +1,11 @@
 import sys
+import json
 import openai
 import signal
 import os
 import traceback
 import time
 import traceback
-import tiktoken
 
 
 class TimeoutError(Exception):
@@ -37,7 +37,7 @@ class ChatGPTCall(object):
                     # {"role": "system", "content": "You are a helpful assistant."},
                     # {"role": "user", "content": "Previous Prompts"},
                     # {"role": "user", "content": "Previous Queries"},
-                    {"role": "system", "content": "You are a helpful assistant that understands C++ code and software architecture."},
+                    {"role": "system", "content": "You are a helpful assistant that understands C++ code."},
                     {"role": "user", "content": f"{query}"},
                 ],
                 # temperature=0
@@ -55,9 +55,10 @@ class ChatGPTCall(object):
 
     def query(self, query, timeout=60*5):
         """
-        :param query: the query to ask GPT
+        The query function for user to send query to the chatGPT
+        :param query: the user's prompt
         :param timeout: the timeout for the user's query
-        :return: the response from GPT
+        :return: the GPT's response
         """
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(timeout)  # set timeout to 5 minutes
@@ -95,77 +96,34 @@ def test_api_key():
 def load_query(path):
         if not os.path.exists(path):
             raise ValueError(
-                f"The File Is Not Found: {path}.")
+                f"The API Key File Is Not Found: {api_key_file}. Please Create It And Store Your API Key Here.")
         with open(path, "r") as file:
             query = file.read()
         return query
 
 def write_to_file(file_path, text):
     try:
-        with open(file_path, "w+") as file:
+        with open(file_path, "w") as file:
             file.write(text)
         print("Saved to file.")
     except IOError:
         print("An error occurred while writing to the file.")
 
-
-def truncate_to_token_limit(text, token_limit):
-    # enc = tiktoken.get_encoding("p50k_base")
-    enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
-    tokens = enc.encode(text)
-
-    if len(tokens) <= token_limit:
-        return text
-    
-    truncated_tokens = tokens[:token_limit]
-    print(len(truncated_tokens))
-    truncated_text = enc.decode(truncated_tokens)
-    print("@@@ Truncated to token limit.")
-    return truncated_text
-
-
-def summarize(file_name):
-    arch_cmd = 'Write an UML architecture description for the following drone application code. Include the components with interfaces and their connections, and explain the code syntax in detail.\n'
-    code = load_query(file_name)
-    code = truncate_to_token_limit(code, 3000)
-    print('Generating summary ...')
-    arch_desc = get_answer(arch_cmd + code)
-    return arch_desc
-
-def get_aadl(summary, ):
-    arch_cmd = 'Write an AADL model for the following architecture description:\n'
-    print('Generating AADL ...')
-    aadl_model = get_answer(arch_cmd + summary)
-    # aadl_model = get_answer(arch_cmd + "implementation code: \n " + code + "\n Summary:\n" + summary)
-    return aadl_model
-
-
 if __name__ == "__main__":
     arguments = sys.argv
 
     if len(arguments) > 1:
-        directory_path = arguments[1]
+        aadl_code = arguments[1]
     else:
         print("No argument provided.")
 
-    # Using os.listdir() to get a list of immediate subdirectories in the given path
-    subdirectories = [entry for entry in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, entry))]
+    # test class constructor
+    # test_timeout()
+    # test_api_key()
 
-    # Iterating through the immediate subdirectories
-    for subdirectory in subdirectories:
-        subdirectory_path = os.path.join(directory_path, subdirectory)
-        
-        # Using os.listdir() again to list the files within the subdirectory
-        files_in_subdirectory = [file for file in os.listdir(subdirectory_path) if os.path.isfile(os.path.join(subdirectory_path, file))]
-        
-        for file_name in files_in_subdirectory:
-            if(file_name.endswith(".cpp")):
-                print(f"Files in {subdirectory_path}:")
-                print(file_name)
-                
-                summary = summarize(os.path.join(subdirectory_path, file_name))
-                write_to_file(subdirectory_path + "/_summary.txt", summary)
+    arch_cmd = 'Refine the AADL code below and and add actions sent from ground control, e.g., arm, takeoff, land.\n'
 
-                aadl = get_aadl(summary)
-                write_to_file(subdirectory_path + "/_aadl_model.txt", aadl)
-                print("====================================")
+    code = load_query(aadl_code)
+    print('Generating aadl ...')
+    arch_desc = get_answer(arch_cmd + code)
+    write_to_file("refined-aadl.txt", arch_desc)

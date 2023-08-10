@@ -1,0 +1,38 @@
+The UML architecture for the given drone application code can be represented as follows:
+
+```
+┌─────────────────────┐       ┌─────────────────────┐       ┌─────────────────────┐
+│   Telemetry - Subscriber - Armed   │       │ MavlinkPassthrough - API     │       │    System            │
+├─────────────────────┤       ├─────────────────────┤       ├─────────────────────┤
+│                     │       │                     │       │                     │
+│ subscribe_armed()   │◄─────►│                     │       │                     │
+│                     │       │                     │       │                     │
+└─────────────────────┘       │                     │       ├─────────────────────┤
+                              │ send_message()       │       │                     │
+                              ├─────────────────────┤       ├─────────────────────┤
+                              │                     │◄─────►│                     │
+                              │                     │       │                     │
+                              └─────────────────────┘       └─────────────────────┘
+```
+
+Components:
+1. Telemetry: This component is responsible for providing telemetry information about the drone, such as armed state. It has a subscribe_armed() function that subscribes to changes in the armed state of the drone.
+
+2. MavlinkPassthrough: This component is responsible for passing Mavlink messages to and from the drone. It has an API for sending Mavlink messages and provides functions to get system IDs and component IDs.
+
+3. System: This component represents the drone system. It may have multiple subsystems, such as autopilot, sensors, etc. In this code, we are only interested in the system with an autopilot.
+
+Interfaces:
+- Telemetry interface: The Telemetry component provides the subscribe_armed() function, which takes a callback function as an argument. This callback function is called when the armed state of the drone changes. The callback function takes a boolean argument indicating whether the drone is armed or not.
+
+- MavlinkPassthrough interface: The MavlinkPassthrough component provides the send_message() function, which sends a Mavlink message to the drone. It also provides functions to get the system ID and component ID.
+
+Connections:
+- Telemetry and MavlinkPassthrough: The Telemetry component subscribes to changes in the armed state of the drone using the subscribe_armed() function. When the armed state changes, it calls the callback function provided by the Telemetry component. The callback function can then use the MavlinkPassthrough component to send a Mavlink message to the drone.
+
+Explanation of code syntax:
+- using namespace mavsdk;: This line brings the mavsdk namespace into the global namespace, allowing us to use mavsdk classes and functions without specifying the namespace.
+- get_system(): This function uses promises and futures to wait for a new system to be discovered. Once a system with an autopilot is found, it returns a shared pointer to that system.
+- main(): This function is the entry point of the program. It takes a command line argument for the connection URL and adds the connection using the mavsdk.add_any_connection() function. If the connection is successful, it gets the system using the get_system() function. Then, it instantiates the Telemetry and MavlinkPassthrough plugins. Finally, it enters a loop to continuously send battery status messages using the send_battery_status() function.
+- subscribe_armed(): This function takes a reference to the Telemetry component and subscribes to changes in the armed state of the drone. It prints whether the drone is armed or not.
+- send_battery_status(): This function takes a reference to the MavlinkPassthrough component and sends a battery status message to the drone using the mavlink_msg_battery_status_pack() function. It sets the necessary fields, such as ID, function, type, voltage, current, etc., in the Mavlink message and then sends it using the send_message() function.

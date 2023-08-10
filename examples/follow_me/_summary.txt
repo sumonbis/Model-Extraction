@@ -1,0 +1,161 @@
+The UML architecture description for the drone application code can be represented as follows:
+
+```plantuml
+@startuml
+
+interface Mavsdk {
+    + add_any_connection(const std::string& connection_url): ConnectionResult
+}
+
+class FakeLocationProvider {
+    + request_location_updates(callback: (double lat, double lon): void): void
+    + is_running(): bool
+}
+
+class Action {
+    + arm(): Action::Result
+    + takeoff(): Action::Result
+    + land(): Action::Result
+}
+
+class FollowMe {
+    + set_config(config: FollowMe::Config): FollowMe::Result
+    + start(): FollowMe::Result
+    + stop(): FollowMe::Result
+    + set_target_location(target_location: FollowMe::TargetLocation): void
+    + get_last_location(): FollowMe::TargetLocation
+}
+
+class Telemetry {
+    + health_all_ok(): bool
+    + set_rate_position(rate: double): Telemetry::Result
+    + subscribe_position(callback: (Telemetry::Position position): void): void
+    + subscribe_flight_mode(callback: (Telemetry::FlightMode flight_mode): void): void
+    + in_air(): bool
+    + armed(): bool
+}
+
+class System {
+    + has_autopilot(): bool
+}
+
+class ConnectionResult {
+    <<enumeration>>
+    + Success
+    + NoSystem
+    + ConnectionError
+    + ConfigurationError
+}
+
+class Action::Result {
+    <<enumeration>>
+    + Success
+    + NoSystem
+    + ConnectionError
+    + Busy
+    + CommandDenied
+}
+
+class FollowMe::Config::FollowDirection {
+    <<enumeration>>
+    + None
+    + Front
+    + Right
+    + Behind
+    + Left
+}
+
+class FollowMe::Result {
+    <<enumeration>>
+    + Success
+    + NoSystem
+    + ConnectionError
+    + Busy
+    + CommandDenied
+}
+
+class FollowMe::Config {
+    <<struct>>
+    + float min_height_m
+    + FollowMe::Config::FollowDirection follow_direction
+}
+
+class FollowMe::TargetLocation {
+    <<struct>>
+    + float latitude_deg
+    + float longitude_deg
+}
+
+class Telemetry::Result {
+    <<enumeration>>
+    + Success
+    + NoSystem
+    + ConnectionError
+    + Busy
+    + CommandDenied
+}
+
+class Telemetry::Position {
+    <<struct>>
+    + float latitude_deg
+    + float longitude_deg
+}
+
+class Telemetry::FlightMode {
+    <<enumeration>>
+    + Ready
+    + Takeoff
+    + Hold
+    + Mission
+    + ReturnToLaunch
+    + ReturnToGroundStation
+    + Land
+    + Offboard
+}
+
+Mavsdk "1" --> "1..*" System
+System --> Action
+System --> FollowMe
+System --> Telemetry
+System --> FakeLocationProvider
+MainApp --> Mavsdk
+MainApp --> FakeLocationProvider
+MainApp --> System
+FakeLocationProvider --> MainApp
+Action --> MainApp
+FollowMe --> MainApp
+Telemetry --> MainApp
+
+@enduml
+```
+
+Explanation of code syntax:
+
+- The code starts by including various libraries required for the application.
+- The `usage()` function is an example of a helper function that prints the usage details of the application.
+- The `get_system()` function is a method that gets the system object from the Mavsdk.
+- The `main()` function is the entry point of the application.
+- The `Mavsdk` class is responsible for handling the connection to the drone.
+- The `Action` class provides methods for arming, taking off, and landing the drone.
+- The `FollowMe` class handles the follow me functionality of the drone.
+- The `Telemetry` class provides information about the drone's status, position, etc.
+- The `FakeLocationProvider` class is a fake location provider used for testing purposes.
+- The `ConnectionResult`, `Action::Result`, `FollowMe::Result`, `Telemetry::Result`, `FollowMe::Config::FollowDirection`, `Telemetry::FlightMode`, `FollowMe::Config`, `FollowMe::TargetLocation`, and `Telemetry::Position` classes are enumerations or structures used by the respective classes.
+- The `main()` function initializes the Mavsdk, adds the connection, gets the system, and instantiates the various components.
+- The `while` loop waits for the telemetry to be ready before proceeding.
+- The `arm()` method is called to arm the drone.
+- The `set_rate_position()` method is used to set the rate of position updates.
+- The `subscribe_position()` method is called to subscribe to position updates.
+- The `subscribe_flight_mode()` method is used to subscribe to flight mode updates.
+- The `takeoff()` method is called to take off the drone.
+- The `set_config()` method is used to configure the follow me parameters.
+- The `start()` method is called to start the follow me mode.
+- The `request_location_updates()` method is used to register for location updates.
+- The `while` loop waits for the location provider to be running before proceeding.
+- The `stop()` method is called to stop the follow me mode.
+- The `subscribe_flight_mode()` method is called again with `nullptr` to stop receiving flight mode updates.
+- The `land()` method is called to land the drone.
+- The final `while` loops wait for the drone to land and disarm.
+- The application exits with a return value of 0.
+
+Note: The UML architecture description assumes that the `Mavsdk` library, which includes the classes `Mavsdk`, `Action`, `FollowMe`, and `Telemetry`, is already implemented and available for use.
