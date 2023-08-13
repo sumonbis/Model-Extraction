@@ -1,0 +1,52 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
++----------------------------------+
+|            Main Program          |
++----------------------------------+
+| - main(argc: int, argv: char**)  |
+| - usage(bin_name: const std::string&) : void |
+| - get_system(mavsdk: Mavsdk&) : std::shared_ptr<System> |
++----------------------------------+
+               |
+               | uses
+               |
++----------------------------------+
+|             Mavsdk               |
++----------------------------------+
+| - add_any_connection(url: const std::string&) : ConnectionResult |
+| - systems() : std::vector<std::shared_ptr<System>> |
+| - subscribe_on_new_system(callback: const std::function<void()>&) : void |
++----------------------------------+
+               |
+               | uses
+               |
++----------------------------------+
+|             System               |
++----------------------------------+
+| - has_autopilot() : bool         |
+| - subscribe_on_new_vehicle(callback: const std::function<void()>&) : void |
++----------------------------------+
+               |
+               | uses
+               |
++----------------------------------+
+|           Transponder            |
++----------------------------------+
+| - system : std::shared_ptr<System> |
+| - set_rate_transponder(rate_hz: float) : Transponder::Result |
+| - subscribe_transponder(callback: const std::function<void(Transponder::AdsbVehicle)>&) : void |
++----------------------------------+
+```
+
+Explanation of Code Syntax:
+- The `main` function is the entry point of the program.
+- The `usage` function is called when the command line arguments are incorrect. It prints the correct usage format to the standard error stream.
+- The `get_system` function is used to discover the system with an autopilot. It uses promises and futures to wait for the system to be discovered.
+- The `Mavsdk` class is the main class that represents the MAVSDK. It is responsible for adding connections and getting the list of systems.
+- The `ConnectionResult` enum represents the result of adding a connection to the MAVSDK.
+- The `System` class represents a specific system. It has functions to check if it has an autopilot and to subscribe to new vehicles.
+- The `Transponder` class represents the transponder plugin. It takes a system object as a parameter and provides functions to set the transponder update rate and subscribe to transponder updates.
+- The `Transponder::Result` enum represents the result of setting the transponder rate.
+- The `transponder.subscribe_transponder` function is used to set a callback function that will be called when a transponder update is received.
+- The `sleep_for` function is used to pause the execution of the program for a specified amount of time.

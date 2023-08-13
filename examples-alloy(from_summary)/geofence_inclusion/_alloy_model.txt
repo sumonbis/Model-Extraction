@@ -1,0 +1,94 @@
+open util/ordering[Component]
+
+sig Component {
+  add_any_connection: set Connection,
+  subscribe_on_new_system: set ConnectionResult,
+  systems: set System
+}
+
+sig Connection {}
+
+sig ConnectionResult {}
+
+sig Telemetry extends Component {
+  health_all_ok: set System
+}
+
+sig Geofence extends Component {
+  upload_geofence: set GeofenceMission
+}
+
+sig GeofenceMission {}
+
+sig GeofencePoint {}
+
+sig GeofencePolygon {
+  fence_type: one FenceType,
+  points: set GeofencePoint
+}
+
+enum FenceType {
+  inclusion,
+  exclusion
+}
+
+sig System {}
+
+sig MainFunction {
+  connectionURL: one URL,
+  mavsdk: one Mavsdk,
+  system: one System,
+  telemetry: one Telemetry,
+  geofence: one Geofence,
+  points: set GeofencePoint,
+  geofenceMission: one GeofenceMission
+} {
+  connectionURL = mavsdk.getConnectionURL[]
+  system = mavsdk.get_system[]
+  mavsdk.add_any_connection = Connection
+  mavsdk.subscribe_on_new_system = ConnectionResult
+  mavsdk.systems = System
+  telemetry.health_all_ok = System
+  geofence.upload_geofence = geofenceMission
+
+  all p: points | p in geofenceMission.points
+}
+
+sig UsageFunction {}
+
+fun Mavsdk.getConnectionURL[]: URL {}
+
+fun Mavsdk.get_system[]: System {}
+
+fun Telemetry.health_all_ok[]: System {}
+
+fun Geofence.upload_geofence[]: GeofenceMission {}
+
+fun add_point[lat: Double, lon: Double]: GeofencePoint {}
+
+pred MainFunctionCorrectness(m: MainFunction) {
+  m.connectionURL = m.mavsdk.getConnectionURL[]
+  m.system = m.mavsdk.get_system[]
+  m.mavsdk.add_any_connection = Connection
+  m.mavsdk.subscribe_on_new_system = ConnectionResult
+  m.mavsdk.systems = System
+  m.telemetry.health_all_ok = System
+  m.geofence.upload_geofence = m.geofenceMission
+
+  all p: m.points | p in m.geofenceMission.points
+}
+
+pred UsageFunctionCorrectness(u: UsageFunction) {}
+
+pred GeofencePointCreationCorrectness(lat: Double, lon: Double) {
+  add_point[lat, lon] = GeofencePoint
+}
+
+pred GeofencePolygonCreationCorrectness(fence_type: FenceType, points: set GeofencePoint) {
+  GeofencePolygon[fence_type, points]
+}
+
+pred GeofencePolygonUsageCorrectness(g: Geofence, p: GeofencePolygon) {
+  p.fence_type in g.geofenceMission.fence_type
+  p.points in g.geofenceMission.points
+}

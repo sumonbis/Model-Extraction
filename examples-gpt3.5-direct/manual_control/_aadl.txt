@@ -1,0 +1,69 @@
+Here is the AADL model architecture for the drone application code:
+
+```
+-------------------------------------------------------------------------------
+--                              AADL Model                                  --
+-------------------------------------------------------------------------------
+
+-- Packages
+package Drone_Application is
+
+   -- Data Types
+   data Axis is new Integer range -32767 .. 32767;
+
+   -- Threads
+   thread JoystickThread
+     properties
+       Dispatch_Protocol => Periodic;
+       Dispatch_Protocol_Period => 100ms;
+     end JoystickThread;
+
+   -- Data Components
+   data Integer Button;
+   data Axis JoystickAxis;
+
+   -- Subprograms
+   subprogram JoystickInit
+     properties
+       Source_Language => C;
+     end JoystickInit;
+ 
+   subprogram JoystickConnect
+     properties
+       Source_Language => C;
+       Period => 10ms;
+     end JoystickConnect;
+
+   subprogram JoystickDisconnect
+     properties
+       Source_Language => C;
+       Period => 10ms;
+     end JoystickDisconnect;
+
+   -- Thread Implementations
+   thread implementation JoystickThread.Impl
+     properties
+       Dispatch_Protocol => periodic;
+       Dispatch_Protocol_Period => 100ms;
+     end JoystickThread.Impl
+   features
+     MyButton: out data port Integer;
+     MyJoystickAxis: out data port Axis;
+   subcomponents
+     JoystickConnectImpl: subprogram access JoystickConnect;
+     JoystickDisconnectImpl: subprogram access JoystickDisconnect;
+   end JoystickThread.Impl;
+
+   -- System Implementation
+   system implementation Drone_Application.Impl
+     subcomponents
+       JoystickThreadImpl: thread implementation JoystickThread.Impl;
+     connections
+       ConnectButton: connection MyButton -> JoystickThread.Impl.MyButton;
+       ConnectJoystickAxis: connection MyJoystickAxis -> JoystickThread.Impl.MyJoystickAxis;
+     end Drone_Application.Impl;
+
+end Drone_Application;
+```
+
+Note that this AADL model architecture does not include all the details of the original code, such as the `Joystick` class and its member functions. It focuses on the main components and their interactions in the system. The AADL model can be used for analysis, simulation, and further refinement.

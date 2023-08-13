@@ -1,0 +1,97 @@
+Here is an Alloy model that represents the data-flow and control-flow relations described:
+
+```alloy
+sig Main {}
+
+sig Argument {
+  argc: Int,
+  argv: String
+}
+
+sig Mavsdk {}
+
+sig System {}
+
+sig Telemetry {}
+
+sig Gimbal {}
+
+sig ConnectionResult {}
+
+sig SetRateResult {}
+
+sig GimbalResult {}
+
+fun mainFunc(m: Main, args: Argument) {}
+
+fun usage() {}
+
+fact {
+  // Data-Flow Relations
+  mainFunc.m -> args
+  
+  args -> argc
+  args -> argv
+
+  m -> Mavsdk
+
+  Mavsdk -> ConnectionResult
+
+  ConnectionResult -> System
+
+  System -> Telemetry
+  System -> Gimbal
+
+  Telemetry -> SetRateResult
+
+  SetRateResult -> Gimbal
+
+  Gimbal -> GimbalResult
+
+  // Control Flow Relations
+  mainFunc.m -> usage
+  usage in exit
+  argc = 2
+  argc in 1..2
+
+  argv in String
+
+  Mavsdk -> mavsdk.add_any_connection
+
+  mavsdk.add_any_connection -> ConnectionResult
+
+  ConnectionResult -> error
+  ConnectionResult -> System
+
+  System -> get_system
+
+  get_system -> System
+
+  get_system in Future
+
+  System -> Telemetry
+  System -> Gimbal
+
+  Telemetry -> telemetry.set_rate_camera_attitude
+
+  telemetry.set_rate_camera_attitude -> SetRateResult
+
+  SetRateResult -> error
+  SetRateResult -> telemetry.subscribe_camera_attitude_euler
+
+  telemetry.subscribe_camera_attitude_euler -> error
+
+  Gimbal -> loop
+  loop -> Gimbal
+
+  Gimbal -> gimbal.release_control
+
+  gimbal.release_control -> GimbalResult
+
+  GimbalResult -> error
+
+  loop in exit
+}
+```
+
+Note that this Alloy model is an abstract representation of the data-flow and control-flow relations and may not capture all the details of the actual code implementation. The purpose of the model is to represent the relationships and dependencies between various components in the given description.

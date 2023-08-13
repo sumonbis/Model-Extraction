@@ -1,0 +1,42 @@
+The Alloy model for the given data and control-flow description can be represented as follows:
+
+```alloy
+sig Mavsdk, Camera, Command, CurrentSettings, UserInput, String, CameraMode, CameraSetting {}
+
+sig Drone {
+  mavsdk: Mavsdk,
+  camera: Camera,
+  currentSettings: CurrentSettings,
+  userInput: UserInput
+}
+
+fact DataFlow {
+  Drone.currentSettings = CurrentSettings
+  Drone.currentSettings in Camera.displaySettings
+  Drone.currentSettings in Camera.availableSettings
+  UserInput.selectedSettings in Camera.changeSettings
+}
+
+fact ControlFlow {
+  all d: Drone |
+    d.mavsdk in Mavsdk and
+    d.camera in Camera and
+    d.currentSettings in CurrentSettings and
+    d.userInput in UserInput
+  d.mavsdk -> d.camera in Command.createCamera
+  drones.mavsdk in Command.connect
+  drones.mavsdk -> drones.camera in Command.discoverCamera
+  drones.camera -> drones.currentSettings in Camera.subscribeSettings
+  drones.camera -> drones.userInput in UserInput.receive
+  CommandLine -> Mavsdk in Command.parseURL
+  drones.camera -> CameraMode in UserInput.selectMode
+  drones.camera -> CameraSetting in UserInput.selectSetting
+  drones.camera -> Command.exit in UserInput.selectQuit
+}
+
+run {
+  some Drone // At least one drone exists in the model
+} for 5
+```
+
+This Alloy model defines the fundamental data types and their relationships. The `Drone` signature represents a drone object that consists of the MAVSDK, Camera, CurrentSettings, and UserInput components. The `DataFlow` fact establishes the data-flow relations between the components. The `ControlFlow` fact represents the control-flow relations between the components. The `run` declaration ensures that there is at least one drone in the model.

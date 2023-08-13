@@ -1,0 +1,46 @@
+The AADL model architecture for the drone application code can be represented as follows:
+
+```aadl
+package Drone_Application
+public with Data_Model;
+
+system Drone_Application
+public
+   with Data_Model;
+
+process main_process
+features
+   input_conn : out Data_Model::ConnectionUrl;
+properties
+   Data_Model::ConnectionUrl => "udp://:14540 udp://:14541";
+end main_process;
+
+process drone_process
+features
+   input_conn : in Data_Model::ConnectionUrl;
+end drone_process;
+
+thread takeoff_and_land_thread
+features
+   system : in Data_Model::System;
+end takeoff_and_land_thread;
+
+process implementation main_implementation
+subcomponents
+   drone_process_sub : process drone_process;
+   takeoff_and_land_thread_sub : thread takeoff_and_land_thread;
+connections
+   main_to_drone_conn : port Data_Model::ConnectionUrl;
+   drone_to_thread_conn : port Data_Model::System;
+   thread_to_drone_conn : port Data_Model::System;
+flows
+   main_conn_flow : flow port main_to_drone_conn -> input_conn;
+   drone_conn_flow : flow port thread_to_drone_conn -> input_conn;
+end main_implementation;
+
+thread implementation takeoff_and_land_thread_implementation
+properties
+   Dispatch_Protocol => periodic;
+   Period => 1s;
+end takeoff_and_land_thread_implementation;
+```

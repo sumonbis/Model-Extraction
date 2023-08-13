@@ -1,0 +1,90 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
+                +--------------------------------------+
+                |               Main                     |
+                +------------+-------------------------+
+                             |
+                             |
+                             |
+                             v
+                +--------------------------------------+
+                |               Mavsdk                   |
+                +------------+-------------------------+
+                             |
+                    +--------+---------+
+                    |                  |
+                    v                  v
+          +-------------------+   +-----------------+
+          |    Connection     |   |     System      |
+          +-------------------+   +-----------------+
+          |                   |   |                 |
+          | +add_any_conn...--+   |                 |
+          +-------------------+   +-----------------+
+                    |
+                    |
+                    v
+          +-------------------+
+          |   ConnectionRe... |
+          +-------------------+
+```
+
+Explanation:
+
+- `Main`: The main component that contains the entry point of the application. It initializes the `Mavsdk` library, subscribes to new system discovery events, and sends a terminate command to the drone.
+
+- `Mavsdk`: Represents the main interface to the MAVSDK library. It provides access to various plugins and handles connections and system discovery.
+
+- `Connection`: Handles the communication between the application and the drone. It adds a new connection using the provided connection URL.
+
+- `System`: Represents the discovered drone system. It provides access to various system functionalities, including the autopilot.
+
+- `ConnectionResult`: Represents the result of a connection attempt.
+
+- `Action`: Plugin that provides access to high-level actions like arming, taking off, and landing the drone. It is instantiated with the system.
+
+Syntax Explanation:
+
+- `#include` statements: These statements include necessary header files from the MAVSDK library and standard C++ libraries.
+
+- `using namespace mavsdk;`: This statement brings the `mavsdk` namespace into the current scope, allowing the use of MAVSDK classes and functions without fully qualifying their names.
+
+- `static void usage(const std::string& bin_name)`: This function takes a string argument and prints a usage message with the provided binary name.
+
+- `int main(int argc, char* argv[])`: The main entry point of the application. It takes command-line arguments and initializes the MAVSDK library.
+
+- `if (argc != 2) {...}`: This condition checks if the application is provided with the correct number of command-line arguments. If not, it prints the usage message and returns an error.
+
+- `const std::string connection_url = argv[1];`: This line assigns the second command-line argument (connection URL) to a variable.
+
+- `std::cout << "Waiting to discover system...\n";`: Prints a message indicating that the application is waiting to discover the drone system.
+
+- `auto prom = std::promise<std::shared_ptr<System>>{};` and `auto fut = prom.get_future();`: These lines create a promise and a future object to wait for the discovery of the drone system.
+
+- `mavsdk.subscribe_on_new_system([&mavsdk, &prom](){...});`: This line subscribes to the new system discovery event. Once a system with an autopilot is found, the callback function is called, setting the promise's value.
+
+- `const ConnectionResult connection_result = mavsdk.add_any_connection(connection_url);`: Attempts to add a connection with the provided connection URL and stores the result in a variable.
+
+- `if (connection_result != ConnectionResult::Success) {...}`: Checks if the connection attempt was successful. If not, it prints an error message and returns an error.
+
+- `if (fut.wait_for(std::chrono::seconds(3)) == std::future_status::timeout) {...}`: Waits for the future object to be set for a maximum of 3 seconds. If the waiting time exceeds 3 seconds, it means no autopilot was found, and the program returns an error.
+
+- `auto system = fut.get();`: Retrieves the system object from the future.
+
+- `auto action = Action{system};`: Instantiates the Action plugin using the system object.
+
+- `std::this_thread::sleep_for(std::chrono::seconds(1));`: Pauses the execution for 1 second.
+
+- `std::cout << "WARNING: termination will:\n...";`: Prints a warning message about the consequences of the termination command.
+
+- `std::cout << "Are you sure to terminate? [y/N]\n";`: Asks the user for confirmation to proceed with the termination command.
+
+- `std::cin >> type;`: Reads the user's input into a character variable.
+
+- `if (type != 'y' && type != 'Y') {...}`: Checks the user's input. If it is not 'y' or 'Y', it means termination is not confirmed, and the program returns successfully.
+
+- `std::cout << "Sending termination\n";`: Prints a message indicating that the termination command is being sent.
+
+- `action.terminate();`: Sends the termination command to the drone using the Action plugin.
+
+- `return 0;`: Indicates a successful program execution.

@@ -1,0 +1,28 @@
+The data-flow relations in the given drone application code can be described as follows:
+
+1. The program reads the connection URL from the command line argument.
+2. The `Mavsdk` object is instantiated.
+3. The `add_any_connection()` function is called on the `mavsdk` object with the connection URL as an argument.
+4. The result of the connection attempt is stored in the `connection_result` variable.
+5. The `get_system()` function is called with the `mavsdk` object as an argument to get a shared pointer to the system.
+6. Inside the `get_system()` function, a promise and future are used to asynchronously wait for the system to be discovered.
+7. Once a system with an autopilot is discovered, the promise is fulfilled and the system is returned.
+8. The system object returned from `get_system()` is checked for validity.
+9. The `Tune` plugin object is instantiated with the system object.
+10. A vector of `Tune::SongElement` objects is created and populated with the notes and durations of the tune to be played.
+11. The tempo of the tune is set.
+12. A `Tune::TuneDescription` object is created with the song elements and tempo.
+13. The `play_tune()` function is called on the `Tune` object with the tune description as an argument.
+14. The result of the tune play is checked and an error message is printed if the result is not success.
+
+The control flow relations in the given drone application code can be described as follows:
+
+1. The program starts at the `main()` function.
+2. It checks if the number of command line arguments is correct.
+3. If the number of arguments is correct, it proceeds to connect to the drone using the connection URL.
+4. If the connection is successful, it gets the system object from `get_system()`.
+5. If the system object is valid, it proceeds to instantiate the `Tune` plugin and set up the tune elements.
+6. It then creates a tune description with the tune elements and tempo.
+7. Finally, it calls the `play_tune()` function and checks the result.
+
+Overall, the code follows a linear control flow with error handling for connection and tune play failures.

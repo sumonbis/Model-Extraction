@@ -1,0 +1,50 @@
+---------------------------------------------------------------------------------------
+-- NAME: Multiple_Drone_Drone1
+-- CONNECTION: udp://:14540
+-- ARCHITECTURE: Multiple_Drone_Drone1.aadl
+---------------------------------------------------------------------------------------
+
+-- Device
+device Camera_GPS is
+   properties
+      AcquisitionRate => 1.0;
+   end Camera_GPS;
+
+-- Device
+device Drone1_Motor is
+   properties
+      MaxSpeed => 100.0;
+   end Drone1_Motor;
+
+-- Thread
+thread GPS_Thread1 is
+   properties
+      Dispatch_Protocol => Periodic;
+      Dispatch_Protocol_Period => 1.0;
+      Dispatch_Protocol_Time_To_Release => 1.0;
+      Dispatch_Protocol_Deadline => 1.0;
+   end GPS_Thread1;
+
+-- Thread
+thread Telemetry_Thread1 is
+end Telemetry_Thread1;
+
+-- Thread
+thread Mission_Thread1 is
+end Mission_Thread1;
+
+-- Thread
+thread Camera_Thread1 is
+end Camera_Thread1;
+
+-- Component
+component Multiple_Drone_Drone1_Component is
+   properties
+      Source_Text => ".hpp";
+   end;
+
+-- System
+system Multiple_Drone_Drone1
+end Multiple_Drone_Drone1;
+
+---------------------------------------------------------------------------------------

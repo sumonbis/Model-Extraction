@@ -1,0 +1,137 @@
+package drone_application;
+
+public system MySystem {
+    memory UAVMemory;
+    process MainProcess;
+    process TelemetryProcess;
+    process GeofenceProcess;
+}
+
+subcomponents {
+    MainProcess : Main;
+    TelemetryProcess : Telemetry;
+    GeofenceProcess : Geofence;
+}
+
+connections {
+    connection MainToTelemetry {
+        port MainProcess.TelemetryOut -> TelemetryProcess.TelemetryIn;
+    }
+
+    connection MainToGeofence {
+        port MainProcess.GeofenceOut -> GeofenceProcess.GeofenceIn;
+    }
+
+    connection TelemetryToMain {
+        port TelemetryProcess.HealthAllOkOut -> MainProcess.HealthAllOkIn;
+    }
+
+    connection GeofenceToMain {
+        port GeofenceProcess.ResultOut -> MainProcess.GeofenceResultIn;
+    }
+}
+
+thread MyThread {
+    processes {
+        MainProcess;
+        TelemetryProcess;
+        GeofenceProcess;
+    }
+}
+
+process Main {
+    ports {
+        input port TelemetryOut;
+        input port GeofenceOut;
+
+        output port HealthAllOkIn;
+        input port GeofenceResultIn;
+    }
+
+    subcomponents {
+        TelemetryComp : TelemetryComponent;
+        GeofenceComp : GeofenceComponent;
+    }
+
+    connections {
+        connection TelemetryOut -> TelemetryComp.TelemetryIn;
+        connection GeofenceOut -> GeofenceComp.GeofenceIn;
+
+        connection HealthAllOkIn -> TelemetryComp.HealthAllOkOut;
+        connection GeofenceResultIn -> GeofenceComp.ResultIn;
+    }
+}
+
+thread TelemetryThread {
+    processes {
+        TelemetryProcess;
+    }
+}
+
+process TelemetryComponent {
+    ports {
+        input port TelemetryIn;
+
+        output port HealthAllOkOut;
+    }
+
+    subcomponents {
+        HealthCheck : HealthCheckComponent;
+    }
+
+    connections {
+        connection TelemetryIn -> HealthCheck.TelemetryIn;
+
+        connection HealthCheck.HealthAllOkOut -> HealthAllOkOut;
+    }
+}
+
+thread GeofenceThread {
+    processes {
+            GeofenceProcess;
+    }
+}
+
+process GeofenceComponent {
+    ports {
+        input port GeofenceIn;
+
+        output port ResultIn;
+    }
+
+    subcomponents {
+        GeofenceControl : GeofenceControlComponent;
+    }
+
+    connections {
+        connection GeofenceIn -> GeofenceControl.GeofenceIn;
+
+        connection GeofenceControl.ResultOut -> ResultIn;
+    }
+}
+
+system memory UAVMemory {}
+
+thread HealthCheckThread {
+    process HealthCheckProcess;
+}
+
+process HealthCheckProcess {
+    ports {
+        input port TelemetryIn;
+
+        output port HealthAllOkOut;
+    }
+}
+
+thread GeofenceControlThread {
+    process GeofenceControlProcess;
+}
+
+process GeofenceControlProcess {
+    ports {
+        input port GeofenceIn;
+
+        output port ResultOut;
+    }
+}

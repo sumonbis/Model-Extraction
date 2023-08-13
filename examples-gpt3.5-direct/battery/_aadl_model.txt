@@ -1,0 +1,46 @@
+Here is the AADL model for the given architecture description:
+
+```
+package DroneApp is
+    public with Data_Model;
+
+    -- Components
+    system Telemetry_Subscriber_Armed
+        features
+            subscribe_armed: in data port;
+            armed_state: out event data port;
+
+    system MavlinkPassthrough_API
+        features
+            send_message: in data port;
+
+    system Drone_System
+        features
+            system_component: out data port;
+
+    -- Connections
+    connection Subscribe_Armed_Connection
+        port subscribe_armed -> subscribe_armed;
+
+    connection Send_Message_Connection
+        port send_message -> send_message;
+
+    connection Drone_Passthrough
+        port armed_state -> system_component;
+
+    -- Data Model
+    data Boolean
+        properties
+            range zero_to_one;
+
+end DroneApp;
+```
+
+Explanation:
+- The architecture model is represented using the package "DroneApp".
+- There are three system components: "Telemetry_Subscriber_Armed", "MavlinkPassthrough_API", and "Drone_System".
+- The "Telemetry_Subscriber_Armed" component has an incoming data port "subscribe_armed" and an outgoing event data port "armed_state".
+- The "MavlinkPassthrough_API" component has an incoming data port "send_message".
+- The "Drone_System" component has an outgoing data port "system_component".
+- The connections are defined using the "connection" keyword. The "Subscribe_Armed_Connection" connects the "subscribe_armed" port of "Telemetry_Subscriber_Armed" to the "subscribe_armed" port of the system component. The "Send_Message_Connection" connects the "send_message" port of "MavlinkPassthrough_API" to the "send_message" port of the system component. The "Drone_Passthrough" connects the "armed_state" port of "Telemetry_Subscriber_Armed" to the "system_component" port of the system component.
+- A data model is defined for the "Boolean" type with the range constraint from 0 to 1. This data model is used to represent the armed state of the drone.

@@ -1,0 +1,47 @@
+The AADL model for the given architecture description can be represented as follows:
+
+```
+package Drone_Application is
+    system System
+        properties
+            Classifier_Name => "System";
+        end System;
+
+    process Shell_Process
+        features
+            from_mavsdk : requires data port connection;
+            to_system : requires data port connection;
+        properties
+            Classifier_Name => "Shell_Process";
+        end Shell_Process;
+
+    process Mavsdk_Process
+        features
+            to_shell : provides data port connection;
+            from_system : requires data port connection;
+        properties
+            Classifier_Name => "Mavsdk_Process";
+        end Mavsdk_Process;
+
+    connection mavsdk_to_shell : data port connection
+        port from_source : provides data;
+        port to_target : requires data;
+    end mavsdk_to_shell;
+
+    connection shell_to_system : data port connection
+        port from_source : provides data;
+        port to_target : requires data;
+    end shell_to_system;
+
+end Drone_Application;
+```
+
+Explanation:
+- The AADL model is represented in a package called "Drone_Application".
+- The model consists of two processes: "Shell_Process" representing the shell component and "Mavsdk_Process" representing the Mavsdk component.
+- The "Shell_Process" has two ports: "from_mavsdk" for receiving data from the Mavsdk component and "to_system" for sending data to the System component.
+- The "Mavsdk_Process" has two ports: "to_shell" for sending data to the Shell component and "from_system" for receiving data from the System component.
+- The model also includes two connections: "mavsdk_to_shell" connecting the Mavsdk component to the Shell component and "shell_to_system" connecting the Shell component to the System component.
+- Each connection has two ports: "from_source" representing the source port and "to_target" representing the target port.
+
+Note: The AADL model only represents the overall structure of the architecture, including the components and their connections. It does not include the details of the behavior or internal structures of each component.

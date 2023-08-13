@@ -1,0 +1,109 @@
+Here is an AADL model architecture for the given drone application code:
+
+```aadl
+package DroneApp
+public
+with  Mavlink;
+with  Periodic_Env;
+with  Std_Input;
+with  Std_Output;
+
+system Drone_App_System
+features
+    log : out event data port;
+    command : in event data port;
+    passthrough : out data port Mavlink.Message;
+end Drone_App_System;
+
+system implementation Drone_App_System.Impl
+subcomponents
+    passthrough : component Mavlink_Passthrough.Impl;
+    command_handler : thread Command_Handler;
+    logger : thread Logger;
+connections
+    log -> logger.log;
+    passthrough.mavlink -> command_handler.mavlink_in;
+    passthrough.mavlink_out -> logger.mavlink;
+    command -> command_handler.command_in;
+end Drone_App_System.Impl;
+
+thread implementation Command_Handler
+subcomponents
+    mavlink_in : in event data port Mavlink.Message;
+    command_in : in event data port;
+end Command_Handler;
+
+process implementation Command_Handler.Process
+subcomponents
+    command_handler_component : component Command_Handler_Component.Impl;
+    command_trigger : event data port;
+connections
+    command_in -> command_trigger;
+    command_trigger -> command_handler_component.command;
+    mavlink_in -> command_handler_component.mavlink_in;
+end Command_Handler.Process;
+
+thread implementation Logger
+subcomponents
+    mavlink : in data port Mavlink.Message;
+end Logger;
+
+process implementation Logger.Process
+subcomponents
+    logger_component : component Logger_Component.Impl;
+    log_trigger : event data port;
+connections
+    mavlink -> logger_component.mavlink;
+    logger_component.log -> log_trigger;
+    log_trigger -> log;
+end Logger.Process;
+
+data implementation Mavlink.Message
+end Mavlink.Message;
+
+component implementation Mavlink_Passthrough.Impl
+end Mavlink_Passthrough.Impl;
+
+thread implementation Command_Handler_Component
+subcomponents
+    mavlink_in : in event data port Mavlink.Message;
+    command : out event data port;
+end Command_Handler_Component;
+
+process implementation Command_Handler_Component.Process
+subcomponents
+    passthrough_component : component Mavlink_Passthrough.Impl;
+    command_trigger : event data port;
+connections
+    mavlink_in -> passthrough_component.mavlink_in;
+    passthrough_component.mavlink_out -> command_trigger;
+end Command_Handler_Component.Process;
+
+thread implementation Logger_Component
+subcomponents
+    mavlink : in data port Mavlink.Message;
+    log : out event data port;
+end Logger_Component;
+
+process implementation Logger_Component.Process
+subcomponents
+    passthrough_component : component Mavlink_Passthrough.Impl;
+    log_trigger : event data port;
+connections
+    mavlink -> passthrough_component.mavlink_in;
+    passthrough_component.mavlink_out -> log_trigger;
+    log_trigger -> log;
+end Logger_Component.Process;
+
+data implementation Std_Input
+end Std_Input;
+
+thread implementation Std_Output
+end Std_Output;
+
+end DroneApp;
+```
+
+This AADL model architecture represents the drone application code with separate components for the main application system, the command handler, and the logger. The components are implemented using threads and processes, and the communication between them is facilitated through event data ports and data ports. The Mavlink protocol is represented with the `Mavlink.Message` data type, which is used for communication between the command handler component and the logger component. The `Mavlink_Passthrough` component is used for handling the Mavlink protocol.
+
+Note: This is a simplified representation of the architecture and may require further refinement based on the specific requirements and constraints of the application.

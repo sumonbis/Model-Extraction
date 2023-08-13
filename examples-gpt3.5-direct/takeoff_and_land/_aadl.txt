@@ -1,0 +1,70 @@
+Here is an example of an AADL model architecture file (.aadl) for the given drone application code:
+
+```
+package Drone_Application_Code
+public
+	with AADL_Project::Programming_Languages => (C);
+
+data implementation SEI_Mavsdk_Mavsdk.Impl is
+end SEI_Mavsdk_Mavsdk.Impl;
+
+data implementation SEI_Mavsdk_ConnectionResult.Impl is
+end SEI_Mavsdk_ConnectionResult.Impl;
+
+data implementation SEI_Mavsdk_Mavsdk_Telemetry.Impl is
+end SEI_Mavsdk_Mavsdk_Telemetry.Impl;
+
+data implementation SEI_Mavsdk_Mavsdk_Action.Impl is
+end SEI_Mavsdk_Mavsdk_Action.Impl;
+
+data SEI_Mavsdk_Mavsdk_Telemetry_Action_impl
+end SEI_Mavsdk_Mavsdk_Telemetry_Action_impl;
+
+data SEI_Mavsdk_Mavsdk_Telemetry_Position_impl
+end SEI_Mavsdk_Mavsdk_Telemetry_Position_impl;
+
+system Drone_Application
+features
+  connection_url: in data port;
+  telemetry_altitude: out data port;
+  vehicle_state: out data port;
+end Drone_Application;
+
+thread main_thread
+features
+  connection_url_PORT: in event data port connection_url;
+  telemetry_altitude_PORT: out event data port telemetry_altitude;
+  vehicle_state_PORT: out event data port vehicle_state;
+end main_thread;
+
+process Drone_Application_Process
+subcomponents
+  drone_app: thread main_thread;
+  mavsdk_impl: data SEI_Mavsdk_Mavsdk.Impl;
+  connection_result_impl: data SEI_Mavsdk_ConnectionResult.Impl;
+  telemetry_impl: data SEI_Mavsdk_Mavsdk_Telemetry.Impl;
+  action_impl: data SEI_Mavsdk_Mavsdk_Action.Impl;
+end Drone_Application_Process;
+
+connection connection01
+end connection01;
+
+connection connection02
+end connection02;
+
+connection connection03
+end connection03;
+
+connection connection04
+end connection04;
+
+connection connection05
+end connection05;
+
+connection connection06
+end connection06;
+
+end Drone_Application_Code;
+```
+
+Please note that this is a simple example of an AADL model that captures the main components and their connections. Additional refinements and details may be required based on the specific system architecture and requirements.

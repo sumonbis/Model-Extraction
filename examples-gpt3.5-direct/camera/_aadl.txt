@@ -1,0 +1,74 @@
+The AADL model architecture for the provided drone application code is as follows:
+
+package DroneApp
+public with MAVLink;
+
+process DroneApp
+public
+features
+  port : provides data port TelemetryMessage;
+  event : provides event PortEvent;
+  system : requires System;
+end DroneApp;
+
+system implementation DroneApp.impl
+subcomponents
+  mavsdk : Mavsdk.SdkComponent;
+  telemetry : Mavsdk.TelemetryComponent;
+  camera : Mavsdk.CameraComponent;
+  port : MAVLink.MAVLinkComponent;
+  event : MAVLink.EventComponent;
+end DroneApp.impl;
+
+connection port to port[1] { "data" };
+
+connection event to event[1] { "event" };
+
+connection event to mavsdk.event[1] { "out" };
+
+connection event to telemetry.event[1] { "out" };
+
+connection event to camera.event[1] { "out" };
+
+subcomponent (mavsdk) Mavsdk.SdkComponent
+features
+  event : provides event;
+  system : requires System;
+end Mavsdk.SdkComponent;
+
+subcomponent (telemetry) Mavsdk.TelemetryComponent
+features
+  event : provides event;
+  port : provides data port TelemetryMessage;
+  system : requires System;
+end Mavsdk.TelemetryComponent;
+
+subcomponent (camera) Mavsdk.CameraComponent
+features
+  event : provides event;
+  system : requires System;
+end Mavsdk.CameraComponent;
+
+subcomponent (port) MAVLink.MAVLinkComponent
+features
+  port : provides data port TelemetryMessage;
+  event : provides event;
+end MAVLink.MAVLinkComponent;
+
+subcomponent (event) MAVLink.EventComponent
+features
+  event : provides event;
+end MAVLink.EventComponent;
+
+connection port to mavsdk.system[1] { "telemetry" };
+connection event to mavsdk.event[1] { "in" };
+
+connection port to telemetry.port[1] { "telemetry" };
+connection event to telemetry.event[1] { "in" };
+
+connection event to camera.event[1] { "in" };
+
+connection port to port.port[1] { "telemetry" };
+connection event to event.event[1] { "in" };
+
+end DroneApp;

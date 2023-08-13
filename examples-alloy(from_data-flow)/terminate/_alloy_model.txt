@@ -1,0 +1,70 @@
+The Alloy model for the given data and control-flow description would be as follows:
+
+sig Connection {
+    connection_url: lone URL
+}
+
+sig System {}
+
+sig Action {}
+
+sig URL {}
+
+sig String {}
+
+fun mainFunction(connection_url: Connection, system: System, action: Action, inputType: String) {
+
+    connection_url in connectionUrl.mainFunction
+    
+    system in systemObject.mainFunction
+    
+    action in actionObject.mainFunction
+    
+    inputType in inputType.mainFunction
+    
+    -- Data-Flow
+    connectionUrl.connection_url = connection_url
+    systemObject.system = system
+    actionObject.action = action
+    inputType.type = inputType
+    
+    -- Control Flow
+    (connectionUrl |-> mainFunction).addAnyConnection in addAnyConnection
+    mainFunction.subscribe_on_new_system in subscribe_on_new_system
+    afterTimeout.timeoutExists in timeoutExists
+    (inputType in "y" or inputType in "Y") and actionObject.terminate in terminate
+    mainFunction.usage not in mainFunction.subscribe_on_new_system
+    mainFunction.terminate not in mainFunction.subscribe_on_new_system
+}
+
+pred usageConstraint(mainFunction: set MainFunction, inputType: set InputType) {
+    (mainFunction.usage in inputType.mainFunction) => (inputType in "usage")
+}
+
+pred terminateCommand(mainFunction: set MainFunction, inputType: set InputType, timeoutExists: set TimeoutExists){
+    (mainFunction.terminate in inputType.mainFunction) => ((inputType in "y" or inputType in "Y") and timeoutExists.timeoutExists)
+}
+
+pred executionFlow(connectionUrl: set ConnectionUrl, mainFunction: set MainFunction, addAnyConnection: set AddAnyConnection,
+                    subscribe_on_new_system: set SubscribeOnNewSystem, timeoutExists: set TimeoutExists,
+                    terminate: set Terminate, actionObject: set ActionObject){
+    (connectionUrl |-> mainFunction).mainFunction.addAnyConnection in addAnyConnection.addAnyConnection
+    mainFunction.subscribe_on_new_system in subscribe_on_new_system.subscribe_on_new_system
+    timeoutExists.timeoutExistsExists in (connectionUrl |-> mainFunction).mainFunction.subscribe_on_new_system.afterTimeout
+    (inputType in "y" or inputType in "Y") and actionObject.terminate in terminate.terminate
+    mainFunction.usage <> mainFunction.subscribe_on_new_system.mainFunction.terminate
+}
+
+run {
+    mainFunction.connectionUrl.addAnyConnection
+    mainFunction.subscribe_on_new_system.subscribe_on_new_system
+    mainFunction.subscribe_on_new_system.mainFunction.subscribe_on_new_system.afterTimeout
+    mainFunction.terminate.terminate
+    mainFunction.usage.mainFunction.subscribe_on_new_system.mainFunction.terminate
+    usageConstraint
+    terminateCommand
+    executionFlow
+} for 4 but exactly one ConnectionUrl, AddAnyConnection, SubscribeOnNewSystem, TimeoutExists, MainFunction,
+    InputType, ActionObject, Connection, System, Action
+
+This Alloy model captures the data-flow and control-flow relations mentioned in the given description, and includes constraints relating to the correct usage and termination command.

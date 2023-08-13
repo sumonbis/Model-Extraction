@@ -1,0 +1,28 @@
+The data-flow and control flow relations for the given drone application code can be described as follows:
+
+Data-flow:
+1. The main thread creates an instance of the MAVSDK object and adds a connection.
+2. The main thread subscribes to the new system event and waits for the autopilot system to be discovered.
+3. The main thread creates instances of the Action, Param, and Telemetry plugins.
+4. The main thread sets up a callback to monitor the altitude of the drone using the Telemetry plugin.
+5. The main thread arms the vehicle and sets the takeoff altitude using the Action plugin.
+6. The main thread initiates takeoff using the Action plugin.
+
+Control flow:
+1. The main thread starts a separate autopilot thread.
+2. The autopilot thread creates another instance of the MAVSDK object and adds a connection to the autopilot.
+3. The autopilot thread subscribes to the new system event and waits for the GCS system to be discovered.
+4. The autopilot thread sets up the server plugins (ParamServer, TelemetryServer, ActionServer, MissionRawServer) using the autopilot system.
+5. The autopilot thread provides parameters, sets allowable flight modes, and arms the vehicle using the server plugins.
+6. The autopilot thread creates a mission raw server and subscribes to incoming mission, current item changed, and clear all events.
+7. The autopilot thread sets the current mission item to complete.
+8. The autopilot thread publishes telemetry information continuously using the TelemetryServer plugin.
+9. The main thread checks for the custom param set in the server thread using the Param plugin.
+10. The main thread creates a mission and uploads it to the mission server using the Mission plugin.
+11. The main thread clears the mission and subscribes to mission progress events.
+12. The main thread waits for 20 seconds.
+13. The main thread sets the rate for position updates using the Telemetry plugin.
+14. The main thread monitors the altitude using a callback.
+15. The main thread waits for the vehicle to be ready to arm using the Telemetry plugin.
+16. The main thread arms the vehicle and sets the takeoff altitude using the Action plugin.
+17. The main thread initiates takeoff using the Action plugin.

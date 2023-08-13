@@ -1,0 +1,186 @@
+abstract sig Thread {}
+one sig MainThread extends Thread {}
+one sig AutopilotThread extends Thread {}
+
+abstract sig Plugin {}
+
+sig MAVSDK {
+    inst: one Thread -> one Plugin
+    connect: one Thread -> one Plugin
+}
+
+sig SystemEvent {}
+
+one sig NewSystemEvent extends SystemEvent {}
+
+one sig Action extends Plugin {}
+one sig Param extends Plugin {}
+one sig Telemetry extends Plugin {}
+
+abstract sig ServerPlugin extends Plugin {}
+one sig ParamServer extends ServerPlugin {}
+one sig TelemetryServer extends ServerPlugin {}
+one sig ActionServer extends ServerPlugin {}
+one sig MissionRawServer extends ServerPlugin {}
+
+one sig Mission extends Plugin {}
+
+one sig AutopilotSystem extends Plugin {}
+one sig GCSSystem extends Plugin {}
+
+fun createsInstance[m: MAVSDK, t: Thread, p: Plugin] {
+    m.inst.t = p
+}
+
+fun addsConnection[m: MAVSDK, t: Thread, p: Plugin] {
+    m.connect.t = p
+}
+
+fun subscribesToEvent[t: Thread, e: SystemEvent] {
+    t -> e
+}
+
+fun waitsForEvent[t: Thread, e: SystemEvent] {
+    t -> e
+}
+
+fun setsUpCallback[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun armsVehicle[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun setsTakeoffAltitude[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun initiatesTakeoff[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun startsThread[t1: Thread, t2: Thread] {
+    t1 = t2
+}
+
+fun createsAnotherInstance[m: MAVSDK, t: Thread, p: Plugin] {
+    m.inst.t = p
+}
+
+fun addsConnectionToAutopilot[m: MAVSDK, t: Thread, p: Plugin] {
+    m.connect.t = p
+}
+
+fun setupServerPlugins[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun providesParameters[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun setsFlightModes[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun createsMissionRawServer[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun subscribesToEvents[t: Thread, e: SystemEvent] {
+    t -> e
+}
+
+fun setsCurrentMissionItem[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun publishesTelemetry[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun checksParam[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun createsMission[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun uploadsMission[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun clearsMission[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun waitsForTime[t: Thread] {
+    t = MainThread
+}
+
+fun setsPositionRate[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun monitorsAltitude[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun waitsForVehicleReady[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun armsVehicleSecond[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun setsTakeoffAltitudeSecond[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fun initiatesTakeoffSecond[t: Thread, p: Plugin] {
+    t -> p
+}
+
+fact {
+    createsInstance[M, MainThread, MAVSDK]
+    addsConnection[M, MainThread, MAVSDK]
+    subscribesToEvent[MainThread, NewSystemEvent]
+    waitsForEvent[MainThread, NewSystemEvent]
+    createsInstance[M, MainThread, Action]
+    createsInstance[M, MainThread, Param]
+    createsInstance[M, MainThread, Telemetry]
+    setsUpCallback[MainThread, Telemetry]
+    armsVehicle[MainThread, Action]
+    setsTakeoffAltitude[MainThread, Action]
+    initiatesTakeoff[MainThread, Action]
+    startsThread[MainThread, AutopilotThread]
+    createsAnotherInstance[M, AutopilotThread, MAVSDK]
+    addsConnectionToAutopilot[M, AutopilotThread, MAVSDK]
+    subscribesToEvent[AutopilotThread, NewSystemEvent]
+    waitsForEvent[AutopilotThread, NewSystemEvent]
+    setupServerPlugins[AutopilotThread, ParamServer]
+    setupServerPlugins[AutopilotThread, TelemetryServer]
+    setupServerPlugins[AutopilotThread, ActionServer]
+    setupServerPlugins[AutopilotThread, MissionRawServer]
+    providesParameters[AutopilotThread, ParamServer]
+    setsFlightModes[AutopilotThread, ParamServer]
+    armsVehicle[AutopilotThread, ActionServer]
+    createsMissionRawServer[AutopilotThread, MissionRawServer]
+    subscribesToEvents[AutopilotThread, NewSystemEvent]
+    setsCurrentMissionItem[AutopilotThread, MissionRawServer]
+    publishesTelemetry[AutopilotThread, TelemetryServer]
+    checksParam[MainThread, Param]
+    createsMission[MainThread, Mission]
+    uploadsMission[MainThread, Mission]
+    clearsMission[MainThread, Mission]
+    waitsForTime[MainThread]
+    setsPositionRate[MainThread, Telemetry]
+    monitorsAltitude[MainThread, Telemetry]
+    waitsForVehicleReady[MainThread, Telemetry]
+    armsVehicleSecond[MainThread, Action]
+    setsTakeoffAltitudeSecond[MainThread, Action]
+    initiatesTakeoffSecond[MainThread, Action]
+}

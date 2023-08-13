@@ -1,0 +1,73 @@
+The UML architecture description for the given drone application code can be organized as follows:
+
+1. Main Component:
+- Name: Main
+- Description: The main component of the application that initializes the Mavsdk library, sets up connections and plan files for each drone, and manages the execution of multiple drones.
+- Interfaces:
+  - add_any_connection(url: string): ConnectionResult
+  - subscribe_on_new_system(callback: function): void
+- Connections:
+  - Mavsdk: Mavsdk Instance
+  - num_systems_discovered: Atomic Variable
+
+2. Systems Component:
+- Name: Systems
+- Description: Manages the discovery of multiple drone systems and keeps track of the number of systems discovered.
+- Interfaces:
+  - systems(): List<System>
+
+3. Telemetry Component:
+- Name: Telemetry
+- Description: Provides access to telemetry data from the drone system.
+- Interfaces:
+  - set_rate_position(rate: float): Telemetry::Result
+  - health_all_ok(): bool
+  - subscribe_position(callback: function): void
+  - armed(): bool
+
+4. Action Component:
+- Name: Action
+- Description: Provides access to the actions that can be taken by the drone system.
+- Interfaces:
+  - arm(): Action::Result
+
+5. Mission Raw Component:
+- Name: MissionRaw
+- Description: Handles importing, uploading, and starting mission execution on the drone system.
+- Interfaces:
+  - import_qgroundcontrol_mission(qgc_plan: string): (Result, MissionRaw::MissionData)
+  - upload_mission(mission_items: List<MissionItem>): MissionRaw::Result
+  - start_mission(): MissionRaw::Result
+  - subscribe_mission_progress(callback: function): void
+
+6. CSV Writer Component:
+- Name: CSVWriter
+- Description: Writes telemetry data to a CSV file.
+- Interfaces:
+  - open(file_name: string): void
+  - write(data: string): void
+
+7. Time Utility Component:
+- Name: TimeUtility
+- Description: Provides utility functions to work with time.
+- Interfaces:
+  - getCurrentTimeString(): string
+
+8. Other Utility Components:
+- Name: Utility
+- Description: Provide utility functions for other operations.
+- Interfaces:
+  - sleep_for(duration: seconds): void
+  - join(): void
+
+Note: The above UML architecture description includes only the main components and their interfaces. It does not include all the helper functions and utility components used in the code.
+
+The syntax in the code:
+- The code includes various libraries that provide functionalities related to MAVSDK, drone actions, mission handling, telemetry, etc.
+- The "using" statements are used to import namespaces for convenience.
+- The main function initializes the Mavsdk library, adds connections based on the provided UDP ports, and starts the drone systems.
+- The "complete_mission" function is responsible for executing the mission on a specific drone system.
+- The code uses lambda functions for callbacks and various utility functions for time manipulation and CSV file writing.
+- Iterations and conditionals are used to handle mission progress, arm the vehicle, and check system health.
+
+Overall, the code allows multiple drones to follow separate plan files, saves telemetry information to CSV files, and ensures that the mission ends with RTL or land to prevent the system from getting stuck.

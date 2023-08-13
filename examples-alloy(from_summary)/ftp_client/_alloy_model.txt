@@ -1,0 +1,59 @@
+The Alloy model for the given drone application source code can be represented as follows:
+
+```alloy
+sig Mavsdk {}
+sig ConnectionResult {}
+sig System {}
+
+sig Ftp {
+    res: Result
+}
+
+sig Result {}
+
+sig main {
+    mavsdk: one Mavsdk,
+    connection_result: one ConnectionResult,
+    system: one System,
+    ftp: one Ftp
+}
+
+fun main.setup_mavsdk[m: main] : Mavsdk {
+    m.mavsdk
+}
+
+fun main.establish_connection[m: main] : ConnectionResult {
+    m.connection_result
+}
+
+fun main.instantiate_ftp[m: main] : Ftp {
+    m.ftp
+}
+
+fun main.execute_ftp_commands[m: main] : Result {
+    m.ftp.res
+}
+
+sig usage {
+    bin_name: one String
+}
+
+fun usage.print_instructions[u: usage] : String {
+    "Printing usage instructions..."
+}
+
+fact {
+    usage.print_instructions[usage] = "Printing usage instructions..."
+}
+
+fun main.usage_instructions[m: main, u: usage] : String {
+    usage.print_instructions[u]
+}
+
+fact {
+    main.usage_instructions[m, u] = "Printing usage instructions..."
+}
+
+```
+
+Note: The Alloy code represents the structural aspects of the given code architecture and does not capture the behavior or implementation details of the functions. It focuses on defining the components and their relationships within the application architecture.

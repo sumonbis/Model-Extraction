@@ -1,0 +1,24 @@
+The code demonstrates how to add and upload a geofence using MAVSDK. Here is the data-flow and control flow analysis:
+
+Data-flow:
+- The main function takes the connection URL as input and adds the connection to MAVSDK.
+- The `get_system` function waits for a system to be discovered and returns a shared pointer to the system.
+- The main function checks if a system is successfully obtained and instantiates the `telemetry` and `geofence` plugins.
+- Inside the while loop, it waits until the telemetry health is all okay.
+- The `points` vector is created and filled with Geofence::Point objects.
+- The `polygons` vector is created and filled with Geofence::Polygon objects.
+- The geofence plugin's `upload_geofence` function is called with the `polygons` vector as input.
+
+Control flow:
+- The main function checks if the number of command-line arguments is correct and displays usage information if not.
+- The main function creates an instance of `Mavsdk` and adds the connection using the provided URL.
+- The main function calls the `get_system` function to get the system object.
+- If the system object is successfully obtained, the main function continues, otherwise it returns.
+- The main function instantiates the `telemetry` and `geofence` plugins.
+- Inside the while loop, it waits until the telemetry health is all okay.
+- After the while loop, it creates and uploads the geofence using the `upload_geofence` function.
+- The main function returns 0 if everything is successful.
+
+The `add_point` function is a helper function that creates and returns a `Geofence::Point` object with the provided latitude and longitude.
+
+Overall, the code connects to a drone using MAVSDK, waits for the drone system to be ready, creates a geofence with specified polygon points, and uploads the geofence to the drone.

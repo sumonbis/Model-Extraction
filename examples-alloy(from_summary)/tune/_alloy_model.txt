@@ -1,0 +1,63 @@
+sig Component {
+}
+
+one sig Main, Mavsdk, Tune extends Component {
+}
+
+sig System {
+}
+
+sig Connection {
+  system: one System,
+  url: one string
+}
+
+fun get_system(mavsdk: Mavsdk): System {
+  ...
+}
+
+fun main(argc: Int, argv: seq String): Int {
+  ...
+}
+
+fun usage(bin_name: String) {
+  ...
+}
+
+fun Mavsdk.add_any_connection(connection_url: String): ConnectionResult {
+  ...
+}
+
+fun Tune.play_tune(tune_description: TuneDescription): Tune.Result {
+  ...
+}
+
+fact MainCallsGetSystem {
+  Main -&gt; get_system[Mavsdk]
+}
+
+fact MainInstantiatesTune {
+  Main -&gt; Tune
+}
+
+fact MainCallsPlayTune {
+  Main -&gt; play_tune[Tune]
+}
+
+fact MainCallsUsage {
+  Main -&gt; usage
+}
+
+// Enumerations
+sig ConnectionResult {
+  Success,
+  Failure
+}
+
+sig TuneDescription {
+}
+
+sig Result {
+  Success,
+  Failure
+}

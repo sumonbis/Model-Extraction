@@ -1,0 +1,54 @@
+The UML architecture for the drone application code can be represented as follows:
+
+```
++----------------+
+|     Mavsdk     |
+|----------------|
+|+add_any_connection()|
+|+systems()      |
+|----------------|
+|                |
+|     Action     |
+|----------------|
+|+arm()          |
+|+return_to_launch()|
+|----------------|
+|                |
+|  MissionRaw    |
+|----------------|
+|+import_qgroundcontrol_mission()|
+|+upload_mission()|
+|+start_mission()|
+|----------------|
+|                |
+|   Telemetry    |
+|----------------|
+|+health_all_ok()|
++----------------+
+```
+
+Explanation of the code syntax:
+
+- `#include <mavsdk/mavsdk.h>`: Includes the main MAVSDK library.
+- `#include <mavsdk/plugins/action/action.h>`: Includes the Action plugin module.
+- `#include <mavsdk/plugins/mission_raw/mission_raw.h>`: Includes the MissionRaw plugin module.
+- `#include <mavsdk/plugins/telemetry/telemetry.h>`: Includes the Telemetry plugin module.
+
+The `main()` function:
+
+- Parses command-line arguments to retrieve the URL for connecting to the drone and the path to the mission plan file.
+- Creates an instance of the MAVSDK object.
+- Adds a connection using the URL provided.
+- Calls the `get_system()` function to get the system object.
+- Creates instances of the Action, MissionRaw, and Telemetry objects.
+- Waits until the telemetry data from the drone indicates that it is ready.
+- Imports the mission items from the mission plan file.
+- Uploads the mission items to the drone.
+- Arms the drone.
+- Subscribes to the mission progress updates.
+- Starts the mission.
+- Waits for the mission to finish or times out after 240 seconds.
+- Sends a Return to Launch (RTL) command to the drone.
+- Exits the program.
+
+Note: The UML diagram provides an overview of the software architecture and the main components involved. The actual implementation details may vary.

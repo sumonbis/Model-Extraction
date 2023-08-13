@@ -1,0 +1,55 @@
+The UML architecture diagram for the drone application code can be described as follows:
+
+Components:
+- Main: Represents the main function of the application.
+- Mavsdk: Represents the MAVSDK library used to interact with the drone.
+- ConnectionResult: Represents the result of a connection attempt to the drone.
+- Telemetry: Represents the telemetry plugin used to retrieve information from the drone.
+- Action: Represents the action plugin used to control the drone.
+- System: Represents a single drone system.
+- std::chrono: Represents the C++ library used for time-related operations.
+- std::future: Represents the C++ library used for asynchronous operations.
+- std::thread: Represents the C++ library used for multi-threading.
+- std::this_thread: Represents the C++ library used for accessing the current thread.
+
+Interfaces:
+- Usage(): Prints the usage instructions for the application.
+- get_system(Mavsdk&): Gets the system representing the drone from the MAVSDK instance.
+- main(int, char**): The entry point of the application.
+
+Connections:
+- Main is connected to Usage.
+- Main is connected to Mavsdk.
+- Main is connected to Telemetry.
+- Main is connected to Action.
+- Main is connected to System.
+- Main is connected to std::chrono.
+- Main is connected to std::future.
+- Main is connected to std::thread.
+- Main is connected to std::this_thread.
+- Mavsdk is connected to ConnectionResult.
+
+Syntax Explanation:
+- #include: Specifies inclusion of a header file.
+- <<: Used for stream insertion (output) in C++.
+- >>: Used for stream extraction (input) in C++.
+- std::cerr: Represents the standard error stream.
+- std::cout: Represents the standard output stream.
+- std::endl: Represents the end line character in C++.
+- std::string: Represents a string data type in C++.
+- std::shared_ptr: Represents a shared pointer in C++.
+- std::future: Represents a mechanism to retrieve the result of an asynchronous operation.
+- std::promise: Represents a mechanism to set the value of a future object.
+- std::chrono: Represents the C++ library for time-related operations.
+- std::this_thread: Represents the C++ library for accessing and manipulating the current thread.
+- std::thread: Represents the C++ library for multi-threading.
+- std::chrono::seconds: Represents a duration in seconds.
+- std::mavsdk: Represents the MAVSDK library.
+- std::cstdint: Represents the C++ library for fixed-width integer types.
+- std::cmath: Represents the C++ library for mathematical functions.
+- Namespace: Represents a scope in C++ to avoid name conflicts.
+- *argv[]: Represents the command-line arguments passed to the program.
+- argc: Represents the number of command-line arguments passed to the program.
+- &mavsdk: Represents the address of a variable.
+- &&: Represents the logical AND operator in C++.
+- Nan: Represents a special floating-point value that represents "Not-a-Number".

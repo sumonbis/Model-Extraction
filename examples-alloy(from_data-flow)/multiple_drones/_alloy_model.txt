@@ -1,0 +1,62 @@
+open util/boolean
+
+sig Main{
+    mavsdk: one Mavsdk
+}
+
+sig Mavsdk{
+    connections: set String,
+    systems: set System
+}
+
+sig System{
+    main: one Main,
+    takeoff_land: one TakeoffAndLand,
+    telemetry: one Telemetry,
+    action: one Action
+}
+
+sig Telemetry{
+    system: one System,
+    position_update_rate: Int,
+    in_air: Bool,
+    altitude: Int,
+    health_all_ok: Bool
+}
+
+sig Action{
+    system: one System,
+    armed: Bool
+}
+
+sig TakeoffAndLand{
+    system: one System,
+    position_update_rate: Int
+}
+
+fun Main::isReadyToFly(): Bool{
+    some s: System | s.main = this and s.takeoff_land = this.takeoff_land
+}
+
+pred mainFlow(m: Main){
+    some s: System, t: TakeoffAndLand | 
+        s.main = m and t.system = s and
+        some a: Action, lt: Telemetry |
+            a.system = s and lt.system = s and
+            m.mavsdk.connections = lt.system.main.mavsdk.connections and
+            lt.in_air = this.altitude and
+            this.position_update_rate = t.position_update_rate and
+            this.health_all_ok = true and
+            this.armed = a.armed
+}
+
+pred dataFlow(m: Main){
+    one ms: Mavsdk, s: System | 
+        ms = m.mavsdk and s.main = m and
+        m.mavsdk.connections = s.main.mavsdk.connections and
+        s.takeoff_land.system = s and
+        s.telemetry.system = s and
+        s.action.system = s
+}
+
+run dataFlow for 16 but 3 Main, 6 Mavsdk, 8 System, 4 Telemetry, 4 TakeoffAndLand, 5 Action

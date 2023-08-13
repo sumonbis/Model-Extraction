@@ -1,0 +1,56 @@
+The Alloy model for the given drone application code can be represented as follows:
+
+```alloy
+module DroneApp
+
+// Declare signatures for different classes
+sig Main {}
+sig Telemetry {}
+sig Action {}
+sig MissionRaw {}
+sig System {}
+
+// Composition relationships
+sig complete_mission {
+    mavsdk: Main,
+    telemetry: Telemetry,
+    action: Action,
+    mission_raw: MissionRaw,
+    system: System
+}
+
+// Relationships between classes
+fact {
+    // Main creates Mavsdk, adds connections, waits for system discovery, and spawns threads for each system
+    Main in complete_mission.mavsdk
+
+    // Each complete_mission function has instances of Telemetry, Action, and MissionRaw
+    complete_mission.telemetry in complete_mission.action + complete_mission.mission_raw
+    complete_mission.action in complete_mission.telemetry + complete_mission.mission_raw
+    complete_mission.mission_raw in complete_mission.telemetry + complete_mission.action
+
+    // Each complete_mission function has an instance of System
+    complete_mission.system in System
+
+    // Telemetry uses callbacks to subscribe to position updates and health changes
+    complete_mission.telemetry in subscribe_position
+    complete_mission.telemetry in health_all_ok
+    complete_mission.telemetry in armed
+
+    // MissionRaw imports mission items from QGroundControl and uploads them to the drone
+    complete_mission.mission_raw in import_qgroundcontrol_mission
+
+    // Each system has a system ID
+    System has one systemId
+}
+
+pred show {}
+
+run show for 10
+```
+
+In the Alloy model, we declare signatures for different classes such as `Main`, `Telemetry`, `Action`, `MissionRaw`, and `System`. We also define a composition relationship `complete_mission` that represents the instances of these classes being used together in the `complete_mission` function.
+
+The fact block specifies the relationships between classes. It ensures that the `Main` class is included in `complete_mission.mavsdk`, and each `complete_mission` function has instances of `Telemetry`, `Action`, `MissionRaw`, and `System`. It also specifies that `Telemetry` uses callbacks to subscribe to position updates and health changes, and `MissionRaw` imports mission items from QGroundControl.
+
+The final predicate `show` and the `run` command are used to execute the model and generate instances that satisfy the defined relationships.

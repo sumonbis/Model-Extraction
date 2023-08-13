@@ -1,0 +1,29 @@
+The Alloy model for the given data and control-flow description can be written as follows:
+
+sig Command_long, Mavlink_msg, Command_long_decoded, Process_command_long, Log_statement, Main, Mavsdk, Set_configuration, Add_any_connection, Subscribe_on_new_system, System, Autopilot, Mavlink_passthrough, Subscribe_message_async {
+}
+
+pred data_flow {
+  Command_long_decoded.unid = Mavlink_msg.command_long_decode.unid
+  Process_command_long.input = Command_long_decoded
+  Log_statement = Process_command_long.output
+}
+
+pred control_flow {
+  Main.init_mavsdk = Mavsdk
+  Set_configuration.mavsdk = Mavsdk
+  Add_any_connection.mavsdk = Mavsdk
+  Subscribe_on_new_system.mavsdk = Mavsdk
+  Subscribe_on_new_system.output = System
+  Autopilot.system = System
+  Mavlink_passthrough.system = Autopilot
+  Subscribe_message_async.mavlink_passthrough = Mavlink_passthrough
+}
+
+pred program_execution {
+  control_flow
+  data_flow
+  Main.run
+}
+
+run program_execution for 10 but exactly 1 Main, 1 Mavsdk, 1 Set_configuration, 1 Add_any_connection, 1 Subscribe_on_new_system, 1 Autopilot, 1 Mavlink_passthrough, 1 Subscribe_message_async, 1 Command_long, 1 Mavlink_msg, 1 Command_long_decoded, 1 Process_command_long, 1 Log_statement, 1 System

@@ -1,0 +1,88 @@
+Here is an Alloy model that captures the data and control-flow relations described:
+
+```alloy
+module DroneApp
+
+sig ReceiverData {
+  systemId: Int,
+  componentId: Int
+}
+
+abstract sig AttitudeData {
+  // Attitude and setpoint data
+  // ...
+
+  // Getter methods
+  getAttitude: AttitudeData -> Attitude,
+  getSetpoint: AttitudeData -> Setpoint,
+
+  // Setter methods
+  setAttitude: AttitudeData -> Attitude -> AttitudeData,
+  setSetpoint: AttitudeData -> Setpoint -> AttitudeData
+}
+
+sig Attitude {
+  // Attitude properties
+  // ...
+}
+
+sig Setpoint {
+  // Setpoint properties
+  // ...
+}
+
+abstract sig Sender {
+  ad: AttitudeData
+}
+
+abstract sig Tester {
+  ad: AttitudeData
+}
+
+run {}
+
+fact DataFlow {
+  // Data flows from ReceiverData to AttitudeData
+  all r: ReceiverData, ad: AttitudeData |
+    some s: Sender | s.ad = ad
+}
+
+fact ControlFlow {
+  // Main function initializes objects and starts Sender and Tester
+  some s: Sender, t: Tester |
+    all s': Sender, t': Tester | s'.ad = s.ad and t'.ad = t.ad
+
+  // Sender runs in a separate thread and periodically sends messages
+  all s: Sender |
+    some ad: AttitudeData |
+      s.ad = ad and runSender[s]
+
+  // Tester runs various test methods
+  all t: Tester |
+    some ad: AttitudeData |
+      t.ad = ad and runTester[t]
+
+  // Sender and Tester rely on AttitudeData
+  all s: Sender, t: Tester |
+    s.ad = t.ad
+
+  // Sender and Tester use AttitudeData to access and modify data
+  all s: Sender |
+    some ad: AttitudeData, a: Attitude, sp: Setpoint |
+      s.ad = ad and getAttitude[ad] = a and getSetpoint[ad] = sp and
+      some ad': AttitudeData |
+        s.ad = ad' and setAttitude[ad', a] = ad' and setSetpoint[ad', sp] = ad'
+
+  all t: Tester |
+    some ad: AttitudeData, a: Attitude, sp: Setpoint |
+      t.ad = ad and getAttitude[ad] = a and getSetpoint[ad] = sp and
+      some ad': AttitudeData |
+        t.ad = ad' and setAttitude[ad', a] = ad' and setSetpoint[ad', sp] = ad'
+}
+```
+
+In this Alloy model, we have defined the necessary signatures to represent the data structures and objects involved in the code. The `DataFlow` fact captures the data flow relation between `ReceiverData` and `AttitudeData`, and the `ControlFlow` fact captures the control flow relations between various objects and methods.
+
+The `main` function and the details of the `Sender` and `Tester` objects are not explicitly modeled as they are beyond the scope of Alloy. The model focuses on capturing the high-level data and control flow relationships between the objects and methods described.
+
+You can further refine and extend this model based on the specific properties and constraints of the code you are working with.

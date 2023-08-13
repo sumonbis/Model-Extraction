@@ -1,0 +1,24 @@
+Data-flow relations:
+- The main function receives the arguments from the command line and initializes the MAVSDK.
+- The main function then adds a connection to the MAVSDK using the provided connection URL.
+- The main function calls the `get_system` function to wait for a system to be discovered and selects the first system that has an autopilot.
+- The main function initializes the `Action`, `Mission`, and `Telemetry` modules using the selected system.
+- The main function waits for the system to be ready by continuously checking the health status of the system through telemetry.
+- The main function creates a mission plan by defining a sequence of `MissionItem`s and uploads the mission plan to the system using the `Mission` module.
+- The main function arms the system using the `Action` module.
+- The main function subscribes to the mission progress through the `Mission` module and sets a flag to pause the mission once a certain mission item is reached.
+- The main function starts the mission using the `Mission` module.
+- The main function waits for the pause flag to be set.
+- The main function pauses the mission using the `Mission` module.
+- The main function waits for 5 seconds.
+- The main function continues the mission using the `Mission` module.
+- The main function waits for the mission to be finished.
+- The main function commands the system to return to launch using the `Action` module.
+- The main function waits for the system to be disarmed through telemetry.
+
+Control flow relations:
+- The main control flow is within the `main` function, which manages the flow of the application.
+- The control flow is sequential, starting from initializing the MAVSDK, adding a connection, waiting for system discovery, initializing modules, waiting for system readiness, creating and uploading the mission, arming the system, starting the mission, pausing the mission, waiting, continuing the mission, waiting for mission completion, and commanding the system to return to launch and wait for disarming.
+- The control flow is heavily dependent on asynchronous callbacks and subscriptions, which can interrupt and modify the main control flow.
+- The control flow is also dependent on the status and responses received from the MAVSDK modules, such as connection status, health status, upload status, mission status, etc.
+- Certain control flow elements, such as waiting for system readiness and mission progression, use loops with sleeps to periodically check and update the state.

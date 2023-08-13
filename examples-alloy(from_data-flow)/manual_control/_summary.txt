@@ -1,0 +1,42 @@
+The data-flow and control flow relations for the given drone application code can be described as follows:
+
+Data-flow relations:
+1. Initialization and connection:
+   - The `init()` function initializes the SDL joystick library.
+   - The `connect()` function checks the number of connected joysticks and connects to the first available joystick.
+   - The `_joystick` member variable is set to the connected joystick.
+   - The `set_initial_values()` function initializes the initial state of buttons and axes.
+
+2. Polling loop:
+   - The `start_poll_loop()` function starts a thread that continuously waits for joystick events.
+   - Within the polling loop, various event types, such as axis motion, button press/release, and device added/removed, are handled.
+   - The corresponding event data is used to update the internal state of the joystick (`_state`).
+
+3. Setters:
+   - The `set_button()` and `set_axis()` functions update the state of a specific button or axis, respectively, in a thread-safe manner.
+
+4. Getters:
+   - The `get_axis()` function retrieves the value of a specific axis from the joystick state.
+
+Control flow relations:
+1. Creation and setup:
+   - The `create()` function creates a new instance of the `Joystick` class and initializes it.
+   - If the initialization is successful, the joystick is connected, and the polling loop is started.
+
+2. SDL event handling:
+   - In the polling loop, various SDL joystick events are handled using a switch statement.
+   - For different event types, specific actions are performed, such as updating the state for axis motion or button press/release, disconnecting/reconnecting the joystick, and terminating the application.
+
+3. Stopping the polling loop:
+   - The `stop_poll_loop()` function sets a flag (`_should_exit`) to signal the polling loop to exit.
+   - The function waits for the polling loop thread to join, ensuring it has finished executing.
+
+4. Cleanup and destruction:
+   - The `disconnect()` function closes the connected joystick.
+   - The `deinit()` function deinitializes the SDL joystick library.
+   - The destructor (`~Joystick()`) calls `stop_poll_loop()`, `disconnect()`, and `deinit()` to clean up resources before the instance of `Joystick` is destroyed.
+
+5. Printing values:
+   - The `print_values()` function outputs the current state of buttons and axes.
+
+Note: The code also includes some error handling and checks for certain conditions, such as the number of connected joysticks, before taking appropriate actions.

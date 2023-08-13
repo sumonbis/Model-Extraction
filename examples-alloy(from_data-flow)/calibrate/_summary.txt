@@ -1,0 +1,21 @@
+The data-flow and control flow relations for the given drone application code can be described as follows:
+
+Data-flow relations:
+1. The main function receives command line arguments `argc` and `argv` which are passed to the `usage` function for displaying usage instructions.
+
+2. The main function creates an instance of the Mavsdk class and adds a connection using the provided connection URL `argv[1]`. The result of the connection operation is stored in the `connection_result` variable.
+
+3. The `get_system` function is called with the Mavsdk instance as an argument to discover the system. It waits for new systems to be discovered and selects the first system that has an autopilot. The discovered system is returned as a shared pointer.
+
+4. The main function instantiates the `Calibration` plugin using the discovered system.
+
+5. Calibration functions `calibrate_accelerometer`, `calibrate_gyro`, and `calibrate_magnetometer` are called sequentially to perform the calibration process. These functions call the respective `calibrate_*_async` functions of the `Calibration` plugin and wait for the asynchronous calibration process to complete using futures. The calibration progress and result are provided to the callback function created by `create_calibration_callback`.
+
+Control flow relations:
+1. The main function checks if the number of command line arguments is correct. If not, it displays the usage instructions and returns.
+2. If the connection is successful, the main function continues, otherwise it displays the connection failure reason and returns.
+3. If a system is discovered, the main function continues, otherwise it displays a message that no autopilot was found and returns.
+4. The calibration functions are called sequentially.
+5. After the calibrations are completed, the main function returns.
+
+Note: There are no loops or conditional statements in the code, so the control flow is linear and deterministic.

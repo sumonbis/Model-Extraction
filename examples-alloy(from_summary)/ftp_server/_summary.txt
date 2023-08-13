@@ -1,0 +1,72 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
++-----------------------------+
+|          DroneCode              |
++-----------------------------+
+|                               |
+|--------------------------------+
+| - mavsdk: Mavsdk             |
++-----------------------------+
+|                               |
+|+ main(argc: int, argv: **char): int |
+|+ usage(bin_name: const string&): void |
++-----------------------------+
+
+            ^
+            |
+            | creates
+            |
++-----------------------------+
+|        Mavsdk                |
++-----------------------------+
+| - Configuration: Configuration |
++-----------------------------+
+|+ setup_udp_remote(ip: string, port: int): ConnectionResult |
+|+ systems(): vector<System> |
+|+ set_configuration(config: Configuration): void |
++-----------------------------+
+
+             ^
+             |
+             | creates
+             |
++-----------------------------+
+|        System                 |
++-----------------------------+
+| - ftp_server: Ftp              |
++-----------------------------+
+|+ get_our_compid(): int                  |
++-----------------------------+
+
+               ^
+               |
+               | uses
+               |
++-----------------------------+
+|         Ftp                    |
++-----------------------------+
+| - system_cc: System              |
+| - root_directory: string                 |
++-----------------------------+
+|+ set_root_directory(directory: string): void |
++-----------------------------+
+
+```
+
+Explanation of the code syntax:
+
+- The code imports necessary libraries using `#include` directives.
+- The `usage` function is defined to print usage instructions for the application.
+- The `main` function is the entry point of the application.
+- Inside `main`, the program checks for the correct number of command line arguments.
+- An instance of the `Mavsdk` class is created and configured for Companion Computer usage.
+- The program sets up a UDP remote connection using the specified IP address and port.
+- If the connection setup is successful, an instance `system_cc` of the `System` class is obtained from `mavsdk.systems()`.
+- An instance of the `Ftp` class is created with `system_cc` as its parameter.
+- The root directory for the FTP server is set using `ftp_server.set_root_directory()`.
+- The program then enters an infinite loop.
+- The loop is intended to keep the program running, as there are no specific instructions inside the loop.
+- The program will only exit if terminated externally.
+
+Note: The architecture description assumes that the necessary class definitions exist in the codebase.

@@ -1,0 +1,102 @@
+Here is an example of an AADL model architecture (.aadl) for the given drone application code:
+
+```
+package DroneApp is
+   public
+      with Data_Model;
+
+   system DroneApp_System
+      properties
+         with Code_Generation_Header => "mavsdk/mavsdk.h",
+              Code_Generation_Source => "mavsdk/plugins/log_files/log_files.h";
+      end DroneApp_System;
+
+   processor DroneApp_Processor
+      properties
+         with Code_Generation_Header => "<chrono>, <functional>, <future>, <iostream>, <iomanip>, <cstring>, <thread>";
+      end DroneApp_Processor;
+
+   thread DroneApp_MainThread
+      properties
+         Source_Text => "main(arg: in out Character_Array) return Integer is";
+      end DroneApp_MainThread;
+
+   thread DroneApp_SystemThread
+      properties
+         Source_Text => "get_system(mavsdk: in out Mavsdk) return System_ptr is";
+      end DroneApp_SystemThread;
+   
+   thread DroneApp_LogFilesThread
+      properties
+         Source_Text => "log_files: in out LogFiles; entry_list: in out EntryList; remove_log_files: in Boolean is";
+      end DroneApp_LogFilesThread;
+
+   process DroneApp_Process
+      subcomponents
+         MainThread: thread DroneApp_MainThread;
+         SystemThread: thread DroneApp_SystemThread;
+         LogFilesThread: thread DroneApp_LogFilesThread;
+      properties
+         Dispatch_Protocol => periodic(0.1 ms);
+   end DroneApp_Process;
+
+   thread implementation DroneApp_MainThread.impl
+      calls SystemThread.get_system,
+            LogFilesThread.get_entries,
+            LogFilesThread.download_log_file,
+            LogFilesThread.erase_all_log_files;
+      data
+         argv: array (0..3) of 
+                  reference character;
+         argc: reference integer;
+      subcomponents
+         mavsdk: Data_Model.Mavsdk;
+         system: Data_Model.System;
+         log_files: Data_Model.LogFiles;
+         get_entries_result: Data_Model.GetEntriesResult;
+         entry: Data_Model.Entry;
+         result: Data_Model.LogFilesResult;
+      properties
+         Actual_Processor_Binding => (DroneApp_Processor);
+   end DroneApp_MainThread.impl;
+
+   thread implementation DroneApp_SystemThread.impl
+      calls mavsdk.subscribe_on_new_system,
+            mavsdk.systems.back;
+      data
+         prom: reference (shared Future);
+         fut: (shared Future);
+      subcomponents
+         mavsdk: Data_Model.Mavsdk;
+      properties
+         Actual_Processor_Binding => (DroneApp_Processor);
+   end DroneApp_SystemThread.impl;
+
+   thread implementation DroneApp_LogFilesThread.impl
+      calls log_files.get_entries,
+            log_files.download_log_file,
+            log_files.erase_all_log_files;
+      data
+         remove_log_files: boolean;
+       entry_list: array(0..100) of reference Data_Model.Entry;
+      subcomponents
+         log_files: Data_Model.LogFiles;
+      properties
+         Actual_Processor_Binding => (DroneApp_Processor);
+   end DroneApp_LogFilesThread.impl;
+
+   process implementation DroneApp_Process.impl
+      subcomponents
+         DroneApp_Processors: processor DroneApp_Processor;
+      connections
+         TX1: port DroneApp_Processors.Out -> DroneApp_MainThread.argv[1];
+         TX2: port DroneApp_Processors.Out -> DroneApp_LogFilesThread.remove_log_files;
+         RX1: port DroneApp_Processors.In -> DroneApp_MainThread.argc;
+      properties
+         Actual_Processor_Binding => (DroneApp_Processors);
+   end DroneApp_Process.impl;
+
+end DroneApp;
+```
+
+Please note that this model is a simplified representation and might be missing some details.

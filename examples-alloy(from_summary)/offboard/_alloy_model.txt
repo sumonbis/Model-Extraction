@@ -1,0 +1,147 @@
+An Alloy model for the drone application source code can be represented as follows:
+
+```
+sig BinName, SystemId, Offboard, Telemetry, ConnectionResult, System, Action, Mavsdk{}
+
+fun Main : BinName -> DroneApplication
+fun GetSystem : Mavsdk -> System
+fun OffbCtrlNed : Offboard -> bool
+fun OffbCtrlPosGlobal : Offboard -> Telemetry -> bool
+fun OffbCtrlBody : Offboard -> bool
+fun OffbCtrlAttitude : Offboard -> bool
+fun Arm : Action -> void
+fun Disarm : Action -> void
+fun Start : Offboard -> void
+fun Stop : Offboard -> void
+fun SetVelocityNED : Offboard -> void
+fun SetPositionGlobal : Offboard -> Telemetry -> void
+fun SetVelocityBody : Offboard -> void
+fun SetAttitude : Offboard -> void
+fun Usage : BinName -> void
+fun GetSystemId : System -> SystemId
+fun HasAutopilot : System -> bool
+fun HealthAllOK : Telemetry -> bool
+fun GetGPSGlobalOrigin : Telemetry -> void
+
+one sig DroneApplication {
+  main : BinName -> void,
+  usage : BinName -> void,
+  get_system : Mavsdk -> System,
+  offb_ctrl_ned : Offboard -> bool,
+  offb_ctrl_pos_global : Offboard -> Telemetry -> bool,
+  offb_ctrl_body : Offboard -> bool,
+  offb_ctrl_attitude : Offboard -> bool
+}
+
+one sig MavsdkConnectionResult {
+  success : ConnectionResult,
+  failure : ConnectionResult
+}
+
+one sig DroneSystem {
+  system_id : SystemId,
+  has_autopilot : bool
+}
+
+one sig DroneAction {
+  arm : Action -> void,
+  disarm : Action -> void
+}
+
+one sig DroneOffboard {
+  start : Offboard -> void,
+  stop : Offboard -> void,
+  set_velocity_ned : Offboard -> void,
+  set_position_global : Offboard -> Telemetry -> void,
+  set_velocity_body : Offboard -> void,
+  set_attitude : Offboard -> void
+}
+
+one sig DroneTelemetry {
+  health_all_ok : Telemetry -> bool,
+  get_gps_global_origin : Telemetry -> void
+}
+
+fact {
+  Main = main,
+  GetSystem = get_system,
+  OffbCtrlNed = offb_ctrl_ned,
+  OffbCtrlPosGlobal = offb_ctrl_pos_global,
+  OffbCtrlBody = offb_ctrl_body,
+  OffbCtrlAttitude = offb_ctrl_attitude,
+  Arm = arm,
+  Disarm = disarm,
+  Start = start,
+  Stop = stop,
+  SetVelocityNED = set_velocity_ned,
+  SetPositionGlobal = set_position_global,
+  SetVelocityBody = set_velocity_body,
+  SetAttitude = set_attitude,
+  Usage = usage,
+  GetSystemId = system_id,
+  HasAutopilot = has_autopilot,
+  HealthAllOK = health_all_ok,
+  GetGPSGlobalOrigin = get_gps_global_origin
+}
+
+fact {
+  BinName = Str,
+  SystemId = Int,
+  Offboard = Bool,
+  Telemetry = Bool,
+  ConnectionResult = Bool,
+  System = DroneSystem,
+  Action = DroneAction,
+  Mavsdk = DroneOffboard + DroneTelemetry,
+  usage.univ = BinName -> void,
+  main.univ = BinName -> void,
+  get_system.univ = Mavsdk -> System,
+  offb_ctrl_ned.univ = Offboard -> bool,
+  offb_ctrl_pos_global.univ = Offboard -> Telemetry -> bool,
+  offb_ctrl_body.univ = Offboard -> bool,
+  offb_ctrl_attitude.univ = Offboard -> bool,
+  arm.univ = Action -> void,
+  disarm.univ = Action -> void,
+  start.univ = Offboard -> void,
+  stop.univ = Offboard -> void,
+  set_velocity_ned.univ = Offboard -> void,
+  set_position_global.univ = Offboard -> Telemetry -> void,
+  set_velocity_body.univ = Offboard -> void,
+  set_attitude.univ = Offboard -> void,
+  usage.domain = BinName,
+  main.domain = BinName,
+  get_system.domain = Mavsdk,
+  offb_ctrl_ned.domain = Offboard,
+  offb_ctrl_pos_global.domain = Offboard + Telemetry,
+  offb_ctrl_body.domain = Offboard,
+  offb_ctrl_attitude.domain = Offboard,
+  arm.domain = Action,
+  disarm.domain = Action,
+  start.domain = Offboard,
+  stop.domain = Offboard,
+  set_velocity_ned.domain = Offboard,
+  set_position_global.domain = Offboard + Telemetry,
+  set_velocity_body.domain = Offboard,
+  set_attitude.domain = Offboard,
+  GetSystem = (Main.get_system),
+  OffbCtrlNed = (Main.offb_ctrl_ned),
+  OffbCtrlPosGlobal = (Main.offb_ctrl_pos_global ++ GetSystem.offb_ctrl_pos_global),
+  OffbCtrlBody = (Main.offb_ctrl_body),
+  OffbCtrlAttitude = (Main.offb_ctrl_attitude),
+  Arm = (Main.get_system.arm ++ GetSystem.arm),
+  Disarm = (Main.get_system.disarm ++ GetSystem.disarm),
+  Start = (Main.get_system.start ++ GetSystem.start),
+  Stop = (Main.get_system.stop ++ GetSystem.stop),
+  SetVelocityNED = (Main.get_system.set_velocity_ned ++ GetSystem.set_velocity_ned),
+  SetPositionGlobal = (Main.get_system.set_position_global ++ GetSystem.set_position_global),
+  SetVelocityBody = (Main.get_system.set_velocity_body ++ GetSystem.set_velocity_body),
+  SetAttitude = (Main.get_system.set_attitude ++ GetSystem.set_attitude),
+  Usage = (Main.usage),
+  GetSystemId = (GetSystem.system_id),
+  HasAutopilot = (GetSystem.has_autopilot),
+  HealthAllOK = (DroneTelemetry.health_all_ok),
+  GetGPSGlobalOrigin = (DroneTelemetry.get_gps_global_origin)
+}
+```
+
+This Alloy model captures the relationships between the various components of the drone application source code, such as the functions, classes, and their respective parameters and return types. It also captures the associations between different components, such as the `Mavsdk` object and the `System` object, and the `Offboard` object and the `Telemetry` object. The model can be used to reason about the behavior and properties of the drone application at a high level.

@@ -1,0 +1,54 @@
+The UML architecture for the given drone application code can be represented as follows:
+
+```
+                        +--------------+
+                        |   Main       |
+                        +--------------+
+                             | Create Mavsdk
+                             | Add connections
+                             | Wait for system discovery
+                             | Spawn threads for each system
+                             |
+                             |
++----------------+           |
+|   complete_    |           |
+|   mission()    |           |           +---------------+
+|                |           +---------->|    Telemetry  |
++----------------+                       +---------------+
+                                          +-subscribe_position()
+                                          |
+                                          +- health_all_ok()
+                                          |
+                                          +- armed()
+                                          |
+                                          +- set_rate_position()
+                                          |
+                                          +- ...
+                                          |
+                                          |
+                            +---------+   |   +---------------+
+                            |  Action |<--|-->|   MissionRaw  |
+                            +---------+       +---------------+
+                            +- arm()            +- import_qgroundcontrol_mission()
+                            |                   |
+                            +- ...
+                            |
+                            |
+                            V
+                      +-----------+
+                      |   System  |
+                      +-----------+
+                      +- get_system_id()
+
+```
+
+Explanation of code syntax and functionality:
+
+- The `main()` function creates an instance of the Mavsdk and adds connections specified as command line arguments. It then waits for system discovery and spawns threads for each system to call the `complete_mission()` function.
+- The `complete_mission()` function takes a mission plan and a shared pointer to a system as input. It creates instances of Telemetry, Action, and MissionRaw for each system to perform telemetry data collection, command actions, and mission management, respectively.
+- Telemetry allows monitoring of the drone's position, health, and arming status. It uses callbacks to subscribe to position updates and health changes.
+- Action allows arming the drone.
+- MissionRaw allows importing mission items from a QGroundControl plan, uploading the mission to the drone, starting the mission, and receiving mission progress updates.
+- The system class provides access to system-specific information such as the system ID.
+
+Please note that this is a simplified representation of the architecture and there may be additional dependencies and interactions not shown here.

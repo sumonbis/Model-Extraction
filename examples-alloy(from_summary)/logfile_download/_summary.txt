@@ -1,0 +1,42 @@
+The UML architecture description for the drone application code can be represented as follows:
+
+```
++---------------------------------------------+
+|   drone-application                         |
++---------------------------------------------+
+|                                             |
+|                                             |
+|---------------------------------------------|
+|                                             |
+| + usage(bin_name: const std::string&)       |
+| + get_system(mavsdk: Mavsdk&)               |
+| + main(argc: int, argv: char**) : int       |
+|                                             |
++---------------------------------------------+
+              |
+              |
+              |
+    +----------------+
+    |    mavsdk      |
+    +----------------+
+       *
+      / \
++----------+
+|  log_files  |
++----------+
+
+```
+
+Explanation of code syntax:
+
+- The `usage` method takes `bin_name` as a parameter, which represents the name of the binary file. It outputs the usage information for the user on how to execute the program with proper arguments.
+
+- The `get_system` method takes `mavsdk` as a reference and returns a `std::shared_ptr<System>`. It waits for a system to be discovered within 3 seconds. Once a system with an autopilot is found, it sets the promise and returns the system.
+
+- The `main` function is the entry point of the code. It takes the command line arguments `argc` and `argv`. It first checks if the number of arguments is correct and then parses the arguments to set the `remove_log_files` flag. It creates an instance of `Mavsdk` and adds a connection using the provided argument. If the connection fails, it returns an error. If the connection is successful, it calls the `get_system` method to get the system and checks if the system is valid. Then, it instantiates the `log_files` plugin using the system. It retrieves the log file entries and starts downloading each file. If a download fails, it sets the `download_failure` flag. Finally, if `remove_log_files` is set, it removes all log files using the `erase_all_log_files` method.
+
+- The `Mavsdk` object represents the connection to the MAVLink-based autopilot systems.
+
+- The `log_files` object represents the Log Files plugin for downloading log files from the autopilot.
+
+Note: This UML diagram only represents the main components and their relationships. The detailed interfaces and connections within each component are not depicted here.

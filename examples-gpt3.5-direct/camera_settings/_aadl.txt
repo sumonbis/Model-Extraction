@@ -1,0 +1,129 @@
+// Architecture Diagram for Drone Application
+
+package DroneApp is
+
+   -- MAVSDK Components
+   thread MAVSDK_Thread
+   port MAVSDK_Connection : out MAVSDK::ConnectionResult
+   port MAVSDK_System : out MAVSDK::SystemPtr
+   port MAVSDK_Telemetry : out MAVSDK::Telemetry
+   port MAVSDK_Camera : out MAVSDK::Camera
+   
+   -- GUI Components
+   thread GUI_Thread
+   port GUI_Command : in GUI::Command
+   
+   -- Drone Application
+   process Drone_Application
+      subprogram Show_Settings
+      subprogram Change_Camera_Mode
+      subprogram Choose_Setting
+      subprogram Change_Camera_Setting
+      subprogram Get_Input
+   end Drone_Application
+   
+   -- Connections
+   connection MAVSDK_Connection_Conn : port MAVSDK_Thread.MAVSDK_Connection -> port GUI_Thread.MAVSDK_Connection
+   connection MAVSDK_System_Conn : port MAVSDK_Thread.MAVSDK_System -> port Drone_Application.MAVSDK_System
+   connection MAVSDK_Telemetry_Conn : port MAVSDK_Thread.MAVSDK_Telemetry -> port Drone_Application.MAVSDK_Telemetry
+   connection MAVSDK_Camera_Conn : port MAVSDK_Thread.MAVSDK_Camera -> port Drone_Application.MAVSDK_Camera
+   
+   connection GUI_Command_Conn : port GUI_Thread.GUI_Command -> port Drone_Application.GUI_Command
+
+end DroneApp
+
+
+thread implementation MAVSDK_Thread.Impl is
+
+   -- Include necessary headers
+   
+   -- MAVSDK Connection
+   
+   port MAVSDK_Connection : out MAVSDK::ConnectionResult;
+   
+   -- MAVSDK System
+   
+   port MAVSDK_System : out MAVSDK::SystemPtr;
+   
+   -- MAVSDK Telemetry
+   
+   port MAVSDK_Telemetry : out MAVSDK::Telemetry;
+   
+   -- MAVSDK Camera
+   
+   port MAVSDK_Camera : out MAVSDK::Camera;
+   
+   -- Implement functionality
+   
+
+end MAVSDK_Thread.Impl
+
+
+thread implementation GUI_Thread.Impl is
+
+   -- Include necessary headers
+   
+   -- MAVSDK Connection
+   
+   port MAVSDK_Connection : in MAVSDK::ConnectionResult;
+   
+   -- Implement functionality
+   
+
+end GUI_Thread.Impl
+
+
+process implementation Drone_Application.Impl is
+
+   -- Include necessary headers
+   
+   -- MAVSDK System
+   
+   port MAVSDK_System : in MAVSDK::SystemPtr;
+   
+   -- MAVSDK Telemetry
+   
+   port MAVSDK_Telemetry : in MAVSDK::Telemetry;
+   
+   -- MAVSDK Camera
+   
+   port MAVSDK_Camera : in MAVSDK::Camera;
+   
+   -- GUI Command
+   
+   port GUI_Command : in GUI::Command;
+   
+   -- Implement subprograms
+   
+   subprogram Show_Settings is
+   
+      -- Implement functionality
+   
+   end Show_Settings;
+   
+   subprogram Change_Camera_Mode is
+   
+      -- Implement functionality
+   
+   end Change_Camera_Mode;
+   
+   subprogram Choose_Setting is
+   
+      -- Implement functionality
+   
+   end Choose_Setting;
+   
+   subprogram Change_Camera_Setting is
+   
+      -- Implement functionality
+   
+   end Change_Camera_Setting;
+   
+   subprogram Get_Input is
+   
+      -- Implement functionality
+   
+   end Get_Input;
+
+
+end Drone_Application.Impl

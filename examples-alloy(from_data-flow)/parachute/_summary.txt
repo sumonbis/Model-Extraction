@@ -1,0 +1,17 @@
+The data-flow and control flow relations for the given drone application code are as follows:
+
+Data Flow Relations:
+1. The command_long message received from mavlink_passthrough is decoded using mavlink_msg_command_long_decode, and the decoded command_long structure is passed to the process_command_long function.
+2. The process_command_long function checks if the received command is a parachute command and if it is meant for the current system. It then performs the necessary action and outputs a log statement.
+
+Control Flow Relations:
+1. The main function takes the connection URL as a command line argument and initializes Mavsdk.
+2. The system ID and component ID are set using the set_configuration function of mavsdk.
+3. The add_any_connection function is called to establish a connection with the drone.
+4. The subscribe_on_new_system function is used to wait for a new system to be discovered. Once a system with an autopilot is found, the autopilot is selected and the function returns the system object.
+5. If no autopilot is found within 3 seconds, the program exits.
+6. The system ID is updated if required, and the mavlink_passthrough plugin is instantiated using the selected system.
+7. The subscribe_message_async function is called to listen for MAVLINK_MSG_ID_COMMAND_LONG messages from mavlink_passthrough.
+8. The program enters an infinite loop, waiting for parachute commands.
+
+Overall, the code listens for parachute commands received through MAVLink, performs the necessary actions, and outputs log statements.

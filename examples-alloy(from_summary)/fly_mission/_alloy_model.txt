@@ -1,0 +1,73 @@
+Based on the provided description, here is an Alloy model representation of the drone application:
+
+```alloy
+-- Drone Application UML Architecture Model
+
+-- Application class
+abstract sig Main {
+  main: Int -> Int,     -- Entry point of the application
+  usage: String -> Int  -- Prints usage instructions
+}
+
+-- Mavsdk class
+abstract sig Mavsdk {
+  add_any_connection: String -> Unit,                  -- Adds a connection
+  subscribe_on_new_system: LAMBDA -> Unit,             -- Subscribes to a new system
+  systems: set System                                  -- Returns a set of systems
+}
+
+-- System class
+abstract sig System {
+  has_autopilot: Bool,                                -- Indicates if the system has an autopilot
+  subsystems: set Subsystem                           -- Returns a set of subsystems
+}
+
+-- Telemetry class
+abstract sig Telemetry {
+  health_all_ok: Bool,                                 -- Checks if the system health is all OK
+  armed: Bool                                          -- Checks if the system is armed
+}
+
+-- Action class
+abstract sig Action {
+  arm: ActionResult,                                    -- Arms the system
+  return_to_launch: ActionResult                        -- Commands the system to return to launch
+}
+
+-- Mission class
+abstract sig Mission {
+  upload_mission: MissionPlan -> MissionResult,        -- Uploads a mission
+  subscribe_mission_progress: LAMBDA -> Unit,          -- Subscribes to mission progress
+  start_mission: MissionResult,                        -- Starts the mission
+  pause_mission: MissionResult,                        -- Pauses the mission
+  is_mission_finished: MissionResult -> Bool,          -- Checks if the mission is finished
+  -- Helper function to create a mission item
+  make_mission_item: (Double, Double) -> MissionItem
+}
+
+-- Other classes
+abstract sig Subsystem {}
+abstract sig ActionResult {}
+abstract sig MissionPlan {}
+abstract sig MissionResult {}
+
+-- Associations between classes
+one sig main extends Main {}
+one sig mavsdk extends Mavsdk {}
+one sig system extends System {}
+
+pred noDuplicateSystems {
+  all m: Mavsdk | #m.systems = #system
+}
+
+pred noDuplicateSubsystems {
+  all s: system | #s.subsystems = 0
+}
+
+fact {
+  noDuplicateSystems
+  noDuplicateSubsystems
+}
+```
+
+This Alloy model represents the class hierarchy and associations between each class in the drone application source code. It defines the necessary signatures for the classes, along with their respective methods and associations. The model also includes some constraints to ensure that there are no duplicate systems and subsystems. You can further extend and refine this model based on your specific requirements and constraints.

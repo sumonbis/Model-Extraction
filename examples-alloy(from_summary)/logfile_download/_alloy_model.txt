@@ -1,0 +1,65 @@
+sig BinName {
+  name: string
+}
+
+sig Mavsdk {} 
+
+sig System {}
+
+sig LogFiles {}
+
+sig DroneApplication {
+  usage: BinName -> ()
+  get_system: Mavsdk -> System
+  main: int -> char** -> int
+}
+
+fact {
+  all d: DroneApplication |
+    all bn: BinName, m: Mavsdk, s: System |
+      get_system[s] = get_system[bn -> m]
+}
+
+pred NumberArguments(n: int) {
+  n >= 0
+}
+
+pred ParseArguments(args: char**, remove_log_files: lone bool) {
+  // Code for parsing and setting remove_log_files flag
+}
+
+pred ConnectionFailed {
+  // Code for handling connection failure
+}
+
+pred ValidSystem(s: System) {
+  // Code for checking if the system is valid
+}
+
+pred DownloadFailure {
+  // Code for handling download failure
+}
+
+pred RemoveLogFiles {
+  // Code for removing log files
+}
+
+run {
+  DroneApplication.usage[BinName."bin_name"]
+  some m: Mavsdk | DroneApplication.get_system[m]
+  some argc: int, argv: char** |
+    NumberArguments[argc] and
+    ParseArguments[argv, remove_log_files] and
+    (
+      ConnectionFailed or
+      (
+        ValidSystem[s] and
+        let log_files: LogFiles | // code for instantiating log_files
+          some entry: log_files.entries |
+            entry.download and
+              some down: entry.downloads |
+                !down.success
+      )
+    ) implies DownloadFailure
+  RemoveLogFiles implies DroneApplication.main[argc, argv] = 0
+} for 5 Int, 5 Char, 5 Bool, 5 DroneApplication, 5 Mavsdk, 5 System, 5 LogFiles

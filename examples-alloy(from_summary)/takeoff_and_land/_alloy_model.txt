@@ -1,0 +1,47 @@
+The Alloy model for the given drone application source code can be represented as follows:
+
+abstract sig Component {}
+
+sig MainComponent extends Component {}
+
+sig MavsdkComponent extends Component {}
+
+sig ConnectionManagerComponent extends Component {
+    mavsdkComponent: one MavsdkComponent
+}
+
+sig DroneSystemComponent extends Component {
+    mavsdkComponent: one MavsdkComponent
+}
+
+sig TelemetryComponent extends Component {
+    droneSystemComponent: one DroneSystemComponent
+}
+
+sig ActionComponent extends Component {
+    droneSystemComponent: one DroneSystemComponent
+}
+
+sig SleepComponent extends Component {}
+
+sig PromiseFutureComponent extends Component {}
+
+// Connections between components
+
+sig Connection {
+    from: one Component,
+    to: one Component
+}
+
+fact {
+    all c: Component - MainComponent | one conn: Connection | conn.from = MainComponent && conn.to = c
+    all c: ConnectionManagerComponent | one conn: Connection | conn.from = c && conn.to = MavsdkComponent
+    all c: DroneSystemComponent | one conn: Connection | conn.from = MavsdkComponent && conn.to = c
+    all c: TelemetryComponent | one conn: Connection | conn.from = MainComponent && (conn.to = TelemetryComponent || conn.to = DroneSystemComponent)
+    all c: ActionComponent | one conn: Connection | conn.from = MainComponent && conn.to = ActionComponent
+    all c: ActionComponent | one conn: Connection | conn.from = DroneSystemComponent && conn.to = ActionComponent
+    all c: SleepComponent | one conn: Connection | conn.from = MainComponent && conn.to = SleepComponent
+    all c: PromiseFutureComponent | one conn: Connection | conn.from = MainComponent && conn.to = PromiseFutureComponent
+}
+
+run {} for 4 but 10 Connection, 2 MainComponent, 2 MavsdkComponent, 2 ConnectionManagerComponent, 2 DroneSystemComponent, 2 TelemetryComponent, 2 ActionComponent, 2 SleepComponent, 2 PromiseFutureComponent

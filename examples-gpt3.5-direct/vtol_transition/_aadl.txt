@@ -1,0 +1,141 @@
+Based on the given code, the AADL model architecture can be represented as follows:
+
+```aadl
+-- Define a system
+package DroneApp
+public
+with AADL_Version => (2018);
+
+-- Use the mavsdk library
+with "../../aadl/mavsdk.aadl";
+
+system Drone_Application
+public
+end Drone_Application;
+
+-- Declare the connections with the MAVSDK library
+
+process MAVSDK_Connection
+public
+end MAVSDK_Connection;
+
+-- Define the MAVSDK Component, which provides the MAVSDK API functionality
+
+process mavsdk_process
+public
+end mavsdk_process;
+
+-- Declare the action and telemetry components
+
+process Action_Component
+public
+end Action_Component;
+
+process Telemetry_Component
+public
+end Telemetry_Component;
+
+-- Define the threads and data ports required for the application
+
+process Main_Thread
+features
+  requires_from_mavsdk : requires data port mavsdk_data;
+  requires_to_action : requires data port action_data;
+  requires_to_telemetry: requires data port telemetry_data;
+  provides_to_mavsdk: provides data port mavsdk_data;
+  provides_from_action : provides data port action_data;
+  provides_from_telemetry : provides data port telemetry_data;
+end Main_Thread;
+
+-- Connect the threads and components using bindings
+
+binding connectionbinding
+public
+with
+    Main_Thread.requires_from_mavsdk -> MAVSDK_Connection.provides_to_mavsdk,
+    Main_Thread.requires_to_action -> Action_Component.provides_from_action,
+    Main_Thread.requires_to_telemetry -> Telemetry_Component.provides_from_telemetry;
+
+    MAVSDK_Connection.requires -> mavsdk_process.provides_from_mavsdk;
+
+    Action_Component.requires -> mavsdk_process.provides_from_mavsdk;
+    Telemetry_Component.requires -> mavsdk_process.provides_from_mavsdk;
+
+    Main_Thread.provides_to_mavsdk -> MAVSDK_Connection.requires_from_mavsdk;
+    Action_Component.provides_to_mavsdk -> MAVSDK_Connection.requires_from_mavsdk;
+    Telemetry_Component.provides_to_mavsdk -> MAVSDK_Connection.requires_from_mavsdk;
+
+    Main_Thread.provides_from_action -> Action_Component.requires_to_action;
+    Main_Thread.provides_from_telemetry -> Telemetry_Component.requires_to_telemetry;
+
+end connectionbinding;
+
+-- Define the connections between the components and the MAVSDK library
+
+connection mavsdk_connection
+public
+end mavsdk_connection;
+
+-- Bind the components to the MAVSDK library connection
+
+binding mavsdk_binding
+public
+with
+    Action_Component.requires -> mavsdk_connection.provides,
+    Telemetry_Component.requires -> mavsdk_connection.provides,
+    mavsdk_process.provides -> mavsdk_connection.requires;
+
+end mavsdk_binding;
+
+-- Declare classifier components required
+
+thread main_thread
+public
+end main_thread;
+
+thread mavsdk_thread
+public
+end mavsdk_thread;
+
+thread action_thread
+public
+end action_thread;
+
+thread telemetry_thread
+public
+end telemetry_thread;
+
+-- Specify the interfaces between the components
+
+data port mavsdk_data
+end mavsdk_data;
+
+data port action_data
+end action_data;
+
+data port telemetry_data
+end telemetry_data;
+
+-- Connect the components to the interfaces
+
+binding main_binding
+public
+with
+    main_thread.requires -> Main_Thread.provides_from_telemetry,
+    main_thread.provides -> Main_Thread.requires_to_telemetry,
+    main_thread.requires -> Main_Thread.provides_from_action,
+    main_thread.provides -> Main_Thread.requires_to_action;
+
+    mavsdk_thread.requires -> mavsdk_process.provides_from_mavsdk,
+    mavsdk_thread.provides -> mavsdk_process.requires_to_mavsdk,
+    action_thread.requires -> Action_Component.provides_from_action,
+    action_thread.provides -> Action_Component.requires_to_action,
+    telemetry_thread.requires -> Telemetry_Component.provides_from_telemetry,
+    telemetry_thread.provides -> Telemetry_Component.requires_to_telemetry;
+
+end main_binding;
+
+end DroneApp.
+```
+
+This AADL model architecture specifies the components, connections, and bindings required for the drone application using the MAVSDK library. The architecture includes threads for the main application, MAVSDK functionality, action component, and telemetry component. The data ports are used to communicate between the threads and components. The bindings connect the threads and components, as well as the components to the MAVSDK library connection.

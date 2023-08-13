@@ -1,0 +1,89 @@
+The UML architecture for the given drone application code can be described as follows:
+
+```
++-----------------+                     +-------------------+
+|    main()       |                     |   run_interactive_| 
+|                 |                     |       shell()     |
+|                 |                     |   +---------------+
+|                 |                     |   |   void         |
+| +--------------++                     |   | run_interactive|
+| | CommandLine  |                     |   | _shell()       |
+| +--------------+                      |   |                |
+|                 |                     |   |                |
+| +--------------+                      |   |                |
+| |   Mavsdk     +--+  adds connection  |   +----------------+
+| +------+-------+  +-----------------+   |    
+|        |          |                     |
+|        |     1..* |                     |
+|        |          |                     |
+| +------v-------+  |   subscribe_on_new_ |
+| |   System     |  |     system()        |
+| +--------------+  |   +-----------------+
+|        ^          |   |
+|        |          |   |
+|        |    1    |   |
+|       +++-------+ |   |  1
+|       | |   Shell | |   | .----------
+|       | |         | |   | |
+|       | +---------+ |   | |
+|       |             |   | |
+|       |  subscribe  |   | |
+|       |  _receive() |   | |
+|       +-------------+   | |
+|                        | |
+|                        | | 
++------------------------+ |
+                           |
+  run_interactive_shell()  |
+                           |
+                           |
++-------------------------+ |
+|                         | |
+|         std::string     | |
+|         output          | |
+|                         | |
++-------------------------+ |
+                          |
+                          |
+                          |
+                          |
+                          |
+                          |
+                          |
+                          |
++-------------------------+ |
+|                         | |
+|    std::cin, std::cout  | |
+|                         | |
++-------------------------+ |
+```
+
+Explanation of the code syntax:
+
+- The code begins with including necessary libraries and headers.
+
+- The `run_interactive_shell()` function is declared as a void function that takes a `std::shared_ptr<System>` as a parameter.
+
+- The `usage()` function is declared to display the usage of the program.
+
+- The `get_system()` function is declared to get the system.
+
+- The `main()` function is defined as the entry point of the program. It takes command-line arguments and first checks if the number of arguments is correct. If not, it displays the usage information and returns 1. 
+
+- It creates an instance of `Mavsdk` class.
+
+- It adds a connection using `mavsdk.add_any_connection(argv[1])`. If the connection is not successful, it displays the connection result and returns 1.
+
+- It calls the `get_system()` function to get the system.
+
+- It then calls the `run_interactive_shell()` function with the system as input.
+
+- In the `run_interactive_shell()` function, a `Shell` object is instantiated with the received system.
+
+- It subscribes to receive the output from the shell using `shell.subscribe_receive()`.
+
+- It continues to read commands from the user until the user enters "exit". It sends the command to the shell using `shell.send(command)`.
+
+- Finally, the program returns 0 to indicate successful execution.
+
+I hope this explanation helps you understand the UML architecture and code syntax for the given drone application.

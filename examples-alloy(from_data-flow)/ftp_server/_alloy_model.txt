@@ -1,0 +1,126 @@
+open util/ordering[Command, ConnectionResult, System, Status] as ord
+
+sig Command { mavsdk: one Mavsdk, config: one Configuration, ftp: one Ftp }
+sig ConnectionResult {}
+sig System {}
+sig Status {}
+
+sig Mavsdk {
+    command: disj one Command,
+    result: disj one ConnectionResult
+}
+
+sig Configuration {
+    usage: one UsageType
+}
+
+enum UsageType {
+    CompanionComputer
+}
+
+sig Ftp {
+    system: one System,
+    rootDirectory: one RootDirectory
+}
+
+sig RootDirectory {}
+
+fun isFirstSystem(system: System) : boolean {
+    // implementation to determine if system is the first in the connected systems list
+}
+
+pred mainFunction(main: Command) {
+    // main function takes command-line input and calls the usage function if arguments are not 4
+    #main.mavsdk = 1
+}
+
+pred usageFunction() {
+    // implementation of usage function
+}
+
+pred createMavsdk(mavsdk: Mavsdk) {
+    mavsdk.command = 1
+    mavsdk.result = 1
+}
+
+pred createConfiguration(configuration: Configuration) {
+    configuration.usage = CompanionComputer
+}
+
+pred setConfiguration(main: Command) {
+    main.mavsdk = 1
+}
+
+pred setupUdpRemote(main: Command, connection_result: ConnectionResult) {
+    main.mavsdk = 1
+    main.config = 1
+    main.mavsdk.result = 1
+    connection_result = ord/first[ConnectionResult]
+    connection_result != Success
+}
+
+pred createFtp(ftp: Ftp, system: System) {
+    ftp.system = system
+    ftp.rootDirectory = 1
+}
+
+pred setRootDirectory(ftp: Ftp) {
+    ftp.rootDirectory = 1
+}
+
+pred printInfo() {
+    // implementation of printing IP address, port, and component ID information to console
+}
+
+pred infiniteLoop() {
+    // implementation of infinite loop with sleep for 1 second in each iteration
+}
+
+fact {
+    // Control-flow relations
+
+    all main: Command |
+        mainFunction[main] => createMavsdk[main.mavsdk] &&
+        (no main.config && no main.ftp && no main.mavsdk.result && no main.result) ||
+        usageFunction[] => (no main.mavsdk && no main.config && no main.ftp && no main.mavsdk.result && no main.result) ||
+        createMavsdk[main.mavsdk] => createConfiguration[main.config] &&
+        (no main.ftp && no main.mavsdk.result && no main.result) ||
+        createConfiguration[main.config] => setConfiguration[main] &&
+        (no main.ftp && no main.mavsdk.result && no main.result) ||
+        setConfiguration[main] => setupUdpRemote[main, main.mavsdk.result] &&
+        (no main.ftp && no main.result) ||
+        setupUdpRemote[main, main.mavsdk.result] => printInfo[] &&
+        (no main.ftp && no main.result) ||
+        printInfo[] => infiniteLoop[] &&
+        (no main.ftp && no main.result) ||
+        infiniteLoop[]
+
+    // Data-flow relations
+
+    all main: Command, connection_result: ConnectionResult, system: System |
+        mainFunction[main] => setupUdpRemote[main, connection_result] &&
+        connection_result = ord/first[ConnectionResult] ||
+        setupUdpRemote[main, connection_result] => (no connection_result)
+        
+    all main: Command, ftp: Ftp |
+        setRootDirectory[ftp] => printInfo[] &&
+        (no ftp.rootDirectory)
+        
+    all main: Command, system: System |
+        mainFunction[main] => createFtp[main.ftp, system] &&
+        isFirstSystem[system] ||
+        createFtp[main.ftp, system] => (no system)
+
+    all ftp: Ftp |
+        setRootDirectory[ftp] => instantiate[ftp.rootDirectory]
+
+    all mavsdk: Mavsdk |
+        createMavsdk[mavsdk] => instantiate[mavsdk.command] && instantiate[mavsdk.result]
+
+    createMavsdk[Mavsdk]
+    createConfiguration[Configuration]
+    createFtp[Ftp]
+    instantiate[RootDirectory]
+    
+    // Additional constraints can be added if required
+}

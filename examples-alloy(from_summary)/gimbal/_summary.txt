@@ -1,0 +1,57 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
++-----------------------------------------+
+|                Drone Application         |
++-----------------------------------------+
+|                                         |
+|                                         |
+|+---------------------------------------+|
+||                 Mavsdk                ||
+||+-------------------------------------+||
+|||                                 ^   |||
+|||                                 |   |||
+|||                                 |   |||
+|||                                 |   |||
+|||                                 |   |||
+|||     +------------------+        |   |||
+|||     |     Gimbal       |<-------+   |||
+|||     +------------------+            |||
+|||                                     |||
+|||     +-----------------+             |||
+|||     |   Telemetry     |<------------+|
+|||     +-----------------+              |
+|||                                     |
+|||     +-----------------------+       |
+|||     |        System         |<------+
+|||     +-----------------------+
+|||            ^
+|||            |
+|||            |
+|||            |
+|||            |
+|||  +---------------------+
+|||  |   ConnectionResult  |
+|||  +---------------------+
+||+-------------------------------------+|
+|                                         |
++-----------------------------------------+
+```
+
+Explanation of the code syntax:
+- The code begins with the inclusion of necessary C++ libraries such as `<chrono>`, `<cstdint>`, `<mavsdk/mavsdk.h>`, `<mavsdk/plugins/gimbal/gimbal.h>`, `<mavsdk/plugins/telemetry/telemetry.h>`, `<iostream>`, `<future>`, `<memory>`, and `<thread>`. These libraries provide functionalities for controlling drones and accessing telemetry data.
+- The `using` statement is used to import the `std::chrono::seconds` and `std::this_thread::sleep_for` functions, which are used later in the code to introduce delays.
+- The `usage()` function is defined to print the usage instructions for the application.
+- The `get_system()` function is defined to discover and return the system with an autopilot that will be used for controlling the drone.
+- The `main()` function is the entry point of the application. It takes the connection URL as a command line argument.
+- The Mavsdk object `mavsdk` is created to interact with the MAVLink system.
+- The `add_any_connection()` function is called on the `mavsdk` object to establish a connection with the drone using the provided URL.
+- The `get_system()` function is called to obtain the system with an autopilot. If no autopilot is found within 3 seconds, the program terminates.
+- The `Telemetry` and `Gimbal` objects are instantiated with the obtained system for accessing telemetry and gimbal functionalities, respectively.
+- The camera/gimbal attitude rate is set to 5 Hz using the `set_rate_camera_attitude()` function of the `telemetry` object.
+- A callback function is set using the `subscribe_camera_attitude_euler()` function of the `telemetry` object to monitor the camera/gimbal angles.
+- Gimbal control is taken using the `take_control()` function of the `gimbal` object with the `Gimbal::ControlMode::Primary` control mode.
+- Various gimbal angles and modes are set using the `set_mode()`, `set_pitch_and_yaw()`, `set_pitch_rate_and_yaw_rate()`, and `set_roi_location()` functions of the `gimbal` object.
+- Finally, gimbal control is released using the `release_control()` function of the `gimbal` object.
+- Error messages are printed if any of the gimbal functions fail.
+- The program finishes by printing a success message and returning 0.

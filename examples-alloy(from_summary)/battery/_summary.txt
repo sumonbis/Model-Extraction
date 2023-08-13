@@ -1,0 +1,29 @@
+The UML architecture description for this drone application code is as follows:
+
+1. Main Component:
+- The `main` function is the entry point of the application. It is responsible for setting up the MAVSDK library, establishing a connection, getting the system, and instantiating the necessary plugins.
+- It creates an instance of `Mavsdk` and adds a connection using the provided URL.
+- It then calls the `get_system` function to get a shared pointer to the discovered system with an autopilot.
+- After that, it instantiates the `telemetry` and `mavlink_passthrough` plugins using the system.
+- The `subscribe_armed` function is called to subscribe to the telemetry's armed state updates.
+- Finally, it enters a loop where it periodically sends battery status using the `send_battery_status` function.
+
+2. get_system Component:
+- This function takes an instance of `Mavsdk` and returns a shared pointer to the discovered system with an autopilot.
+- It waits for a new system to be discovered by subscribing to the `subscribe_on_new_system` event.
+- Once a new system is found and it has an autopilot, the function sets the value of a promise and unsubscribes from further system events.
+- If no autopilot is found within 3 seconds, it returns an empty shared pointer.
+
+3. subscribe_armed Component:
+- This function takes an instance of `Telemetry` and subscribes to the `armed` state updates.
+- It prints whether the drone is armed or disarmed whenever the armed state changes.
+
+4. send_battery_status Component:
+- This function takes an instance of `MavlinkPassthrough` and sends a battery status message using the MAVLink protocol.
+- It creates a message struct, packs it with battery status values, and sends it using the `send_message` function of the `mavlink_passthrough` instance.
+
+Connections:
+- The `main` component connects to the MAVLink system through the `Mavsdk` library and adds a connection using the provided URL.
+- The `telemetry` and `mavlink_passthrough` plugins are instantiated using the shared pointer to the discovered system obtained from the `get_system` function.
+
+Overall, the code demonstrates how to interact with a drone's telemetry using the MAVSDK library and how to send battery status updates using the MAVLink protocol.

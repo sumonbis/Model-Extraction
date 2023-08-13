@@ -1,0 +1,73 @@
+abstract sig Command {}
+
+sig ConnectionURL extends Command {}
+sig ServerComponentID extends Command {}
+sig Operation extends Command {}
+sig Parameters extends Command {}
+
+sig Result {}
+
+abstract sig OperationType {}
+
+sig UploadFile extends OperationType {}
+sig DownloadFile extends OperationType {}
+sig RenameFile extends OperationType {}
+sig CreateDirectory extends OperationType {}
+sig RemoveDirectory extends OperationType {}
+sig ListDirectory extends OperationType {}
+
+abstract sig DronePlugin {}
+
+sig FTPPlugin extends DronePlugin {}
+
+abstract sig Program {}
+
+sig UsageInstructions extends Program {}
+sig InitializeMavsdkLibrary extends Program {}
+sig EstablishConnection extends Program {}
+sig DiscoverDroneSystem extends Program {}
+sig CreateFTPPluginInstance extends Program {}
+sig SetTargetComponentID extends Program {}
+sig ResetServer extends Program {}
+sig CheckCommand extends Program {}
+sig PerformOperation extends Program {}
+sig CheckOperationResult extends Program {}
+sig PrintToConsole extends Program {}
+sig ReturnStatus extends Program {}
+
+fact {
+    OperationType in Operation
+    DronePlugin in Operation
+    Program in Operation
+    Result in CheckOperationResult
+}
+
+pred RequiredCommandLineArgumentsProvided(p: Program) {
+    p in UsageInstructions implies no (ConnectionURL + ServerComponentID + Operation + Parameters)
+    p not in UsageInstructions implies (ConnectionURL + ServerComponentID + Operation + Parameters) = Command
+}
+
+pred DroneSystemNotFound(p: Program) {
+    p in DiscoverDroneSystem implies #p = 1
+    DronePlugin in #p
+}
+
+pred FileOrDirectoryDoesNotExist(p: Program) {
+    p in PerformOperation implies Result = {} implies p in ReturnStatus
+}
+
+pred ProgramSuccess(p: Program) {
+    p in ReturnStatus implies Result = {}
+}
+
+pred GeneralError(p: Program) {
+    p in ReturnStatus[1] implies Result = {}
+}
+
+run {
+    RequiredCommandLineArgumentsProvided[UsageInstructions]
+    DroneSystemNotFound[DiscoverDroneSystem]
+    FileOrDirectoryDoesNotExist[PerformOperation]
+    ProgramSuccess[ReturnStatus]
+    GeneralError[ReturnStatus]
+}

@@ -1,0 +1,26 @@
+Data Flow:
+
+1. The main function is called with user-provided command line arguments.
+2. The add_any_connection function of the Mavsdk class is called to establish a connection with the drone using the provided connection URL.
+3. The get_system function is called to retrieve the system information of the connected drone.
+4. The transponder plugin is instantiated with the retrieved system information.
+5. The set_rate_transponder function of the transponder plugin is called to set the update rate for transponder data.
+6. The subscribe_transponder function of the transponder plugin is called to set up a callback to monitor transponder activity.
+7. The main thread sleeps for 60 seconds to allow time for transponder data to be received.
+8. The program exits.
+
+Control Flow:
+
+1. The main function starts by checking if the correct number of command line arguments is provided. If not, it displays an error message and exits.
+2. The Mavsdk class is instantiated.
+3. The add_any_connection function of the Mavsdk class is called to establish a connection with the drone using the provided connection URL. The result is stored in the connection_result variable.
+4. If the connection was not successful, an error message is displayed and the program exits.
+5. If the connection was successful, the get_system function is called to retrieve the system information of the connected drone. The result is stored in the system variable.
+6. If no system information was retrieved, the program exits.
+7. The transponder plugin is instantiated with the retrieved system information.
+8. The set_rate_transponder function of the transponder plugin is called to set the update rate for transponder data. The result is stored in the set_rate_result variable.
+9. If the update rate setting was not successful, an error message is displayed and the program exits.
+10. The subscribe_transponder function of the transponder plugin is called to set up a callback to monitor transponder activity.
+11. The main thread sleeps for 60 seconds to allow time for transponder data to be received.
+12. A message is displayed indicating that the program has finished.
+13. The program exits.

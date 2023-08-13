@@ -1,0 +1,118 @@
+Here is an Alloy model that represents the data-flow and control-flow relations in the provided code:
+
+```alloy
+open util/boolean
+open util/relation
+
+abstract sig Function {}
+one sig Main, Usage, GetSystem, RunInteractiveShell extends Function {}
+
+abstract sig Variable {}
+one sig ConnectionURL, ConnectionResult extends Variable {}
+
+abstract sig Object {}
+one sig Mavsdk extends Object {}
+
+abstract sig Pointer {}
+one sig SystemPointer extends Pointer {}
+
+// Data-flow relation
+sig DataFlow {
+    from: Function,
+    to: Function,
+    data: Variable
+}
+
+// Control-flow relation
+sig ControlFlow {
+    from: Function,
+    to: Function
+}
+
+// Relation between functions, control-flow and data-flow
+sig FunctionRelation {
+    func: Function,
+    control: ControlFlow,
+    data: DataFlow
+}
+
+// Execution of functions
+one sig Execution {
+    executed: some Function
+}
+
+// Constraints
+fact {
+    // Control-flow constraints
+    Main not in Main.^~to  // No direct or indirect recursive calls to Main
+    Usage not in Usage.^~to  // No direct or indirect recursive calls to Usage
+    GetSystem not in GetSystem.^~to  // No direct or indirect recursive calls to GetSystem
+    RunInteractiveShell not in RunInteractiveShell.^~to  // No direct or indirect recursive calls to RunInteractiveShell
+
+    // The main function is called at the beginning
+    no Main.^to
+
+    // The usage function is called at the beginning of the main function
+    Main in Usage.^to
+
+    // The correct number of command-line arguments is checked in the main function
+    Main in ConnectionURL.^from
+
+    // If the correct number of command-line arguments is not provided, the usage function is called
+    ConnectionURL in Usage.^from
+
+    // The Mavsdk object is created in the main function
+    Main in Mavsdk.^from
+
+    // The connection URL is passed to the add_any_connection method of the Mavsdk object
+    ConnectionURL in add_any_connection.data
+
+    // The result of the connection is stored in the connection_result variable
+    ConnectionResult in add_any_connection.data
+
+    // If the connection is not successful, an error message is printed and the program returns with an error code
+    add_any_connection not in ConnectionResult.^from
+
+    // If the connection is successful, the get_system function is called
+    ConnectionResult in GetSystem.^from
+
+    // The get_system function waits for the discovery of a new system with an autopilot
+    // and returns an empty shared pointer if no autopilot is found
+    GetSystem in SystemPointer.^to
+
+    // Once an autopilot system is discovered, the main function continues
+    SystemPointer in GetSystem.^to
+
+    // The run_interactive_shell function is called with the retrieved system object
+    GetSystem in RunInteractiveShell.^to
+
+    // Inside the run_interactive_shell function, a Shell object is instantiated with the system object
+    RunInteractiveShell in Shell.^from
+
+    // The subscribe_receive method of the Shell object is called to subscribe to receive outputs from the shell
+    Shell in subscribe_receive.data
+
+    // The user commands are sent to the shell using the send method of the Shell object
+    send in Shell.data
+
+    // If the command is "exit", the run_interactive_shell function ends
+    send - "exit" not in RunInteractiveShell.^to
+
+    // If the command is not "exit", it is sent to the shell
+    "exit" not in send.~data
+
+    // The user can continuously enter commands until "exit" is entered
+    RunInteractiveShell.*to & send.*data - "exit" = RunInteractiveShell.*to & send.*data
+
+    // After exiting the while loop, a newline character is printed
+    "\n" in RunInteractiveShell.^to
+
+    // The run_interactive_shell function returns
+    no RunInteractiveShell.^to
+
+    // The main function returns with a success code
+    no Main.^to
+}
+```
+
+This Alloy model represents the data-flow and control-flow relations described in the code. It defines several sigs to represent functions, variables, objects, pointers, and relations. The constraints ensure that the control-flow and data-flow relations are satisfied within the code. The Execution sig represents the execution of functions, and the model checks if the constraints hold for any possible execution.

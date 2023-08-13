@@ -1,0 +1,83 @@
+Here is the AADL model architecture (.aadl) for the given drone application code:
+
+```
+package Drone_Controller
+public
+
+with Ada.Strings.Wide_Wide_IO;
+
+public
+
+ -- Types, which might be refined for a specific platform or implementation.
+type Message_Id_Type is
+ (Hearbeat, ConnectionResult_Success, ConnectionResult_Failure, Action_Result_Success, Action_Result_Failure);
+
+type Value_Type is range -10.0 .. 10.0;
+
+type Actuator_Index is range 0 .. 10;
+
+system DroneController
+public
+
+ -- Connections and ports
+with Mavsdk;
+with Mavsdk.Plugins.Action; -- Import the required packages
+
+subcomponents
+mavsdk: Mavsdk.MAVSDK_Type;
+action_component: Mavsdk.Plugins.Action.Action_Type;
+
+-- Connection and port instances
+connection: Mavsdk.ConnectionType;
+action_port: Mavsdk.Plugins.Action.Action_Port_Type;
+
+end DroneController;
+
+system Mavsdk
+public
+
+ -- Import required packages
+with Mavsdk.Plugins.Action;
+
+subcomponents
+action_component: Mavsdk.Plugins.Action.Action_Type;
+
+-- Port instances
+action_port: Mavsdk.Plugins.Action.Action_Port_Type;
+
+end Mavsdk;
+
+system Mavsdk.Plugins.Action
+public
+
+ -- Port types
+with Value_Type;
+
+data Port_Type is
+new DataPortType(Value_Type);
+
+data Event_Port_Type is
+new EventDataPortType(Message_Id_Type);
+
+subcomponents -- Subcomponents
+action_component: Action_Type;
+
+-- Port instances
+value_port: Port_Type;
+result_port: Event_Port_Type;
+
+end Mavsdk.Plugins.Action;
+
+system Drone_Environment
+public
+
+ data Drone_State is
+new DataPortType(Value_Type);
+
+subcomponents -- Subcomponents
+drone_state_component: Drone_State;
+
+end Drone_Environment;
+```
+
+This is a simplified AADL model architecture that represents the main components and connections in the given drone application code. The AADL model includes three main systems: `DroneController`, `Mavsdk`, and `Drone_Environment`. The `DroneController` system is responsible for controlling the drone actuators, while the `Mavsdk` system provides the MAVSDK library functionality. The `Drone_Environment` system represents the environment or state of the drone. The `DroneController` system has a connection to the `Mavsdk` system and a port instance `action_port` to communicate with the `Mavsdk` system's `Action_Plugin`. Similarly, the `Mavsdk` system has a connection to the `Action_Plugin` and a port instance `action_port` to communicate with the `Action_Plugin`. The `Action_Plugin` has two port instances `value_port` and `result_port` to communicate with the `DroneController` system. The `Drone_Environment` system has a data port `drone_state_component` to receive and send the drone state information.

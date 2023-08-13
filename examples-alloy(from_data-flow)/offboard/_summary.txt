@@ -1,0 +1,9 @@
+The code starts with an entry point `main()` function that initializes the Mavsdk library, establishes a connection with a drone system, and initializes the necessary plugins (Action, Offboard, and Telemetry).
+
+The `get_system()` function waits for a system with an autopilot to be discovered. Once a system is found, it sets it as the target system for further actions.
+
+The `offb_ctrl_ned()`, `offb_ctrl_pos_global()`, `offb_ctrl_body()`, and `offb_ctrl_attitude()` functions demonstrate different methods of offboard control. Each function sets the necessary offboard control commands and sends them to the drone using the Offboard plugin.
+
+The `main()` function also waits for the system to be ready by checking the health status reported by the Telemetry plugin.
+
+Overall, the code establishes a connection with a drone system, waits for it to be ready, and demonstrates different methods of offboard control using attitude, velocity, and position commands.

@@ -1,0 +1,80 @@
+Here is the Alloy model for the provided data-flow and control-flow description:
+
+```alloy
+open util/ordering[DataFlow]
+open util/ordering[ControlFlow]
+
+abstract sig Command {}
+
+sig CommandLineArgument extends Command {}
+sig AddConnection extends Command {}
+sig SubscribeOnNewSystem extends Command {}
+sig AssignSystem extends Command {}
+sig InstantiatePlugin extends Command {}
+sig SetCameraMode extends Command {}
+sig SubscribeCaptureInfo extends Command {}
+sig TakePhoto extends Command {}
+sig PrintErrorMessage extends Command {}
+sig Sleep extends Command {}
+sig ExitProgram extends Command {}
+
+sig Mavsdk {}
+sig System {}
+sig Telemetry {}
+sig Camera {}
+
+fact {
+  #CommandLineArgument = 1
+
+  CommandLineArgument -> AddConnection in DataFlow
+  AddConnection -> SubscribeOnNewSystem in DataFlow
+  SubscribeOnNewSystem -> AssignSystem in DataFlow
+  AssignSystem -> InstantiatePlugin in DataFlow
+  InstantiatePlugin -> SetCameraMode in DataFlow
+  SetCameraMode -> SubscribeCaptureInfo in DataFlow
+  SubscribeCaptureInfo -> TakePhoto in DataFlow
+  TakePhoto -> Sleep in DataFlow
+  Sleep -> ExitProgram in DataFlow
+
+  Mavsdk = Mavsdk.first
+  System = System.first
+  Telemetry = Telemetry.first
+  Camera = Camera.first
+
+  all c: Command - ExitProgram | c.next in Command
+}
+
+pred mainFunctionExecution {
+  CommandLineArgument -> AddConnection -> SubscribeOnNewSystem -> AssignSystem -> InstantiatePlugin ->
+    SetCameraMode -> SubscribeCaptureInfo -> TakePhoto -> Sleep -> ExitProgram in ControlFlow
+
+  no AddConnection -> PrintErrorMessage -> ExitProgram in ControlFlow
+}
+
+pred connectionFailure {
+  AddConnection -> PrintErrorMessage -> ExitProgram in ControlFlow
+}
+
+pred cameraNotFound {
+  SubscribeOnNewSystem -> PrintErrorMessage -> ExitProgram in ControlFlow
+}
+
+pred modeSwitchFailure {
+  SetCameraMode -> PrintErrorMessage -> ExitProgram in ControlFlow
+}
+
+run {
+  mainFunctionExecution
+  connectionFailure
+  cameraNotFound
+  modeSwitchFailure
+} for 10
+```
+
+This Alloy model captures the data-flow and control-flow relations described in the problem statement. It defines the relevant commands and their relationships using the `Command` abstract signature. The `DataFlow` signature represents the data-flow relations, and the `ControlFlow` signature represents the control-flow relations.
+
+The `fact` section defines the basic constraints of the model, including the number of command-line arguments, the sequential order of commands in the data-flow relations, and the initial objects representing the `Mavsdk`, `System`, `Telemetry`, and `Camera`.
+
+The `pred` sections define predicates that represent the control-flow conditions mentioned in the problem statement, such as connection failure, camera not found, and mode switch failure.
+
+Finally, the `run` section specifies the predicates that need to be checked in the model, such as `mainFunctionExecution`, `connectionFailure`, `cameraNotFound`, and `modeSwitchFailure`.

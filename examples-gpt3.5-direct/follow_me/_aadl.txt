@@ -1,0 +1,31 @@
+The AADL model architecture for the given drone application code is as follows:
+
+Component Types:
+- Mavsdk: This component represents the Mavsdk library.
+- Action: This component represents the Action plugin of Mavsdk.
+- FollowMe: This component represents the FollowMe plugin of Mavsdk.
+- Telemetry: This component represents the Telemetry plugin of Mavsdk.
+- FakeLocationProvider: This component represents the FakeLocationProvider.
+
+Connection Type:
+- Connection: This connection type represents the connection between Mavsdk and the drone system.
+
+System Type:
+- DroneSystem: This system type represents the drone system.
+
+Connections:
+- Connection between Mavsdk and DroneSystem.
+
+System Implementation:
+- DroneSystemImpl: This system implementation implements the DroneSystem type and includes the Mavsdk component.
+
+Component Implementations:
+- MavsdkImpl: This component implementation implements the Mavsdk component type and includes the Action, FollowMe, and Telemetry components. It also includes a thread with the FakeLocationProvider component.
+
+Component Connections:
+- Connection between MavsdkImpl and Action.
+- Connection between MavsdkImpl and FollowMe.
+- Connection between MavsdkImpl and Telemetry.
+- Connection between MavsdkImpl and FakeLocationProvider.
+
+Please note that this is a high-level model architecture and additional details such as ports, data types, and features have not been included for brevity. The model can be further refined to include these details as required.

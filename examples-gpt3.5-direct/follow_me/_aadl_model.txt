@@ -1,0 +1,110 @@
+The AADL model for the given architecture description can be represented as follows:
+
+```
+package Drone_Application_Code
+public with Air_Traffic_Control_Pkg;
+
+public system MainApp
+features
+  requires Mavsdk: port Mavsdk_Port;
+  requires FakeLocationProvider: port FakeLocationProvider_Port;
+end MainApp;
+
+system Mavsdk
+features
+  provides ConnectionResult: port ConnectionResult_Port;
+  requires FakeLocationProvider: port FakeLocationProvider_Port;
+end Mavsdk;
+
+system FakeLocationProvider
+features
+  provides ConnectionResult: port ConnectionResult_Port;
+  provides LocationUpdates: port LocationUpdates_Port;
+  provides RunningStatus: port RunningStatus_Port;
+  requires MainApp: port FakeLocationProvider_Port;
+end FakeLocationProvider;
+
+system Action
+features
+  provides ArmResult: port ArmResult_Port;
+  requires MainApp: port Action_Port;
+end Action;
+
+system FollowMe
+features
+  requires MainApp: port FollowMe_Port;
+end FollowMe;
+
+system Telemetry
+features
+  provides PositionUpdate: port PositionUpdate_Port;
+  requires MainApp: port Telemetry_Port;
+end Telemetry;
+
+system System
+features
+  requires MainApp: port System_Port;
+end System;
+
+interface ConnectionResult
+end ConnectionResult;
+
+interface ArmResult
+end ArmResult;
+
+interface LocationUpdates
+end LocationUpdates;
+
+interface RunningStatus
+end RunningStatus;
+
+interface PositionUpdate
+end PositionUpdate;
+
+interface Mavsdk_Port
+  provides ConnectionResult: event ConnectionResult;
+end Mavsdk_Port;
+
+interface FakeLocationProvider_Port
+  requires MainApp: event FakeLocationProvider;
+  provides ConnectionResult: event ConnectionResult;
+  provides LocationUpdates: event LocationUpdates;
+  provides RunningStatus: event RunningStatus;
+end FakeLocationProvider_Port;
+
+interface Action_Port
+  provides ArmResult: event ArmResult;
+end Action_Port;
+
+interface FollowMe_Port
+end FollowMe_Port;
+
+interface Telemetry_Port
+  provides PositionUpdate: event PositionUpdate;
+end Telemetry_Port;
+
+interface System_Port
+end System_Port;
+
+process MainApp_Process
+features
+  Mavsdk: access Mavsdk_Port;
+  FakeLocationProvider: access FakeLocationProvider_Port;
+  Action: access Action_Port;
+  FollowMe: access FollowMe_Port;
+  Telemetry: access Telemetry_Port;
+  System: access System_Port;
+end MainApp_Process;
+
+end Drone_Application_Code;
+```
+
+Explanation of AADL model elements:
+- The AADL model is defined within the `Drone_Application_Code` package.
+- The `MainApp` system is the top-level system representing the drone application code.
+- The `Mavsdk`, `FakeLocationProvider`, `Action`, `FollowMe`, `Telemetry`, and `System` systems represent the components of the drone application code.
+- The `ConnectionResult`, `ArmResult`, `LocationUpdates`, `RunningStatus`, and `PositionUpdate` interfaces represent the data exchanged between the components.
+- The `Mavsdk_Port`, `FakeLocationProvider_Port`, `Action_Port`, `FollowMe_Port`, `Telemetry_Port`, and `System_Port` interfaces provide/receive events for data exchange.
+- The `MainApp_Process` process encapsulates the behavior of the `MainApp` system.
+
+Note: The AADL model is a high-level representation of the architecture and may not include detailed behavior or type information.

@@ -1,0 +1,43 @@
+The given code is a simple example of a drone application that implements a parachute device. The application connects to a drone autopilot system using the MAVSDK library and listens for parachute commands. When a parachute command is received, the application logs a message indicating the action: disable, enable, or release the parachute.
+
+To understand the architecture of the code, we can describe it using UML notation. The components of the system are as follows:
+
+1. Main Component: This is the main entry point of the application. It initializes the MAVSDK library, sets the configuration, adds a connection, and waits for the autopilot system to be discovered. Once the system is discovered, it creates the required plugins and subscribes to parachute commands. It indefinitely waits for parachute commands.
+
+2. MAVSDK Library: This is an external library that provides the API for interacting with MAVLink-based systems, such as drones. It is used to initialize and configure the MAVSDK instance, add connections, and interact with the autopilot system.
+
+3. Parachute Plugin: This plugin handles the logic related to parachute commands. It subscribes to MAVLink messages of type `COMMAND_LONG` and processes the commands accordingly. It logs a message indicating the action performed: disable, enable, or release the parachute.
+
+4. MAVLink Passthrough Plugin: This plugin is responsible for handling MAVLink messages between the application and the autopilot system. It subscribes to MAVLink messages, filters them based on the message type, and forwards them to the appropriate handlers.
+
+5. Autopilot System: This component represents the drone autopilot system. It provides the necessary interfaces to interact with the drone and handles the communication with the application.
+
+6. MAVLink Messages: These are standard messages defined by the MAVLink protocol. The application subscribes to the `COMMAND_LONG` MAVLink messages to receive parachute commands.
+
+Here's the UML diagram representing the architecture:
+
+```
+                                     
+       +---------------------+                                     
+       |     Main          |                                     
+       +---------------------+                                     
+       |                     |                                     
+       | + Mavsdk           |                                     
+       | + ParachutePlugin  |        +--------------------------+
+       | + MavlinkPlugin    |------->|    Autopilot System      |
+       |                     |        +--------------------------+
+       +---------------------+                                     
+                                                   
+```
+
+Note: The connections between the components in the UML diagram are represented by dashed lines.
+
+The `process_command_long` function decodes and processes the received `COMMAND_LONG` MAVLink messages. It checks if the command is a parachute command, if it is meant for the application, and performs the corresponding action based on the `param1` value. The actions are logged as messages.
+
+The `usage` function prints out the usage message for the application.
+
+In terms of C++ code syntax, the code includes necessary headers for the MAVSDK library, standard libraries like `<chrono>`, `<cstdint>`, `<iostream>`, `<future>`, and `<memory>`, and the appropriate namespaces are used (`mavsdk`, `std`). 
+
+The main function takes an argument for the connection URL and checks if the expected number of arguments is provided. It creates an instance of `Mavsdk`, sets the system ID, adds the connection using the provided URL, and waits for the autopilot system to be discovered. Once the system is discovered, it retrieves the system ID and creates the required plugins. It then subscribes to the parachute commands by subscribing to the `COMMAND_LONG` messages using the `process_command_long` function. Finally, it enters an indefinite loop, waiting for parachute commands.
+
+It's important to note that the UML diagram and the code explanation provided here are based solely on the code provided and may not include all aspects of the actual implementation. The complete architecture would depend on the internal implementation of the MAVSDK library and other external dependencies.

@@ -1,0 +1,166 @@
+abstract sig ConnectionURL{}
+
+one sig InvalidURL extends ConnectionURL{}
+
+one sig ValidURL extends ConnectionURL{
+    url: String
+}
+
+abstract sig System{}
+
+one sig DiscoveredSystem extends System{}
+
+one sig NotFoundSystem extends System{}
+
+abstract sig Plugin{}
+
+one sig TelemetryPlugin extends Plugin{}
+
+one sig GeofencePlugin extends Plugin{}
+
+abstract sig HealthStatus{}
+
+one sig AllOK extends HealthStatus{}
+
+one sig NotOK extends HealthStatus{}
+
+abstract sig Point{}
+
+one sig GeofencePoint extends Point{
+    latitude: Double,
+    longitude: Double
+}
+
+abstract sig Polygon{}
+
+one sig GeofencePolygon extends Polygon{
+    points: set Point
+}
+
+abstract sig CommandArg{}
+
+one sig CorrectArg extends CommandArg{}
+
+one sig IncorrectArg extends CommandArg{}
+
+sig Main {
+    connectionURL: ConnectionURL,
+    commandArgs: CommandArg,
+    system: System,
+    plugins: set Plugin,
+    telemetryHealth: HealthStatus,
+    points: set Point,
+    polygons: set Polygon,
+    result: Int
+}
+
+fun Main::GetDataFlowAnalysis(): DataFlowAnalysis{
+    {
+        main.connectionURL = ValidURL
+        main.commandArgs = CorrectArg
+        main.system = DiscoveredSystem
+        main.plugins = TelemetryPlugin + GeofencePlugin
+        main.telemetryHealth = AllOK
+        main.points = GeofencePoint
+        main.polygons = GeofencePolygon
+    }
+    else
+    {
+        main.connectionURL = ValidURL
+        main.commandArgs = CorrectArg
+        main.system = NotFoundSystem
+        main.result = 0
+    }
+}
+
+fun Main::GetControlFlowAnalysis(): ControlFlowAnalysis{
+    {
+        main.commandArgs = CorrectArg
+        main.system = DiscoveredSystem
+        main.plugins = TelemetryPlugin + GeofencePlugin
+        main.telemetryHealth = AllOK
+        main.points = GeofencePoint
+        main.polygons = GeofencePolygon
+        main.result = 0
+    }
+    else
+    {
+        main.commandArgs = IncorrectArg
+        main.system = NotFoundSystem
+        main.result = 0
+    }
+}
+
+sig GetSystem{}
+
+abstract sig UploadGeofenceFunction{}
+
+one sig UploadGeofence extends UploadGeofenceFunction{
+    polygons: set Polygon
+}
+
+sig MainFunction{}
+
+one sig MainFunction1 extends MainFunction{
+    connectionURL: ConnectionURL,
+    args: CommandArg,
+    system: System,
+    plugins: set Plugin,
+    telemetryHealth: HealthStatus,
+    points: set Point,
+    polygons: set Polygon,
+    result: Int
+}
+
+one sig MainFunction2 extends MainFunction{}
+
+abstract sig CreatePointFunction{}
+
+one sig CreatePoint extends CreatePointFunction{
+    latitude: Double,
+    longitude: Double
+}
+
+abstract sig CreatePolygonFunction{}
+
+one sig CreatePolygon extends CreatePolygonFunction{
+    points: set Point
+}
+
+fact DataFlowAnalysisFact {
+    all m: MainFunction1 | {
+        m.connectionURL = ValidURL and m.args = CorrectArg implies {
+            m.system = DiscoveredSystem and m.plugins = TelemetryPlugin + GeofencePlugin and m.telemetryHealth = AllOK
+            and m.points = GeofencePoint and m.polygons = GeofencePolygon and m.result = 0
+        }
+        
+        m.connectionURL = ValidURL and m.args = IncorrectArg implies {
+            m.system = NotFoundSystem and m.result = 0
+        }
+    }
+}
+
+fact ControlFlowAnalysisFact {
+    all m: MainFunction2 | {
+        m.args = CorrectArg implies {
+            m.system = DiscoveredSystem and m.plugins = TelemetryPlugin + GeofencePlugin and m.telemetryHealth = AllOK
+            and m.points = GeofencePoint and m.polygons = GeofencePolygon and m.result = 0
+        }
+        
+        m.args = IncorrectArg implies {
+            m.system = NotFoundSystem and m.result = 0
+        }
+    }
+}
+
+fact AddPointFunctionFact {
+    all f: CreatePointFunction | some p: Point | p in f
+}
+
+fact AddPolygonFunctionFact {
+    all f: CreatePolygonFunction | some p: Polygon | p in f
+}
+
+fact UploadGeofenceFunctionFact {
+    all f: UploadGeofenceFunction | some p: Polygon | p in f.polygons
+}

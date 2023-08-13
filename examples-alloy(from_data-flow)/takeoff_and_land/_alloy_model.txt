@@ -1,0 +1,95 @@
+sig ConnectionURL {}
+
+sig Mavsdk {}
+
+sig System {
+    connectedTo: one Drone,
+    connectedToPlugin: one set Plugin
+}
+
+sig Drone {}
+
+sig Plugin {}
+
+sig TelemetryPlugin extends Plugin {}
+sig ActionPlugin extends Plugin {}
+
+sig Altitude {}
+
+sig Usage {}
+
+pred mainFunc(c: ConnectionURL, m: Mavsdk, s: System, tp: TelemetryPlugin, ap: ActionPlugin, a: Altitude, u: Usage) {
+    checkCommandLineArguments(c, u),
+    establishConnection(m, c),
+    getSystem(m, s),
+    checkSystem(s),
+    instantiatePlugins(s, tp, ap),
+    setTelemetryRate(tp),
+    registerCallback(tp, a),
+    waitForDroneReady(s, ap),
+    armDrone(ap),
+    initiateTakeoff(ap),
+    waitForHover(),
+    landDrone(ap),
+    waitForLanding(),
+    waitForFinish()
+}
+
+pred checkCommandLineArguments(c: ConnectionURL, u: Usage) {
+    #c = 1 => true else u = 1
+}
+
+pred establishConnection(m: Mavsdk, c: ConnectionURL) {
+    add_any_connection(m, c)
+}
+
+pred getSystem(m: Mavsdk, s: System) {
+    connectedTo.s = Drone,
+    connectedToPlugin.s = Plugin
+}
+
+pred checkSystem(s: System) {
+    no otherSystem: System | otherSystem != s
+}
+
+pred instantiatePlugins(s: System, tp: TelemetryPlugin, ap: ActionPlugin) {
+    s.connectedToPlugin = tp + ap
+}
+
+pred setTelemetryRate(tp: TelemetryPlugin) {
+    set_rate_position(tp) = 1
+}
+
+pred registerCallback(tp: TelemetryPlugin, a: Altitude) {
+    subscribe_position(tp, a)
+}
+
+pred waitForDroneReady(s: System, ap: ActionPlugin) {
+    health_all_ok(s) = true => true else waitForDroneReady(s, ap)
+}
+
+pred armDrone(ap: ActionPlugin) {
+    arm(ap)
+}
+
+pred initiateTakeoff(ap: ActionPlugin) {
+    takeoff(ap)
+}
+
+pred waitForHover() {
+    sleep_for(10)
+}
+
+pred landDrone(ap: ActionPlugin) {
+    land(ap)
+}
+
+pred waitForLanding() {
+    in_air(m) = false => true else waitForLanding()
+}
+
+pred waitForFinish() {
+    sleep_for(3)
+}
+
+run mainFunc for 1 Mavsdk, 1 ConnectionURL, 1 System, 1 TelemetryPlugin, 1 ActionPlugin, 1 Altitude, 1 Usage

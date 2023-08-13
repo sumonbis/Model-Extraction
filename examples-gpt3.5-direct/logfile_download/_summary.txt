@@ -1,0 +1,40 @@
+The UML architecture description for the given drone application code is as follows:
+
+1. Main Component:
+- This is the main component of the application that contains the main function.
+- It is responsible for parsing command line arguments, establishing a connection with the drone, discovering the system, and downloading log files.
+- It utilizes the LogFiles component to interact with the drone and download the log files.
+- It also handles error messages and returns the appropriate exit codes.
+
+2. Mavsdk Component:
+- This component represents the MAVSDK library, which is a high-level API for communicating with drones.
+- It is responsible for initializing the MAVSDK library, adding a connection, and discovering the system.
+- It interacts with the LogFiles component for log file operations.
+
+3. LogFiles Component:
+- This component represents the LogFiles plugin of the MAVSDK library.
+- It is responsible for managing log files on the drone, including listing available log files, downloading log files, and erasing log files.
+- It communicates with the MAVSDK library to perform these operations.
+
+4. System Component:
+- This component represents the drone system.
+- It is discovered by the MAVSDK library during system discovery.
+- It is passed to the LogFiles component for log file operations.
+
+The connections between the components are as follows:
+- The Main component interacts with the Mavsdk component to initialize the MAVSDK library, add a connection, and discover the system.
+- The Main component also interacts with the LogFiles component to perform log file operations.
+- The Mavsdk component interacts with the LogFiles component to delegate log file operations to the LogFiles plugin.
+- The LogFiles component interacts with the System component to perform log file operations on the drone system.
+
+The code syntax in detail:
+- The code uses various header files such as `<mavsdk/mavsdk.h>`, `<mavsdk/plugins/log_files/log_files.h>`, and `<chrono>`.
+- Namespaces `mavsdk` and `std::chrono` are used.
+- The `usage` function is a utility function to display the usage of the program.
+- The `get_system` function waits for a system to be discovered by subscribing to new system events.
+- The `main` function is the entry point of the program.
+- It parses command line arguments and sets the `remove_log_files` flag based on the argument.
+- It initializes the MAVSDK library, adds a connection using the provided connection URL, and retrieves the discovered system.
+- It instantiates the LogFiles plugin and performs log file operations such as getting log entries, downloading log files, and erasing log files.
+- Error messages are displayed for connection failures and log file operation failures.
+- The main function returns an appropriate exit code.

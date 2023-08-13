@@ -1,0 +1,62 @@
+Here is an example of an AADL model architecture file for the given drone application code:
+
+```aadl
+package DroneApp
+public
+   with Base_Types, Networking;
+
+-- Define the data types used in the application
+data BatteryStatus
+features
+   capacity : Base_Types.Integer;
+   voltage : Base_Types.Integer;
+   current : Base_Types.Integer;
+   temperature : Base_Types.Integer;
+   remaining : Base_Types.Integer;
+end BatteryStatus;
+
+-- Define the threads in the system
+thread MAVSDKThread
+features
+   -- Dependency on MAVSDK library
+   mavsdk_library : requires BASE_Types;
+end MAVSDKThread;
+
+thread SubcribeArmedThread
+features
+   -- Dependency on Telemetry library
+   telemetry_library : requires BASE_Types;
+end SubcribeArmedThread;
+
+thread SendBatteryStatusThread
+features
+   -- Dependency on MavlinkPassthrough library
+   mavlink_passthrough_library : requires BASE_Types;
+end SendBatteryStatusThread;
+
+thread MainThread
+features
+   -- Dependency on MAVSDKThread, SubscribeArmedThread, and SendBatteryStatusThread
+   mavsdk_thread : requires MAVSDKThread;
+   subscribe_armed_thread : requires SubscribeArmedThread;
+   send_battery_status_thread : requires SendBatteryStatusThread;
+end MainThread;
+
+-- Define the connections between the threads
+connection subscribe_armed_connection
+from subscribe_armed_thread::telemetry_library.requires
+to main_thread::mavsdk_thread.provides;
+
+connection send_battery_status_connection
+from send_battery_status_thread::mavlink_passthrough_library.requires
+to main_thread::mavsdk_thread.provides;
+
+connection battery_status_connection
+from main_thread::subscribe_armed_thread.provides
+to main_thread::send_battery_status_thread.provides;
+
+system DroneSystem
+end DroneSystem;
+```
+
+Please note that the AADL model architecture file provided is an example and may need to be modified or extended to fit your specific requirements and the actual implementation of the application code.

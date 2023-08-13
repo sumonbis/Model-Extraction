@@ -1,0 +1,92 @@
+Based on the provided description, here is an AADL model for the drone application architecture:
+
+```aadl
+package Drone_Application is
+
+   -- Import necessary packages
+   public
+      with MavSdk.Camera;
+      with MavSdk.Telemetry;
+      with MavSdk.MavSdk;
+  
+   -- Drone application process
+   process Drone_Application_Process
+      features
+         -- Connection to mavlink
+         connection_required : requires MavSdk.MavSdk.Connection;
+      subcomponents
+         -- Drone component
+         Drone_Component : component Drone;
+         -- MavSDK component
+         MavSdk_Component : component MavSdk;
+         -- Connection component
+         Connection_Component : component Connection;
+         -- Camera component
+         Camera_Component : component Camera;
+         -- Telemetry component (optional)
+         Telemetry_Component : component Telemetry;
+      connections
+         -- Connection between Drone and MavSDK
+         Drone_MavSdk_Connection : port Drone_Component.Camera_Connection_Port -> MavSdk_Component.Camera_Connection_Port;
+         -- Connection between MavSDK and Connection
+         MavSdk_Connection : port MavSdk_Component.Connection_Port -> Connection_Component.Port;
+         -- Connection between Camera and Drone
+         Camera_Drone_Connection : port Camera_Component.Camera_Response_Port -> Drone_Component.Camera_Response_Port;
+         -- Connection between Telemetry and Drone
+         Telemetry_Drone_Connection : port Telemetry_Component.Telemetry_Response_Port -> Drone_Component.Telemetry_Response_Port;
+      properties
+         Connection_Maximum_Connection_Timeout : constant Time_Span := 10 ms;
+   end Drone_Application_Process;
+
+   -- Drone component
+   abstract
+       component Drone
+          ports
+            -- Connection port for camera messages
+            Camera_Connection_Port : out port MavSdk.Camera.Camera_Message;
+            -- Response port for camera messages
+            Camera_Response_Port : in port MavSdk.Camera.Camera_Response;
+            -- Response port for telemetry messages
+            Telemetry_Response_Port : in port MavSdk.Telemetry.Telemetry_Message;
+       end Drone;
+
+   -- MavSDK component
+   abstract
+       component MavSdk
+          ports
+            -- Connection port for MavSDK
+            Connection_Port : in port MavSdk.Connection.Connection_Message;
+       end MavSdk;
+
+   -- Connection component
+   abstract
+       component Connection
+          ports
+            -- Connection port for drone communications
+            Port : out port MavSdk.Connection.Connection_Message;
+       end Connection;
+
+   -- Camera component
+   abstract
+       component Camera
+          ports
+            -- Camera messages port
+            Camera_Message : in port MavSdk.Camera.Camera_Message;
+            -- Response port for camera messages
+            Camera_Response : out port MavSdk.Camera.Camera_Response;
+       end Camera;
+
+   -- Telemetry component (optional)
+   abstract
+       component Telemetry
+          ports
+            -- Telemetry messages port
+            Telemetry_Message : in port MavSdk.Telemetry.Telemetry_Message;
+            -- Response port for telemetry messages
+            Telemetry_Response : out port MavSdk.Telemetry.Telemetry_Response;
+       end Telemetry;
+
+end Drone_Application;
+```
+
+Please note that this is a high-level AADL model that represents the components and their interactions. It does not show the internal behavior or implementation details of each component and their corresponding functions.

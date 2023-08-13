@@ -1,0 +1,53 @@
+The architecture of the drone application code can be represented using several components with their respective interfaces and connections. 
+
+Components:
+1. Mavsdk: This component handles the MAVLink communication with the drone and provides access to various plugins such as action, follow_me, and telemetry.
+
+2. Action Plugin: This plugin provides access to drone actions such as arming, takeoff, land, etc. It exposes methods and events related to the control of the drone.
+
+3. FollowMe Plugin: This plugin provides functionality for the Follow Me feature, where the drone follows a target location. It exposes methods and events related to setting the target location, configuring the follow me behavior, starting, stopping, etc.
+
+4. Telemetry Plugin: This plugin provides access to various drone telemetry data such as position, flight mode, air status, etc. It exposes methods and events for subscribing to telemetry updates.
+
+5. FakeLocationProvider: This component is used for generating fake location updates to be used by the FollowMe plugin. It provides a method for registering for location updates and uses a callback function to pass the location updates to the FollowMe plugin.
+
+Interfaces:
+1. Mavsdk Interface: This interface provides methods for adding a connection to the MAVLink system and getting access to the system.
+
+2. Action Interface: This interface provides methods for arming, taking off, landing, and other drone control actions. It also provides events for receiving action-related updates.
+
+3. FollowMe Interface: This interface provides methods for setting the target location, configuring the follow me behavior, and starting or stopping the follow me feature. It also provides events for receiving updates related to the follow me feature.
+
+4. Telemetry Interface: This interface provides methods for subscribing to telemetry updates such as position and flight mode. It also provides events for receiving telemetry updates.
+
+Connections:
+1. Mavsdk to Action: The Mavsdk component is connected to the Action plugin to provide access to drone control actions.
+
+2. Mavsdk to FollowMe: The Mavsdk component is connected to the FollowMe plugin to provide access to the follow me feature.
+
+3. Mavsdk to Telemetry: The Mavsdk component is connected to the Telemetry plugin to provide access to telemetry data.
+
+4. FakeLocationProvider to FollowMe: The FakeLocationProvider component is connected to the FollowMe plugin to provide location updates for the follow me feature.
+
+Syntax Explanation:
+1. #include: This directive is used to include C++ library headers in the code.
+
+2. using: This statement is used to introduce a namespace into the current scope.
+
+3. Namespace: A namespace is a declarative region that defines a scope for a set of identifiers. In this code, the 'mavsdk' namespace is used to access the classes and functions provided by the MAVSDK library.
+
+4. Function Definitions: The code defines several functions such as 'usage', 'get_system', and 'main'. These functions are called at different points in the code to perform specific tasks.
+
+5. Variables: The code uses variables to store values such as connection URLs, system pointers, plugin instances, action results, etc.
+
+6. Loops and Conditionals: The code uses loops and conditional statements such as 'while', 'if', and 'else' to control the flow of execution based on certain conditions.
+
+7. Function Calls: The code calls various functions provided by the MAVSDK library such as 'add_any_connection', 'arm', 'takeoff', 'land', 'set_target_location', etc. These function calls perform specific actions or retrieve information from the connected drone.
+
+8. Lambdas: The code uses lambda expressions to define inline functions or callbacks that are passed as arguments to other functions.
+
+9. Promises and Futures: The code uses promises and futures to handle asynchronous execution. Promises are used to set a value that can be accessed later through the associated future. Futures are used to obtain the value that was set by the promise.
+
+10. Sleeping: The code uses the 'sleep_for' function from the chrono library to introduce delays in the execution of the program. This is done to wait for certain conditions to be met or to simulate timing requirements.
+
+Overall, the code demonstrates how to use the FollowMe plugin provided by the MAVSDK library to implement a Follow Me feature with a drone. It connects to a drone, performs necessary checks and configurations, starts the follow me feature, and then simulates location updates to make the drone follow a target location. Finally, it stops the follow me feature and lands the drone.

@@ -1,0 +1,58 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+Components:
+1. Main: This component represents the main function of the application. It is responsible for connecting to the drone, instantiating the Tune plugin, and playing a tune using the Tune plugin.
+
+2. Mavsdk: This component represents the MAVSDK library, which provides an API to communicate with the drone. It is responsible for adding a connection to the drone and getting the system.
+
+3. Tune: This component represents the Tune plugin provided by MAVSDK. It is responsible for playing a tune on the connected drone.
+
+Interfaces:
+1. get_system(mavsdk: Mavsdk): std::shared_ptr<System>
+   - Input: mavsdk - An instance of the Mavsdk component.
+   - Output: std::shared_ptr<System> - A shared pointer to the system.
+
+2. main(argc: int, argv: char**): int
+   - Input: argc - Number of command line arguments.
+            argv - Array of command line arguments.
+   - Output: int - Exit code of the application.
+
+3. usage(bin_name: const std::string&): void
+   - Input: bin_name - Name of the binary file.
+   - Output: void
+
+4. Mavsdk::add_any_connection(connection_url: const std::string&): ConnectionResult
+   - Input: connection_url - URL to connect to the drone.
+   - Output: ConnectionResult - Result of the connection attempt.
+
+5. Tune::play_tune(tune_description: const TuneDescription&): Tune::Result
+   - Input: tune_description - Description of the tune to be played.
+   - Output: Tune::Result - Result of the tune playback.
+
+Connections:
+1. Main -> Mavsdk: Calls the get_system() function to get the system using the Mavsdk component instance.
+
+2. Main -> Tune: Instantiates the Tune plugin using the system obtained from the Mavsdk component.
+
+3. Main -> Tune: Calls the play_tune() function to play a tune using the Tune plugin.
+
+4. Main -> usage: Calls the usage() function to display the usage help if the command line arguments are not provided correctly.
+
+Syntax Explanation:
+1. `#include`: This preprocessor directive is used to include external libraries or header files in the code. In this code, it is used to include necessary libraries for MAVSDK, C++ standard types, and IO operations.
+
+2. Namespaces: `mavsdk`, `std::this_thread`, and `std::chrono` are namespaces that provide access to the MAVSDK, C++ threading, and time-related functionalities respectively. `using namespace` is used to avoid specifying the full namespace every time a function or class from that namespace is used.
+
+3. Function Definition: Functions like `usage()`, `get_system()`, and `main()` are defined with their respective parameter types, return types, and implementation using C++ syntax.
+
+4. Member Access Operator: `.` is used to access members of classes or structs. For example, `mavsdk.subsribe_on_new_system()` is used to call the `subscribe_on_new_system()` function of the `mavsdk` object.
+
+5. Containers: `std::vector` is a container class that provides dynamic array functionality in C++. In this code, it is used to store the elements of the tune song.
+
+6. Constants and Enumerations: Constants like `ConnectionResult::Success` and `Tune::Result::Success` are defined using enumeration types to represent specific values.
+
+7. Pointers: `std::shared_ptr` is a smart pointer that manages the lifetime of objects and provides shared ownership. In this code, it is used to manage the lifetime of the `System` object obtained from MAVSDK.
+
+8. Control Flow: Control flow statements like `if`, `for`, and `return` are used to conditionally execute code or repeat a certain block of code based on conditions.
+
+9. Output: `std::cout` and `std::cerr` are used to output messages to the console. `<<` operator is used to concatenate and output the values.

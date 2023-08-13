@@ -1,0 +1,159 @@
+package drone_app;
+
+public system Drone_System {
+    process Drone_Process {
+        data port std::string connection_url;
+        data port std::shared_ptr<System> system;
+        data port std::shared_ptr<Mavsdk> mavsdk;
+
+        subcomponent connection_result_box of  ConnectionResult;
+        subcomponent action_box of Action;
+        subcomponent offboard_box of Offboard;
+        subcomponent telemetry_box of Telemetry;
+
+        connection_result_box uses connection_url;
+        connection_result_box provides connection_result;
+
+        uses action_box;
+        uses offboard_box;
+        uses telemetry_box;
+
+        system() {
+            mavsdk -> action_box.mavsdk;
+            mavsdk -> offboard_box.mavsdk;
+            mavsdk -> telemetry_box.mavsdk;
+            connection_url -> connection_result_box.connection_url;
+            connection_result_box.connection_result -> system;
+            action_box.system -> system;
+            offboard_box.system -> system;
+            telemetry_box.system -> system;
+            action_box.system -> action_box.system;
+            offboard_box.system -> offboard_box.system;
+            telemetry_box.system -> telemetry_box.system;
+        }
+    }
+
+    process Main_Process {
+        subcomponent drone_process_box of Drone_Process;
+
+        drone_process_box uses drone_process_box.connection_url;
+        drone_process_box.connection_url -> drone_process_box.system;
+        drone_process_box.connection_result -> drone_process_box;
+    }
+
+    Main_Process.main -> drone_process_box.connection_url;
+}
+
+component Action {
+    port action::Action action;
+
+    provides action::Result arm();
+    provides action::Result disarm();
+    provides action::Result start();
+    provides action::Result stop();
+
+    uses mavsdk::System system;
+
+    action.arm -> system.activity.arm;
+    action.disarm -> system.activity.disarm;
+    action.start -> system.activity.start;
+    action.stop -> system.activity.stop;
+}
+
+component Offboard {
+    port offboard::Offboard offboard;
+
+    provides bool offb_ctrl_ned();
+    provides bool offb_ctrl_pos_global();
+    provides bool offb_ctrl_body();
+    provides bool offb_ctrl_attitude();
+
+    uses action::Action action;
+    uses telemetry::Telemetry telemetry;
+
+    offboard.offb_ctrl_ned -> telemetry.offb_ctrl_ned;
+    offboard.offb_ctrl_pos_global -> telemetry.offb_ctrl_pos_global;
+    offboard.offb_ctrl_body -> telemetry.offb_ctrl_body;
+    offboard.offb_ctrl_attitude -> telemetry.offb_ctrl_attitude;
+}
+
+component Telemetry {
+    port telemetry::Telemetry telemetry;
+
+    provides Telemetry::Result get_gps_global_origin();
+    provides bool health_all_ok();
+
+    uses mavsdk::System system;
+
+    telemetry.get_gps_global_origin -> system.coordinate_system.get_gps_global_origin;
+    telemetry.health_all_ok -> system.health.health_all_ok;
+}
+
+component System {
+    data port std::shared_ptr<System> system;
+    data port std::shared_ptr<Mavsdk> mavsdk;
+
+    uses mavsdk::Mavsdk mavsdk;
+    uses mavsdk::System system;
+
+    mavsdk.system -> system;
+    mavsdk.blocking_add_any_connection.system -> system;
+    system.get_mavsdk -> mavsdk;
+    system.has_autopilot -> mavsdk.plugin.get_autopilot;
+    system.subscribe_on_new_system -> mavsdk.subscribe_on_new_system;
+}
+
+component Mavsdk {
+    data port std::shared_ptr<Mavsdk> mavsdk;
+
+    subcomponent plugin_box of Plugins;
+    plugin_box uses plugin_box.action;
+    plugin_box uses plugin_box.offboard;
+    plugin_box uses plugin_box.telemetry;
+
+    Mavsdk() {
+        mavsdk.box -> plugin_box.mavsdk;
+    }
+}
+
+component Plugins {
+    port mavsdk::plugins::action::Action action;
+    port mavsdk::plugins::offboard::Offboard offboard;
+    port mavsdk::plugins::telemetry::Telemetry telemetry;
+}
+
+component ConnectionResult {
+    data port std::string connection_url;
+    data port mavsdk::ConnectionResult connection_result;
+
+    uses mavsdk::System system;
+    uses mavsdk::Mavsdk mavsdk;
+
+    mavsdk.add_any_connection -> connection_url;
+    mavsdk.box -> system.mavsdk;
+    system.get_system -> mavsdk.plugin;
+    system.get_system -> connection_result;
+
+    system.system -> connection_result.system;
+}
+
+component Action_Box {
+    action.arm -> action_box.arm;
+    action.disarm -> action_box.disarm;
+    action.start -> action_box.start;
+    action.stop -> action_box.stop;
+
+    mavsdk.plugin.get_autopilot -> action_box.plugin;
+}
+
+component Offboard_Box {
+    offboard.offb_ctrl_ned -> offboard_box.offb_ctrl_ned;
+    offboard.offb_ctrl_pos_global -> offboard_box.offb_ctrl_pos_global;
+    offboard.offb_ctrl_body -> offboard_box.offb_ctrl_body;
+    offboard.offb_ctrl_attitude -> offboard_box.offb_ctrl_attitude;
+
+    mavsdk.plugin.offboard -> offboard_box.plugin;
+}
+
+component Telemetry_Box {
+    telemetry.get

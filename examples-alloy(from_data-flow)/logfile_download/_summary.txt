@@ -1,0 +1,18 @@
+Data-flow relations:
+1. The command-line arguments passed to the program are stored in the `argc` and `argv` variables.
+2. The `argv[1]` value is used as the connection URL to add a connection to the MAVSDK using the `add_any_connection` method of the `Mavsdk` class.
+3. The `get_system` function is called to wait for the discovery of a system with an autopilot. It uses a promise and future mechanism to wait for and retrieve the discovered system.
+4. The `LogFiles` class is instantiated with the discovered system.
+5. The `get_entries` method of the `LogFiles` class is called to retrieve a list of log files available on the system.
+6. If the `get_entries` method call is successful, a loop iterates through each log file entry and downloads the log file using the `download_log_file` method.
+7. Optionally, if the `--rm` command-line argument is passed, the `erase_all_log_files` method is called to remove all log files from the system.
+
+Control flow relations:
+1. The `main` function is the entry point of the program.
+2. The command-line arguments are checked to ensure they are valid. If not, the `usage` function is called.
+3. The MAVSDK connection is added using the provided connection URL. If the connection fails, an error message is printed and the program exits.
+4. The `get_system` function is called to wait for the discovery of a system with an autopilot. If no system is discovered within 3 seconds, an error message is printed and the program exits.
+5. The `LogFiles` class is instantiated with the discovered system.
+6. The `get_entries` method is called to retrieve the list of log files. If it fails, an error message is printed and the program exits.
+7. If the `get_entries` method succeeds, a loop iterates through each log file entry to download and optionally remove the log files.
+8. Finally, the program exits with a status of 0 if all operations were successful.

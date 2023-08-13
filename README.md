@@ -26,3 +26,13 @@ pip install -r requirements.txt
 4. Run the `python extract-model examples` to generate the AADL models for the MAVSDK code examples. The generated models are stored in the corresponding subdirectories.
 
 Before running the command, place the openai key (`api_key.txt`) in the root directory of the repository.
+
+## References
+
+How to verify the correctness of generated AADL model:
+
+- Johnsen, Andreas, Paul Pettersson, and Kristina Lundqvist. "An architecture-based verification technique for AADL specifications." European Conference on Software Architecture. Berlin, Heidelberg: Springer Berlin Heidelberg, 2011.
+
+- Johnsen, Andreas, et al. "Automated verification of AADL-specifications using UPPAAL." 2012 IEEE 14th International Symposium on High-Assurance Systems Engineering. IEEE, 2012.
+
+- Ling, Dongyi, et al. "Reliability evaluation based on the AADL architecture model." Journal of Networks 9.10 (2014): 2721.

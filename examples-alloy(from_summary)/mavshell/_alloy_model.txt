@@ -1,0 +1,121 @@
+Alloy is a declarative modeling language that is used to specify and analyze software and system architectures. Here is an Alloy model that captures the structural aspects of the given drone application source code:
+
+```alloy
+
+open util/boolean
+
+-- Signature declarations
+
+abstract sig Connection{}
+
+sig AnyConnection, MavsdkConnection extends Connection{}
+
+sig System{
+    connection: one Connection
+}
+
+sig Shell{
+    system: one System,
+    commandQueue: seq Command,
+    output: one stdString 
+}
+
+sig Command{}
+
+-- Predicate declarations
+
+pred mainEntryPoint(program: Program){
+    -- main() is defined as the entry point of the program
+    one m: Method | m.name = "main" && program.entryPoint = m
+    m.parameters = [one cliArg: Param | #cliArg = 1]
+}
+
+pred connectionSuccessful(program: Program, con: one AnyConnection){
+    -- Connection is added using mavsdk.add_any_connection(argv[1])
+    con in program.objects && con in System.connection
+}
+
+pred getSystemCall(program: Program, getSysFuncCall: one FunctionCall){
+    -- get_system() function is called to get the system
+    getSysFuncCall in program.objects &&
+    let getSystemMethod = program.objects & Method | getSystemMethod.name = "get_system" 
+    {getSysFuncCall, getSystemMethod}
+}
+
+pred runInteractiveShell(program: Program, system: one System, shell: one Shell){
+    -- run_interactive_shell() function is called with the system as input
+    shell.system = system
+}
+
+pred subscribeReceiveCall(program: Program, shell: one Shell, subscribeCall: one FunctionCall){
+    -- shell.subscribe_receive() is called to subscribe to receive the output from the shell
+    subscribeCall in program.objects &&
+    let subscribeMethod = program.objects & Method | subscribeMethod.name = "subscribe_receive" 
+    {subscribeCall, subscribeMethod, shell}
+}
+
+pred sendCommand(program: Program, shell: one Shell, sendCall: one FunctionCall){
+    -- shell.send(command) is called to send the command to the shell
+    sendCall in program.objects &&
+    let sendMethod = program.objects & Method | sendMethod.name = "send" 
+    {sendCall, sendMethod, shell}
+}
+
+pred userExitCommand(program: Program, shell: one Shell, exitCommand: one Command){
+    -- User enters "exit" command to exit the interactive shell
+    exitCommand in shell.commandQueue
+}
+
+-- Fact declarations
+
+fact CommandLine{
+    -- CommandLine class is defined
+    one cl: Class | cl.name = "CommandLine"
+}
+
+fact Mavsdk{
+    -- Mavsdk class is defined
+    one md: Class | md.name = "Mavsdk"
+}
+
+fact connectedToSystem{
+    -- Mavsdk is connected to the System and has 1..* relation
+    System.connection in AnyConnection
+    MavsdkConnection in System.connection
+}
+
+fact Shell{
+    -- Shell is connected to the System and has 1 relation
+    Shell.system in System
+    Shell in System.connection
+}
+
+fact stdString{
+    -- std::string is defined
+    one stdStr: Class | stdStr.name = "std::string"
+}
+
+fact cinAndCout{
+    -- std::cin and std::cout are defined
+    let ioStream = System.objects & Class,
+        cin = ioStream & Field,
+        cout = ioStream & Field{
+        cin.name = "std::cin" and
+        cout.name = "std::cout"
+    }
+}
+
+-- Helper function declarations
+
+fun program: Program{
+    -- Contains all the classes, objects, and method calls in the program
+    ...
+}
+
+fun FunctionCall: set Method{
+    -- Contains all the function calls in the program
+    ...
+}
+```
+
+Note that the Alloy model captures the structural aspects of the given code and defines predicates and facts to represent the behavior. The exact implementation of the predicates and facts depends on your specific needs and the details of the code. You can extend and modify the model as per your requirements.

@@ -1,0 +1,100 @@
+Here is an AADL model that describes the given drone application architecture:
+
+```aadl
+package Drone_App is
+    public with SEI;
+    public with MAVSDK;
+    public with FTP;
+    
+    system Drone_App_System
+        subcomponents
+            Main: process Main_Process;
+            Mavsdk: subprogram MAVSDK_Init;
+            Ftp: subprogram FTP_Operations;
+        connections
+            Main_To_Mavsdk: access communication Main.Mavsdk_Connection;
+            Main_To_Ftp: access communication Main.Ftp_Connection;
+    end Drone_App_System;
+
+    process Main_Process
+        features
+            From_User: out event port;
+            To_User: in event port;
+        subcomponents
+            Control_Process: subprogram MAVSDK_Control_Process;
+        connections
+            From_User_Connection: access communication From_User.to_in;
+            To_User_Connection: access communication To_User.from_in;
+    end Main_Process;
+
+    subprogram MAVSDK_Init
+        features
+            Control_To_Mavsdk: in event port;
+            Mavsdk_To_Control: out event port;
+        subcomponents
+            Mavsdk_Library: subprogram MAVSDK_Library;
+        connections
+            Control_To_Mavsdk_Connection: access communication Control_To_Mavsdk.from_in;
+            Mavsdk_To_Control_Connection: access communication Mavsdk_To_Control.to_out;
+    end MAVSDK_Init;
+
+    subprogram FTP_Operations
+        features
+            Control_To_Ftp: in event port;
+            Ftp_To_Control: out event port;
+        subcomponents
+            Ftp_Library: subprogram FTP_Library;
+        connections
+            Control_To_Ftp_Connection: access communication Control_To_Ftp.from_in;
+            Ftp_To_Control_Connection: access communication Ftp_To_Control.to_out;
+    end FTP_Operations;
+
+    subprogram MAVSDK_Library
+        features
+            Mavsdk_Library_From_Mavsdk: in event port;
+            Mavsdk_Library_To_Mavsdk: out event port;
+        subcomponents
+            Mavsdk_Library_Impl: subprogram MAVSDK_Library_Impl;
+        connections
+            Mavsdk_Library_From_Mavsdk_Connection: access communication Mavsdk_Library_From_Mavsdk.from_in;
+            Mavsdk_Library_To_Mavsdk_Connection: access communication Mavsdk_Library_To_Mavsdk.to_out;
+        properties
+            Actual_Processor_Binding => (Mavsdk_Library_To_Mavsdk_Connection.Part);
+    end MAVSDK_Library;
+
+    subprogram FTP_Library
+        features
+            Ftp_Library_From_Ftp: in event port;
+            Ftp_Library_To_Ftp: out event port;
+        subcomponents
+            Ftp_Library_Impl: subprogram FTP_Library_Impl;
+        connections
+            Ftp_Library_From_Ftp_Connection: access communication Ftp_Library_From_Ftp.from_in;
+            Ftp_Library_To_Ftp_Connection: access communication Ftp_Library_To_Ftp.to_out;
+        properties
+            Actual_Processor_Binding => (Ftp_Library_To_Ftp_Connection.Part);
+    end FTP_Library;
+
+    subprogram MAVSDK_Library_Impl
+        features
+            Mavsdk_Library_From_Mavsdk_Impl: in event data port MAVSDK.From_Mavsdk;
+            Mavsdk_Library_To_Mavsdk_Impl: out event data port MAVSDK.To_Mavsdk;
+        properties
+            Dispatch_Protocol => deferred;
+        end MAVSDK_Library_Impl;
+
+    subprogram FTP_Library_Impl
+        features
+            Ftp_Library_From_Ftp_Impl: in event data port FTP.From_Ftp;
+            Ftp_Library_To_Ftp_Impl: out event data port FTP.To_Ftp;
+        properties
+            Dispatch_Protocol => deferred;
+        end FTP_Library_Impl;
+
+end Drone_App;
+```
+This AADL model represents the basic structure of the drone application architecture. It includes system, process, subprogram, event ports, and communication connections to represent the interactions between the components.
+
+Note that this model is an abstract representation and does not contain the implementation details of each component. The actual implementation of each component will depend on the specific programming language and framework being used.
+
+In order to generate code from this AADL model, you will need to use an AADL toolset that supports code generation, such as AADL Inspector or OSATE.

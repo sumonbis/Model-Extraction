@@ -1,0 +1,127 @@
+Here is an AADL model for the given architecture description:
+
+```
+package DroneApp_Code_Architecture is
+
+   process Main_Thread
+      features
+         port Main_Mavsdk: out event
+         port Main_Action: out event
+         port Main_Param: out event
+         port Main_Telemetry: out event
+         port Main_Mission: out event
+         port Main_To_Autopilot: in event
+      end Main_Thread;
+
+   process Autopilot_Thread
+      features
+         port Autopilot_MavsdkTester: out event
+         port Autopilot_System: out event
+         port Autopilot_ParamServer: out event
+         port Autopilot_TelemetryServer: out event
+         port Autopilot_ActionServer: out event
+         port Autopilot_MissionRawServer: out event
+         port Autopilot_To_Main: out event
+         port Autopilot_To_MavsdkTester: in event
+         port Autopilot_To_System: in event
+         port Autopilot_To_ParamServer: in event
+         port Autopilot_To_TelemetryServer: in event
+         port Autopilot_To_ActionServer: in event
+         port Autopilot_To_MissionRawServer: in event
+      end Autopilot_Thread;
+
+   system Mavsdk;
+   system MavsdkTester;
+   system System;
+   system Action;
+   system Param;
+   system Telemetry;
+   system Mission;
+   system ParamServer;
+   system TelemetryServer;
+   system ActionServer;
+   system MissionRawServer;
+
+   interface Main_Mavsdk_Interface
+      features
+         port to Main_Thread.Main_Mavsdk: out event;
+         port to Autopilot_Thread.Autopilot_To_MavsdkTester: in event;
+         port to Autopilot_Thread.Autopilot_To_MavsdkTester: out event;
+         port to Autopilot_Thread.Autopilot_To_System: in event;
+         port to Autopilot_Thread.Autopilot_To_System: out event;
+      end Main_Mavsdk_Interface;
+
+   interface Main_Action_Interface
+      features
+         port to Main_Thread.Main_Action: out event;
+         port to Autopilot_Thread.Autopilot_To_ActionServer: in event;
+         port to Autopilot_Thread.Autopilot_To_ActionServer: out event;
+      end Main_Action_Interface;
+
+   interface Main_Param_Interface
+      features
+         port to Main_Thread.Main_Param: out event;
+         port to Autopilot_Thread.Autopilot_To_ParamServer: in event;
+         port to Autopilot_Thread.Autopilot_To_ParamServer: out event;
+      end Main_Param_Interface;
+
+   interface Main_Telemetry_Interface
+      features
+         port to Main_Thread.Main_Telemetry: out event;
+         port to Autopilot_Thread.Autopilot_To_TelemetryServer: in event;
+         port to Autopilot_Thread.Autopilot_To_TelemetryServer: out event;
+      end Main_Telemetry_Interface;
+
+   interface Main_Mission_Interface
+      features
+         port to Main_Thread.Main_Mission: out event;
+         port to Autopilot_Thread.Autopilot_To_MissionRawServer: in event;
+         port to Autopilot_Thread.Autopilot_To_MissionRawServer: out event;
+      end Main_Mission_Interface;
+
+   interface Autopilot_MavsdkTester_Interface
+      features
+         port to Autopilot_Thread.Autopilot_MavsdkTester: out event;
+         port to Main_Thread.Main_Mavsdk: in event;
+         port to Main_Thread.Main_Mavsdk: out event;
+      end Autopilot_MavsdkTester_Interface;
+
+   interface Autopilot_System_Interface
+      features
+         port to Autopilot_Thread.Autopilot_System: out event;
+         port to Main_Thread.Main_To_Autopilot: in event;
+         port to Main_Thread.Main_To_Autopilot: out event;
+      end Autopilot_System_Interface;
+
+   interface Autopilot_ParamServer_Interface
+      features
+         port to Autopilot_Thread.Autopilot_ParamServer: out event;
+         port to Main_Thread.Main_To_Autopilot: in event;
+         port to Main_Thread.Main_To_Autopilot: out event;
+      end Autopilot_ParamServer_Interface;
+
+   interface Autopilot_TelemetryServer_Interface
+      features
+         port to Autopilot_Thread.Autopilot_TelemetryServer: out event;
+         port to Main_Thread.Main_To_Autopilot: in event;
+         port to Main_Thread.Main_To_Autopilot: out event;
+      end Autopilot_TelemetryServer_Interface;
+
+   interface Autopilot_ActionServer_Interface
+      features
+         port to Autopilot_Thread.Autopilot_ActionServer: out event;
+         port to Main_Thread.Main_To_Autopilot: in event;
+         port to Main_Thread.Main_To_Autopilot: out event;
+      end Autopilot_ActionServer_Interface;
+
+   interface Autopilot_MissionRawServer_Interface
+      features
+         port to Autopilot_Thread.Autopilot_MissionRawServer: out event;
+         port to Main_Thread.Main_To_Autopilot: in event;
+         port to Main_Thread.Main_To_Autopilot: out event;
+      end Autopilot_MissionRawServer_Interface;
+
+end DroneApp_Code_Architecture;
+```
+
+This AADL model represents an architectural view of the drone application code. It includes processes for both the main thread and autopilot thread. The processes communicate with each other and with the components through event ports defined in the interfaces. The interfaces connect the main thread and autopilot thread with the relevant components. The systems, such as Mavsdk, MavsdkTester, and others, are represented as system components in the model.

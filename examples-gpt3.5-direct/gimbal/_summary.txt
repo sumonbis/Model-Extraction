@@ -1,0 +1,73 @@
+The UML architecture for the given drone application code can be represented as follows:
+
+```
++------------------+        +------------------------+        +-----------------+
+|      main()      |        |       Gimbal           |        |    Telemetry    |
++------------------+        +------------------------+        +-----------------+
+| - usage()        |        | - take_control()       |        | - set_rate_camera_attitude()     |
+| - get_system()   |        | - set_mode()           |        | - subscribe_camera_attitude_euler()    |
+|                  |        | - set_pitch_and_yaw()  |        |                 |
+|                  |        | - set_pitch_rate_and_yaw_rate()  |        |                 |
+|                  |        | - set_roi_location()  |        |                 |
+|                  |        | - release_control()    |        |                 |
+|                  |        +------------------------+        +-----------------+
+|                  |
+|                  |
+|                  |
+|                  |
+|                  |
+|                  |
+|                  |
+|                  |
+|                  |
++------------------+
+       |                   |
+       |                   |
+       |                   |
+       |                   |
+       |                   |
+       |                   |
+       |                   |
+       v                   v
++-----------------+  System discovery   +--------------------+
+|    Mavsdk       |<------------------>|    PX4 Autopilot    |
++-----------------+                     +--------------------+
+```
+
+- `main()`: The entry point of the application. It initializes the `mavsdk` object, adds a connection to the autopilot using the command line argument, and retrieves the system object to control the gimbal.
+
+- `usage()`: A helper function to display the correct usage of the application.
+
+- `get_system()`: A utility function that waits for the system to be discovered and returns the first system with an autopilot.
+
+- `Mavsdk`: The main SDK class that provides access to the autopilot and plugins.
+
+- `Gimbal`: A plugin that controls the gimbal. It provides methods to take control of the gimbal, set the mode, set the pitch and yaw angles, set the pitch and yaw rates, set the region of interest location, and release control of the gimbal.
+
+- `Telemetry`: A plugin that provides access to telemetry data from the autopilot. It provides methods to set the rate of camera attitude updates and subscribe to camera attitude updates.
+
+Note: The syntax used in the code:
+
+- `<>` denotes template parameters.
+
+- `using` is used to introduce a name into the current scope, in this case, namespaces are introduced (`mavsdk`, `std::chrono::seconds`, and `std::this_thread::sleep_for`).
+
+- `::` is the scope resolution operator used to access members of a namespace or class.
+
+- `auto` is used for type inference, where the type is automatically deduced based on the assigned value.
+
+- `std::shared_ptr` and `std::unique_ptr` are smart pointers used for managing the lifetime of objects.
+
+- `std::promise` and `std::future` are used for asynchronous communication between threads.
+
+- `std::cerr` is the standard error stream used for error output.
+
+- `std::thread` is a class representing a thread of execution.
+
+- `std::chrono` is a library providing time-related functionality.
+
+- `sleep_for` is used to pause the execution of the current thread for a specified duration.
+
+- `<<` is the stream insertion operator used for output streams.
+
+- `argc` and `argv` are command line arguments passed to the program.

@@ -1,0 +1,25 @@
+The data-flow and control flow relations in the given drone application code can be described as follows:
+
+Data-flow:
+1. The main function receives the connection URL as a command line argument and initializes the Mavsdk object.
+2. The main function adds the connection using the add_any_connection method of the Mavsdk object.
+3. The main function calls the get_system function to discover and get the autopilot system.
+4. The get_system function subscribes to new system events and waits for a system with an autopilot to be discovered.
+5. The get_system function returns the shared pointer to the discovered system.
+6. The main function checks if a system is successfully discovered and returns if not.
+7. The main function creates instances of Telemetry and MavlinkPassthrough plugins.
+8. The main function calls the subscribe_armed function to subscribe to the armed state change events.
+9. The main function enters an infinite loop where it periodically calls the send_battery_status function and sleeps for 1 second.
+
+Control flow:
+1. The main function checks the number of command line arguments and displays the usage if incorrect.
+2. The main function initializes the Mavsdk object and adds the connection using the add_any_connection method.
+3. The main function calls the get_system function to get the discovered autopilot system.
+4. The main function checks if a system is successfully discovered and returns if not.
+5. The main function creates instances of Telemetry and MavlinkPassthrough plugins.
+6. The main function calls the subscribe_armed function to subscribe to the armed state change events.
+7. The main function enters an infinite loop where it periodically calls the send_battery_status function and sleeps for 1 second.
+8. The subscribe_armed function subscribes to the armed state change events and prints the state when it changes.
+9. The send_battery_status function creates a mavlink message representing the battery status and sends it using the MavlinkPassthrough plugin.
+
+Note: Some code snippets or function definitions that were not included in the code snippet provided may be referenced in the descriptions above.

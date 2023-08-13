@@ -1,0 +1,72 @@
+sig Mavsdk{}
+sig MavsdkObject{
+    adds : Mavsdk -> Connection,
+    get_system: -> System, 
+    create_Telemetry: -> Telemetry,
+    create_MavlinkPassthrough: -> MavlinkPassthrough
+}{
+    adds.mavsdk=this,
+    get_system.mavsdk=this,
+    create_Telemetry.mavsdk=this,
+    create_MavlinkPassthrough.mavsdk=this
+}
+
+sig Connection{
+    url: String,
+    add_any_connection: MavsdkObject -> MavsdkObject
+}{
+    add_any_connection.mavsdk=this
+}
+
+sig System{
+    discover: -> System,
+    subscribe: System -> System,
+    is_discovered: Bool
+}
+
+sig Telemetry{
+    subscribe_armed: -> Telemetry
+}
+
+sig MavlinkPassthrough{}
+
+fun main: Mavsdk -> Mavsdk{
+    main_obj : MavsdkObject,
+    connection : Connection,
+    system: System,
+    telemetry: Telemetry,
+    mavlinkPassthrough: MavlinkPassthrough |
+    // Data-flow relations
+    main_obj.adds = connection.add_any_connection[main_obj],
+    main_obj.get_system = system.discover[main_obj].subscribe[main_obj],
+    main_obj.create_Telemetry = telemetry.subscribe_armed[main_obj],
+    main_obj.create_MavlinkPassthrough = mavlinkPassthrough,
+    // Control-flow relations
+    main_obj.adds = connection.add_any_connection[main_obj],
+    main_obj.get_system = system.discover[main_obj].subscribe[main_obj],
+    main_obj.is_discovered = true
+}
+
+pred display_usage [main: Mavsdk] {
+    no main.connection
+}
+
+fun get_system[main: Mavsdk][this_obj: System] : MavsdkObject - this_obj {
+    main_obj: MavsdkObject |
+    main_obj.get_system = this_obj
+    main_obj.get_system.mavsdk = main
+}
+
+pred system_discovered[system: System] {
+    system.is_discovered
+}
+
+pred subscribe_armed_change[main: Mavsdk] {
+    main_obj: MavsdkObject |
+    main_obj.create_Telemetry
+}
+
+fun send_battery_status[main: Mavsdk] : MavsdkObject {
+    main_obj: MavsdkObject |
+    main_obj.create_MavlinkPassthrough
+}

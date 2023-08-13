@@ -1,0 +1,231 @@
+open util/ordering[Command]
+
+sig Command {
+    addConnection: one URL,
+    getSystem: one System,
+    getEntries: one Entries,
+    downloadLogFile: one File,
+    eraseAllLogFiles: lone File
+}
+
+sig URL {}
+
+sig System {}
+
+sig Entries {}
+
+sig File {}
+
+sig LogFiles {
+    system: one System
+}
+
+pred mainEntry(c: Command) {
+    c.addConnection in URL
+    c.getSystem in System
+    c.getEntries in Entries
+    c.downloadLogFile in File
+    c.eraseAllLogFiles in File
+}
+
+pred validArguments(c: Command) {
+    c.addConnection = addConnection[argv[1]]
+}
+
+pred connectionSuccess() {}
+
+pred connectionFailure() {}
+
+pred systemDiscoverySuccess() {}
+
+pred systemDiscoveryFailure() {}
+
+pred getEntriesSuccess() {}
+
+pred getEntriesFailure() {}
+
+pred loopSuccess() {}
+
+pred loopFailure() {}
+
+// Data-flow constraints
+
+fact {
+    all c: Command | mainEntry[c]
+}
+
+fact {
+    all c: Command | validArguments[c]
+}
+
+fact {
+    connectionSuccess implies (
+        some c: Command | c.addConnection in URL
+    )
+}
+
+fact {
+    connectionFailure implies (
+        some c: Command | c.addConnection in URL
+    )
+}
+
+fact {
+    systemDiscoverySuccess implies (
+        some c: Command | c.getSystem in System
+    )
+}
+
+fact {
+    systemDiscoveryFailure implies (
+        some c: Command | c.getSystem in System
+    )
+}
+
+fact {
+    getEntriesSuccess implies (
+        some c: Command | c.getEntries in Entries
+    )
+}
+
+fact {
+    getEntriesFailure implies (
+        some c: Command | c.getEntries in Entries
+    )
+}
+
+fact {
+    loopSuccess implies (
+        some c: Command | c.downloadLogFile in File
+    )
+}
+
+fact {
+    loopFailure implies (
+        some c: Command | c.downloadLogFile in File
+    )
+}
+
+// Control-flow constraints
+
+fact {
+    all c: Command | c.addConnection in URL implies connectionSuccess
+}
+
+fact {
+    all c: Command | c.addConnection in URL implies not connectionFailure
+}
+
+fact {
+    all c: Command | c.getSystem in System implies systemDiscoverySuccess
+}
+
+fact {
+    all c: Command | c.getSystem in System implies not systemDiscoveryFailure
+}
+
+fact {
+    all c: Command | c.getEntries in Entries implies getEntriesSuccess
+}
+
+fact {
+    all c: Command | c.getEntries in Entries implies not getEntriesFailure
+}
+
+fact {
+    all c: Command | c.downloadLogFile in File implies loopSuccess
+}
+
+fact {
+    all c: Command | c.downloadLogFile in File implies not loopFailure
+}
+
+fact {
+    all c: Command | c.eraseAllLogFiles in File implies not loopFailure
+}
+
+fact {
+    all c: Command | c.eraseAllLogFiles in File implies not getEntriesFailure
+}
+
+// Success and failure conditions
+
+fact {
+    all c: Command | (
+        connectionSuccess and systemDiscoverySuccess and getEntriesSuccess and loopSuccess
+    ) implies (
+        some c: Command | c.eraseAllLogFiles in File
+    )
+}
+
+fact {
+    all c: Command | (
+        connectionSuccess and systemDiscoverySuccess and getEntriesSuccess and loopSuccess and c.eraseAllLogFiles in File
+    ) implies (
+        some c: Command | successExit
+    )
+}
+
+pred successExit() {}
+
+pred failureExit() {}
+
+fact {
+    failureExit implies (
+        not successExit
+    )
+}
+
+fact {
+    successExit implies (
+        not failureExit
+    )
+}
+
+fact {
+    connectionFailure implies (
+        some c: Command | c.eraseAllLogFiles in File
+    )
+}
+
+fact {
+    connectionFailure implies (
+        some c: Command | failureExit
+    )
+}
+
+fact {
+    systemDiscoveryFailure implies (
+        some c: Command | c.eraseAllLogFiles in File
+    )
+}
+
+fact {
+    systemDiscoveryFailure implies (
+        some c: Command | failureExit
+    )
+}
+
+fact {
+    getEntriesFailure implies (
+        some c: Command | c.eraseAllLogFiles in File
+    )
+}
+
+fact {
+    getEntriesFailure implies (
+        some c: Command | failureExit
+    )
+}
+
+fact {
+    loopFailure implies (
+        some c: Command | c.eraseAllLogFiles in File
+    )
+}
+
+fact {
+    loopFailure implies (
+        some c: Command | failureExit
+    )
+}

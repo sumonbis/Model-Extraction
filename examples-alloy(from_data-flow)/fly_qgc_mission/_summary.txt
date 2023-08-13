@@ -1,0 +1,25 @@
+Data-flow relations:
+1. The application reads the connection URL and mission plan path from the command line arguments (argv).
+2. The application creates a Mavsdk object and adds a connection using the provided connection URL.
+3. The application calls the get_system function to discover and get the system with an autopilot.
+4. The application creates Action, MissionRaw, and Telemetry objects using the system.
+5. The application waits for the system to be ready by checking telemetry health status in a loop.
+6. The application imports mission items from the provided mission plan using the mission_raw object.
+7. The application uploads the mission items to the vehicle using the mission_raw object.
+8. The application arms the vehicle using the action object.
+9. The application starts the mission using the mission_raw object.
+10. The application waits for the mission to finish by subscribing to mission progress updates.
+11. The application commands Return to Launch (RTL) once the mission is accomplished using the action object.
+
+Control flow relations:
+1. The application checks the number of command line arguments and displays usage information if incorrect.
+2. If the connection to the vehicle fails, the application displays the connection result and exits.
+3. If the system with an autopilot is not found, the application exits.
+4. If importing the mission items fails, the application displays an error message and exits.
+5. If there are no mission items in the plan, the application displays an error message and exits.
+6. If uploading the mission items fails, the application displays an error message and exits.
+7. If arming the vehicle fails, the application displays an error message and exits.
+8. If starting the mission fails, the application displays an error message and exits.
+9. If the mission does not finish within 240 seconds, the application displays an error message and exits.
+10. If commanding RTL fails, the application displays an error message and exits.
+11. If everything succeeds, the application returns 0 to indicate success.

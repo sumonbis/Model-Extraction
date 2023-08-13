@@ -1,0 +1,48 @@
+Here is an Alloy model that represents the given data and control-flow description:
+
+```alloy
+sig System {}
+sig Telemetry {}
+sig Action {}
+
+fact {
+  // Data-Flow
+  all s: System | one m: Main |
+    m.connURL = s.connURL
+
+  all m: Main |
+    one t: Telemetry |
+      t.system = m.system
+
+  all m: Main |
+    one a: Action |
+      a.system = m.system
+      
+  // Control-Flow
+  Main.next = connURL =>
+    one t: Telemetry |
+      one a: Action |
+        let s = m.system |
+          some m.connURL implies t.rate = 1 and m.callback = t.altitudeMonitor and (
+            t.waitReadyToArm and a.arm and a.takeoff and a.transitionToFixedWing and a.transitionToMulticopter and a.land and waitLandedDisarmed
+          ) and (not t.waitReadyToArm and not a.arm and not a.takeoff and not a.transitionToFixedWing and not a.transitionToMulticopter and not a.land and not waitLandedDisarmed)
+
+  all m: Main | m.callback in Telemetry -> Boolean
+}
+
+pred waitLandedDisarmed[m: Main] {
+  m.waitLandedDisarmed = true
+}
+
+pred show {
+  some m: Main |
+    some t: Telemetry |
+      some a: Action |
+        some s: System |
+          show m, t, a, s
+}
+
+run show for 5
+```
+
+Please note that Alloy is a formal modeling language, and this model is a simplified representation of the system. The purpose of Alloy is to check for consistency, find constraints, and generate instances that satisfy the given constraints.

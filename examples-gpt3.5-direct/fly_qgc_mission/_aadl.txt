@@ -1,0 +1,57 @@
+Here is the AADL model architecture for the given drone application code:
+
+--------------------------------
+--  DroneApp.aadl
+--------------------------------
+
+package DroneApp
+public
+
+public with SEI;
+public with AADLv2;
+
+-- System Definition
+system DroneApp_System
+features
+    -- External Connections
+    connection_url: in AADLv2::DataPort;
+    mission_plan_path: in AADLv2::DataPort;
+
+    -- Internal Connections
+    action_status: out AADLv2::EventData;
+    mission_status: out AADLv2::EventData;
+    telemetry_status: out AADLv2::EventData;
+
+end DroneApp_System;
+
+-- Data Definitions
+data AADLv2::EventData;
+data AADLv2::DataPort;
+data AADLv2::EventData;
+
+-- Subcomponent Definitions
+subcomponent Mavsdk_MavsdkSystem: Mavsdk_Sys with
+    SEI::DEPLOYED_DPL_NAME => "Mavsdk_MavsdkSystem",
+    SEI::DEPLOYED_SIGNAL_NAME => "register_connection";
+    AADLv2::DataPort => connection_url,
+    SEI::DEPLOYED_DPL_NAME => "Mavsdk_MavsdkSystem",
+    SEI::DEPLOYED_SIGNAL_NAME => "register_mission_plan";
+    AADLv2::DataPort => mission_plan_path,
+    SEI::DEPLOYED_DPL_NAME => "Mavsdk_MavsdkSystem",
+    SEI::DEPLOYED_SIGNAL_NAME => "action_state";
+    AADLv2::EventData => action_status,
+    SEI::DEPLOYED_DPL_NAME => "Mavsdk_MavsdkSystem",
+    SEI::DEPLOYED_SIGNAL_NAME => "mission_state";
+    AADLv2::EventData => mission_status,
+    SEI::DEPLOYED_DPL_NAME => "Mavsdk_MavsdkSystem",
+    SEI::DEPLOYED_SIGNAL_NAME => "telemetry_state";
+    AADLv2::EventData => telemetry_status;
+end Mavsdk_MavsdkSystem;
+
+-- System Composition
+system implementation DroneApp_System.Impl
+subcomponents
+    mavsdk: Mavsdk_MavsdkSystem;
+end DroneApp_System.Impl;
+
+end DroneApp;

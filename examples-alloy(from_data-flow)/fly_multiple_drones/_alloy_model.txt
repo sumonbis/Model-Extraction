@@ -1,0 +1,193 @@
+open util/ordering[Time]
+
+// Signature for systems
+sig System {
+    id: Int, -- unique identifier for the system
+    connection: UDP, -- connection object for the system
+    telemetry: Telemetry, -- telemetry object for the system
+    action: Action, -- action object for the system
+    missionRaw: MissionRaw -- mission_raw object for the system
+}
+
+sig UDP {}
+
+sig Telemetry {
+    system: one System,
+    positionUpdates: set Time,
+    positionData: Time -> Position
+}
+
+sig Action {
+    system: one System
+}
+
+sig MissionRaw {
+    system: one System,
+    mission: lone Mission
+}
+
+sig Mission {}
+
+sig Position {}
+
+// Signature for the Mavsdk object
+sig Mavsdk {
+    systems: set System,
+    connections: set UDP,
+    csvFiles: set CSVFile
+}
+
+// Signature for CSV files
+sig CSVFile {
+    name: String,
+    positionData: Time -> Position
+}
+
+// fact to check that the CSV file name is correct
+fact CSVFileName {
+    all csf: CSVFile | some s: System |
+        csf.name = "position_data_" + s.id.toString() + ".csv"
+}
+
+// fact to check that each system has a connection
+fact SystemConnection {
+    all s: System |
+        s.connection in Mavsdk.connections
+}
+
+// fact to check that each system has a telemetry object
+fact SystemTelemetry {
+    all s: System |
+        s.telemetry in s.connection.~sig[Telemetry]
+}
+
+// fact to check that each system has an action object
+fact SystemAction {
+    all s: System |
+        s.action in s.connection.~sig[Action]
+}
+
+// fact to check that each system has a mission_raw object
+fact SystemMissionRaw {
+    all s: System |
+        s.missionRaw in s.connection.~sig[MissionRaw]
+}
+
+// fact to enforce unique system identifiers
+fact UniqueSystemIDs {
+    all disj s1, s2: System |
+        s1.id != s2.id
+}
+
+// fact to check that each position update is associated with a telemetry
+fact TelemetryPositionUpdates {
+    all s: System |
+        s.telemetry.positionUpdates = s.telemetry.positionData.Time
+}
+
+// fact to enforce order of position updates
+fact PositionUpdatesOrder {
+    all s: System |
+        s.telemetry.positionUpdates in Time/first
+}
+
+// fact to check that each system has a CSV file associated with it
+fact SystemCSVFile {
+    all s: System |
+        some csf: CSVFile |
+            csf.name = "position_data_" + s.id.toString() + ".csv" and
+            csf in Mavsdk.csvFiles
+}
+
+// fact to ensure unique CSV file names
+fact UniqueCSVFileNames {
+    all disj csf1, csf2: CSVFile |
+        csf1.name != csf2.name
+}
+
+// fact to enforce data flow from telemetry to CSV file
+fact TelemetryToCSVFile {
+    all s: System |
+        s.telemetry.positionUpdates.Time in s initionData.Time
+}
+
+// fact to check that each connection is associated with a mavsdk object
+fact MavsdkConnections {
+    all c: UDP |
+        c in Mavsdk.connections
+}
+
+// fact to check that each system is associated with a mavsdk object
+fact MavsdkSystems {
+    all s: System |
+        s in Mavsdk.systems
+}
+
+// fact to enforce order of system creation
+fact SystemsOrder {
+    all s1: System, s2: System |
+        s1.id < s2.id implies some c:UDP |
+            c in Mavsdk.connections and
+            s2.connection = c
+}
+
+// fact to enforce unique systems for each UDP port
+fact UniqueSystemsPerConnection {
+    all c: UDP |
+        c in Mavsdk.connections implies lone s: System |
+            s.connection = c
+}
+
+// fact to ensure systems are discovered after connections are added
+fact SystemsDiscoveredAfterConnectionsAdded {
+    all s: System |
+        s in Mavsdk.systems implies s.connection in Mavsdk.connections
+}
+
+// fact to ensure correct initialization of Mavsdk object
+fact MavsdkInitialization {
+    one Mavsdk
+    all s: System |
+        s in Mavsdk.systems implies some c: UDP |
+            c in Mavsdk.connections and
+            s.connection = c
+}
+
+// start predicate to represent the main function
+pred start[main: Mavsdk] {
+    -- check command-line arguments
+    
+    -- initialize Mavsdk object
+    main.systems = {}
+    main.connections = {}
+    main.csvFiles = {}
+    
+    -- add connections for each specified UDP port
+    
+    -- subscribe to new system events
+    
+    -- wait for systems to be discovered
+    
+    -- create separate thread for each system
+    -- call complete_mission function for each system
+}
+
+// predicate to represent the complete_mission function
+pred complete_mission[sys: System] {
+    -- set up telemetry, action, and mission_raw objects
+    sys.telemetry = new Telemetry[sys]
+    sys.action = new Action[sys]
+    sys.missionRaw = new MissionRaw[sys]
+    
+    -- set position update rate to 1 Hz
+    
+    -- import mission items from QGC plan
+    
+    -- upload mission to system
+    
+    -- arm system
+    
+    -- start mission
+    
+    -- wait for system to be disarmed
+}

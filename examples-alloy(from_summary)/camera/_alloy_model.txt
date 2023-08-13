@@ -1,0 +1,32 @@
+abstract sig Component {}
+
+sig MainProgram extends Component {}
+
+sig Mavsdk extends Component {}
+
+sig Connection extends Component {}
+
+sig Result extends Component {}
+
+sig Telemetry extends Component {}
+
+sig Camera extends Component {}
+
+abstract sig Mode {}
+
+sig Photo extends Mode {}
+
+sig CameraResult extends Result {}
+
+sig CaptureInfo extends Result {}
+
+fact {
+  MainProgram in Mavsdk
+  Connection in Mavsdk
+  Result in Mavsdk
+  Telemetry in Mavsdk
+  Camera in Mavsdk
+  Photo in Camera
+  CameraResult in Camera
+  CaptureInfo in Camera
+}

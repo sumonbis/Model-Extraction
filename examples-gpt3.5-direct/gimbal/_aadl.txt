@@ -1,0 +1,56 @@
+Here is the AADL model architecture for the given drone application code:
+
+```
+package Drone_App is
+    -- Import required packages
+    with MAVSDK;
+    with MAVSDK.Plugins.Gimbal;
+    with MAVSDK.Plugins.Telemetry;
+
+    system Drone_App_System is
+        -- System instantiation
+        instance system_0 : MAVSDK.Instance;
+
+        -- Components instantiation
+        instance gimbal_0 : MAVSDK.Plugins.Gimbal.Component;
+        instance telemetry_0 : MAVSDK.Plugins.Telemetry.Component;
+    end Drone_App_System;
+
+    thread Main_Thread is
+        -- Execution thread
+        calls Get_System;
+        calls Controlling_Gimbal;
+    end Main_Thread;
+
+    thread Get_System is
+        -- Thread to get the system
+        calls System_Discovery;
+    end Get_System;
+
+    thread System_Discovery is
+        -- Thread to wait for system discovery
+        calls Set_Promise;
+    end System_Discovery;
+
+    thread Set_Promise is
+        -- Thread to set promise for system detection
+    end Set_Promise;
+
+    thread Controlling_Gimbal is
+        -- Thread to control the gimbal
+        calls Setup_Callback;
+        calls Control_Gimbal;
+    end Controlling_Gimbal;
+
+    thread Setup_Callback is
+        -- Thread to setup callbacks
+    end Setup_Callback;
+
+    thread Control_Gimbal is
+        -- Thread to perform gimbal control
+    end Control_Gimbal;
+
+end Drone_App;
+```
+
+Note that this AADL model gives a high-level representation of the software architecture and does not include the complete details such as data and event properties, ports, and subprograms. These details can be added to the AADL model based on the system requirements and the desired behavior.

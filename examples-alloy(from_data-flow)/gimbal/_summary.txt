@@ -1,0 +1,37 @@
+The data-flow and control flow relations for the given drone application code are as follows:
+
+Data-Flow Relations:
+1. The main function receives the command-line arguments argc and argv.
+2. The argv[1] argument is passed as the connection URL to establish a connection with the drone.
+3. The Mavsdk object is created to communicate with the drone.
+4. The connection URL is added to the Mavsdk object to initiate the connection.
+5. The get_system function is called to discover the system (autopilot) connected to the Mavsdk.
+6. The discovered system is returned to the main function.
+7. Telemetry and Gimbal objects are instantiated using the system.
+8. The telemetry.set_rate_camera_attitude function is called to set the rate at which to receive camera/gimbal angle updates.
+9. The telemetry.subscribe_camera_attitude_euler function is called to register a callback for camera/gimbal angle updates.
+10. The control flow enters a loop to control the gimbal's behavior.
+11. Various gimbal functions are called to control the gimbal's pitch and yaw.
+12. The control flow reaches the end of the loop and the loop is repeated until all gimbal actions are completed.
+13. The gimbal.release_control function is called to stop controlling the gimbal.
+14. The control flow exits the loop and the program ends.
+
+Control Flow Relations:
+1. The main function starts execution.
+2. The argc and argv arguments are checked for the correct number of arguments.
+3. If the number of arguments is incorrect, the usage function is called to display the correct usage and the program exits.
+4. The connection URL is added to the Mavsdk object using the mavsdk.add_any_connection function.
+5. The connection result is checked, and if unsuccessful, an error message is displayed and the program exits.
+6. The get_system function is called to discover the system (autopilot) connected to the Mavsdk.
+7. If no system is discovered within 3 seconds, an error message is displayed and the program exits.
+8. The system is obtained from the future and checked for validity.
+9. Telemetry and Gimbal objects are instantiated using the system.
+10. The telemetry.set_rate_camera_attitude function is called to set the rate at which to receive camera/gimbal angle updates.
+11. The set_rate_result is checked for success, and if unsuccessful, an error message is displayed and the program exits.
+12. The telemetry.subscribe_camera_attitude_euler function is called to register a callback for camera/gimbal angle updates.
+13. The control flow enters a loop to control the gimbal's behavior.
+14. Various gimbal functions are called to control the gimbal's pitch and yaw.
+15. The control flow reaches the end of the loop and the loop is repeated until all gimbal actions are completed.
+16. The gimbal.release_control function is called to stop controlling the gimbal.
+17. The gimbal_result is checked for success, and if unsuccessful, an error message is displayed and the program exits.
+18. The control flow exits the loop and the program ends.

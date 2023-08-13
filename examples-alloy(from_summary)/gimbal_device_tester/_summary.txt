@@ -1,0 +1,19 @@
+The UML architecture description for the provided drone application code consists of the following components:
+
+1. Sender: This component is responsible for sending messages related to autopilot state and gimbal device attitude. It receives references to instances of MavlinkPassthrough and AttitudeData.
+
+2. MavlinkPassthrough: This component provides a passthrough interface to send and receive MAVLink messages.
+
+3. AttitudeData: This component manages data related to gimbal and vehicle attitude. It contains structs for gimbal attitude, gimbal limits, vehicle attitude, and attitude setpoint. It also provides functions to change these data values while ensuring thread safety.
+
+4. Tester: This component is responsible for testing pitch and yaw angles for both follow and lock modes. It receives a reference to an instance of AttitudeData.
+
+Now let's look at the connections between these components:
+
+1. The Sender component has a reference to an instance of MavlinkPassthrough and AttitudeData. It uses these references to send autopilot state and gimbal device attitude messages.
+
+2. The MavlinkPassthrough component is used by the Sender component to send MAVLink messages.
+
+3. The AttitudeData component is used by the Sender and Tester components to access and modify attitude-related data. The Sender component uses AttitudeData to get vehicle attitude and attitude setpoint. The Tester component uses AttitudeData to get gimbal limits and change vehicle attitude.
+
+Note: The code syntax described here includes the instantiation and usage of various classes and structs, as well as the usage of functions provided by the MavlinkPassthrough library.

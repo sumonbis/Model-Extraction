@@ -1,0 +1,19 @@
+The data-flow and control flow relations in the given drone application code can be described as follows:
+
+Data-Flow:
+1. The main function takes the connection URL as an argument and stores it in the 'connection_url' variable.
+2. The 'connection_url' variable is used to establish a connection with the drone using the Mavsdk library.
+3. The 'system' variable is assigned the system object from the Mavsdk systems list.
+4. The 'action' object is instantiated with the 'system' object.
+5. User input is stored in the 'type' variable.
+6. The 'terminate' function of the 'action' object is called to send the termination command to the drone.
+
+Control Flow:
+1. The 'usage' function is called to display the correct usage of the program if the number of command-line arguments is not equal to 2.
+2. The 'mavsdk.subscribe_on_new_system' function is called to subscribe to new systems being discovered.
+3. The connection is added using the 'mavsdk.add_any_connection' function.
+4. The program waits for a new system to be discovered using the promise and future mechanism.
+5. If a system with an autopilot is discovered within the timeout period, the program continues; otherwise, it exits.
+6. The 'action.terminate' function is called if the user inputs 'y' or 'Y'; otherwise, the program exits.
+
+Overall, the code connects to a drone system, waits for an autopilot to be discovered, prompts the user for termination confirmation, and sends the termination command to the drone if confirmed.

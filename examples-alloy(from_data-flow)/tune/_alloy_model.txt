@@ -1,0 +1,153 @@
+Here is the Alloy model that describes the data and control-flow relations in the given drone application code:
+
+```alloy
+// Define signatures for various entities
+sig ConnectionURL {}
+
+abstract sig Device {}
+
+sig Mavsdk extends Device {}
+
+sig System extends Device {}
+
+sig Tune {}
+
+sig TuneResult {
+  success: Bool
+}
+
+sig Note {}
+
+sig Duration {}
+
+sig TuneDescription {
+  elements: set Note,
+  tempo: one Duration
+}
+
+// Define the data-flow relations
+fact {
+  // Relation between program and connection URL
+  ConnectionURL in Program
+
+  // Relation between program and Mavsdk object
+  Mavsdk in Program
+
+  // Relation between program and connection result
+  resultOf[connection_result, Program]
+
+  // Relation between program and system object
+  System in Program
+
+  // Relation between system and Tune plugin
+  Tune in Program
+
+  // Relation between Tune and tune description
+  TuneDescription in Program
+
+  // Relation between Tune and tune result
+  TuneResult in Program
+
+  // Relation between TuneDescription and tune elements
+  elementsOf[TuneDescription]
+}
+
+// Define the control-flow relations
+fact {
+  // Relation between main and program
+  Program in Main
+
+  // Relation between main and system
+  System in Main
+
+  // Relation between main and connection URL
+  ConnectionURL in Main
+
+  // Relation between program and get_system
+  get_system in Program
+
+  // Relation between program and play_tune
+  play_tune in Program
+
+  // Relation between program and check_result
+  check_result in Program
+
+  // Relation between program and Tune plugin instantiation
+  instantiate_Tune in Program
+
+  // Relation between program and set_tempos
+  set_tempos in Program
+
+  // Relation between program and create_description
+  create_description in Program
+
+  // Relation between program and create_elements
+  create_elements in Program
+
+  // Relation between create_elements and Note
+  Note in create_elements
+
+  // Relation between create_elements and Duration
+  Duration in create_elements
+
+  // Relation between create_description and TuneDescription
+  TuneDescription in create_description
+
+  // Relation between set_tempos and Duration
+  Duration in set_tempos
+
+  // Relation between play_tune and TuneDescription
+  TuneDescription in play_tune
+
+  // Relation between play_tune and TuneResult
+  TuneResult in play_tune
+
+  // Relation between check_result and Program
+  Program in check_result
+
+  // Relation between check_result and TuneResult
+  TuneResult in check_result
+}
+
+// Define the control-flow constraints
+fact {
+  // Constraint 1: Correct number of command line arguments
+  all c: ConnectionURL |
+    #(c.Program) = 1
+
+  // Constraint 2: Valid connection result
+  all r: resultOf[connection_result, Program] |
+    r.success
+
+  // Constraint 3: System object is valid
+  all s: System |
+    s in get_system.Program
+
+  // Constraint 4: Tune play result is success
+  all r: resultOf[TuneResult, play_tune] |
+    r.success
+
+  // Constraint 5: Main control flow
+  all m: Main |
+    one Program in m.Program
+
+  // Constraint 6: Connection and system control flow
+  all c: Program, s: System |
+    (c in s.Program) implies
+    (one d: Device | d in s.check_result.Program)
+
+  // Constraint 7: Tune control flow
+  all t: Tune |
+    (one d: Device | d in t.create_elements.Program) and
+    (one d: Device | d in t.set_tempos.Program) and
+    (one d: Device | d in t.create_description.Program) and
+    (one d: Device | d in t.play_tune.Program)
+
+  // Constraint 8: Tune description with valid elements and tempo
+  all d: TuneDescription |
+    (all e: d.elements | e in create_elements.Program) and
+    (d.tempo in set_tempos.Program)
+}
+```
+
+In this Alloy model, I have defined signatures for various entities such as ConnectionURL, Device, Mavsdk, System, Tune, Note, Duration, TuneDescription, and TuneResult. I have then defined data-flow relations using the `in` relation, control-flow relations using custom relations like `get_system`, `play_tune`, `check_result`, `instantiate_Tune`, `set_tempos`, `create_description`, and `create_elements`, and relations for result checking using the `resultOf` relation. Finally, I have defined constraints to capture the correct number of command-line arguments, valid connection results, validation of system object, tune play result success, main control flow, connection and system control flow, tune control flow, and tune description with valid elements and tempo.

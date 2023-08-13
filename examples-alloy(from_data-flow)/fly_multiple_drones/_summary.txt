@@ -1,0 +1,7 @@
+The control flow of the code starts in the `main` function. It checks the number of command-line arguments to ensure that the connections and plan files for each drone have been specified. It then initializes the Mavsdk object and adds connections for each specified UDP port. After that, it subscribes to new system events and waits for the systems to be discovered.
+
+Once all systems are discovered, the code creates a separate thread for each system and calls the `complete_mission` function for each system. 
+
+The `complete_mission` function sets up the telemetry, action, and mission_raw objects for the system. It sets the position update rate to 1 Hz and imports the mission items from the specified QGC plan. If the mission import is successful, it uploads the mission to the system and arms the system. It then starts the mission and waits for the system to be disarmed.
+
+The data flow in the code includes subscribing to telemetry position updates and writing the position data to a CSV file. The CSV file is named with the last few digits of the UUID number of the vehicle.

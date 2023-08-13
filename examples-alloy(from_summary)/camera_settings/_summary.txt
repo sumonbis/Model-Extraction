@@ -1,0 +1,110 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```plantuml
+@startuml
+
+interface Mavsdk {
+    {abstract} +add_any_connection(connection_url: string): ConnectionResult
+    {abstract} +systems(): std::vector<std::shared_ptr<System>>
+    {abstract} +subscribe_on_new_system(callback: std::function<void()>)
+    {abstract} +wait() const
+    {abstract} +wait_until_discover(system_uuid: uint64_t, timeout_ms: int = -1)
+}
+
+interface System {
+    {abstract} +has_camera(): bool
+}
+
+interface Camera {
+    {abstract} +set_mode(mode: Mode)
+    {abstract} +set_setting(setting: Setting)
+    {abstract} +possible_setting_options(): std::vector<SettingOption>
+    {abstract} +subscribe_current_settings(callback: std::function<void(std::vector<Setting> settings)>)
+}
+
+interface Telemetry {
+    {abstract} +state(): State
+}
+
+class CurrentSettings {
+    -mutex: std::mutex
+    +settings: std::vector<Setting>
+}
+
+enum Mode {
+    Photo
+    Video
+}
+
+class Setting {
+    -setting_id: string
+    -option: Option
+}
+
+class Option {
+    -option_id: string
+    -option_description: string
+}
+
+class SettingOption {
+    -setting_id: string
+    -setting_description: string
+    -options: std::vector<Option>
+}
+
+enum Input {
+    PrintCurrentSettings
+    ChangeCameraMode
+    ChangeSetting
+    Quit
+}
+
+class App {
+    -mavsdk: Mavsdk
+    -telemetry: Telemetry
+    -camera: Camera
+    -current_settings: CurrentSettings
+    +usage(bin_name: std::string)
+    +show_settings(current_settings: const CurrentSettings&)
+    +change_camera_mode(camera: Camera)
+    +choose_setting(camera: Camera, setting_id: const std::string&, current_option_id: const std::string&) : bool
+    +change_camera_setting(camera: Camera, current_settings: const CurrentSettings&)
+    +get_input() : Input
+    +main(argc: int, argv: char**) : int
+}
+
+Mavsdk <|.. App
+System <|.. App
+Camera <|.. App
+Telemetry <|.. App
+CurrentSettings <-- App
+Mode <-- Camera
+Setting <-- Camera
+Option <-- Setting
+SettingOption <-- Camera
+Input <-- App
+
+@enduml
+```
+
+Explanation of the code syntax:
+
+- The code is written in C++ language.
+- The code includes multiple C++ header files from the `mavsdk` library, such as `<mavsdk/mavsdk.h>`, `<mavsdk/plugins/camera/camera.h>`, and `<mavsdk/plugins/telemetry/telemetry.h>`. These headers provide the necessary classes and interfaces to interact with the drone's camera and telemetry data.
+- The code defines a namespace `mavsdk` to use classes and functions from the `mavsdk` library without specifying the namespace every time.
+- The code includes other C++ standard library headers like `<chrono>`, `<cstdint>`, `<iostream>`, `<future>`, `<memory>`, `<stdexcept>`, `<string>`, and `<thread>` to use various functionalities and data types.
+- The code uses the `using` directive to make names from the `mavsdk` and `std::chrono` namespaces directly accessible without specifying the namespace.
+- The code defines a function `usage` to display the usage of the application, which takes a string `bin_name` as an argument.
+- The code defines a `struct` named `CurrentSettings`, which has a mutable `std::mutex` member to synchronize access to the `settings` vector.
+- The code defines an enumeration `Input` to represent different input options for the application.
+- The code defines several functions to perform operations on the drone camera and handle user input.
+- The code defines a `main` function as the entry point of the program, which takes command-line arguments `argc` and `argv`.
+- The `main` function initializes the `mavsdk` object, connects to the drone using the provided connection URL, and waits for the discovery of a system with a camera.
+- Once the camera system is discovered, the program instantiates the `telemetry` and `camera` objects to interact with the drone's telemetry and camera functionalities.
+- The program creates a `CurrentSettings` object to cache and manage the current camera settings.
+- The program enters a loop in which it prompts the user for different input options and performs the corresponding actions based on the selected option.
+- The program uses callbacks and multi-threading to update and display the current camera settings.
+- The program continues running until the user selects the "Quit" option.
+- The `main` function returns 0 to indicate successful execution of the program.
+
+Note: The above description provides a simplified overview of the architecture based on the code provided. Additional implementation details and interactions with other components may exist but are not visible from the given code snippet.

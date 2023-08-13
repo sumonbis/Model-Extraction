@@ -1,0 +1,87 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
+          +---------------+
+          |   Mavsdk      |
+          +---------------+
+                 | (1)
+                 |
+           +-----v-----+
+       ++> |  System   |
+       |   +-----+-----+
+(7)    |         |
+       |         |
+       |         | (6)
+       |   +-----v-----+
+       |   |  Action   |
+       |   +-----+-----+
+       |         |
+       |         |
+       |         | (5)
+       |   +-----v-----+
+       |   | Telemetry |
+       |   +-----+-----+
+       |         |
+       |         |
+       |         | (4)
+       |   +-----v-----+
+       |   |  Vehicle  |
+       |   +-----+-----+
+       |
+       | (2)
+       |
+   +---v-----+
+   |   Main   |
+   +---+-----+
+       |
+      (3)
+
+```
+
+Components:
+1. Mavsdk: Represents the main interface to the MAVSDK library. It is responsible for managing connections to the drone systems.
+2. Main: The main function that acts as the entry point of the application code.
+3. Vehicle: The vehicle control component that contains the application logic for commanding the drone.
+4. Telemetry: The telemetry plugin that provides access to the drone's telemetry information such as position, altitude, and health status.
+5. Action: The action plugin that provides control over the drone's actions such as arming, takeoff, land, goto location, etc.
+6. System: Represents a specific drone system. It is discovered by the Mavsdk and contains information and interfaces related to that system.
+7. Connection: Represents the connection to the drone system.
+
+Interfaces and Connections:
+1. The Main component initializes the Mavsdk instance and establishes a connection with the drone system using the provided connection URL.
+2. The Main component gets a reference to the connected system using the get_system() function.
+3. The Main component instantiations the Telemetry and Action plugins using the connected system.
+4. The Telemetry plugin sets the rate for receiving position updates from the drone and subscribes to the position update events.
+5. The Action plugin is used to arm the drone, takeoff, transition to fixed-wing mode, goto a specific location, transition back to multicopter mode, and land the drone.
+6. The Main component waits for the vehicle to be ready to arm by continuously checking the health status using the telemetry plugin.
+7. The get_system() function waits for the system discovery event and returns the discovered system to the Main component.
+
+Explanation of Code Syntax:
+- #include: Used to include the necessary header files for using the MAVSDK library and other standard libraries.
+- using: Using namespace declarations to simplify the usage of specific namespaces in the code.
+- std::this_thread::sleep_for: Sleeping the current thread for a specified duration.
+- std::chrono::seconds: Represents a duration in seconds.
+- std::future: Represents a result that may not be available yet.
+- std::promise: Used to set a value or an exception in a future.
+- std::cerr: Standard error stream for error output.
+- std::cout: Standard output stream for regular output.
+- Mavsdk: Represents the main interface to the MAVSDK library. It is initialized and used to establish a connection with the drone system.
+- Mavsdk::add_any_connection: Adds a new connection using the provided connection URL.
+- std::shared_ptr<System>: Shared pointer to a System object representing a drone system.
+- Mavsdk::subscribe_on_new_system: Subscribes to the event triggered when a new system is discovered.
+- System::has_autopilot: Checks if the system has an autopilot.
+- Mavsdk::systems: Returns a list of all discovered systems.
+- Telemetry: Represents the telemetry plugin and provides access to the drone's telemetry information.
+- Action: Represents the action plugin and provides control over the drone's actions.
+- Telemetry::set_rate_position: Sets the update rate for receiving position updates from the drone.
+- Telemetry::subscribe_position: Subscribes to the position update events and provides a callback function to handle the received positions.
+- Telemetry::Position: Represents the position information of the drone.
+- Telemetry::health_all_ok: Checks if the drone's health status is all OK.
+- Action::arm: Arms the drone.
+- Action::takeoff: Initiates the takeoff sequence for the drone.
+- Action::transition_to_fixedwing: Transitions the drone to fixed-wing mode.
+- Action::goto_location: Sends the drone to a specified location with latitude and longitude.
+- Action::transition_to_multicopter: Transitions the drone back to multicopter mode.
+- Action::land: Lands the drone.
+- Telemetry::armed: Checks if the drone is armed.
+- NAN: Represents a "Not a Number" value for unset parameters.

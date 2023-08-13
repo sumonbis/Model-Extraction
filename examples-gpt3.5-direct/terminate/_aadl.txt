@@ -1,0 +1,98 @@
+Here is a possible AADL model architecture (.aadl) for the given drone application code:
+
+```
+-- Definition of the MAVSDK package.
+package MAVSDK
+public
+    -- Definition of the MAVSDK connection.
+    data connection : data string
+
+    -- Definition of the MAVSDK system.
+    thread new_system_thread
+    data system : data pointer
+
+    -- Definition of the MAVSDK action.
+    thread action_thread
+end MAVSDK
+
+-- Definition of the DroneSystem package.
+package DroneSystem
+public
+    -- Definition of the DroneSystem thread.
+    thread drone_system_thread
+    data mavsdk : data pointer
+    data connection_url : data string
+    data connection_result : data enumeration { success, failure }
+
+    -- Definition of the DroneSystem actions.
+    thread subscribe_on_new_system_thread
+    thread add_any_connection_thread
+    thread terminate_flight_thread
+end DroneSystem
+
+-- Definition of the MAVSDK thread.
+thread implementation MAVSDK.new_system_thread
+features
+    -- Connection URL for discovering new systems.
+    connection_url : requires data access MAVSDK.connection
+    -- Shared memory for system pointer.
+    system : provides data access MAVSDK.system
+end MAVSDK.new_system_thread
+
+-- Implementation of the MAVSDK thread.
+thread implementation MAVSDK.new_system_thread.impl
+subcomponents
+    -- MAVSDK instance.
+    mavsdk : component MAVSDK.System
+    -- Other components specific to the code.
+    action : component MAVSDK.Action
+end MAVSDK.new_system_thread.impl
+
+-- Definition of the DroneSystem thread.
+thread implementation DroneSystem.drone_system_thread
+features
+    -- Shared memory for MAVSDK pointer.
+    mavsdk : requires data access DroneSystem.mavsdk
+    -- Connection URL for MAVSDK.
+    connection_url : requires data access DroneSystem.connection_url
+    -- Shared memory for connection result.
+    connection_result : provides data access DroneSystem.connection_result
+end DroneSystem.drone_system_thread
+
+-- Implementation of the DroneSystem thread.
+thread implementation DroneSystem.drone_system_thread.impl
+subcomponents
+    -- MAVSDK instance.
+    mavsdk : component MAVSDK.System
+    -- Other components specific to the code.
+    action : component MAVSDK.Action
+end DroneSystem.drone_system_thread.impl
+
+-- Implementation of the DroneSystem subscribe_on_new_system_thread.
+thread implementation DroneSystem.subscribe_on_new_system_thread.impl
+subcomponents
+    -- MAVSDK instance.
+    mavsdk : component MAVSDK.System
+    -- Other components specific to the code.
+    action : component MAVSDK.Action
+end DroneSystem.subscribe_on_new_system_thread.impl
+
+-- Implementation of the DroneSystem add_any_connection_thread.
+thread implementation DroneSystem.add_any_connection_thread.impl
+subcomponents
+    -- MAVSDK instance.
+    mavsdk : component MAVSDK.System
+    -- Other components specific to the code.
+    action : component MAVSDK.Action
+end DroneSystem.add_any_connection_thread.impl
+
+-- Implementation of the DroneSystem terminate_flight_thread.
+thread implementation DroneSystem.terminate_flight_thread.impl
+subcomponents
+    -- MAVSDK instance.
+    mavsdk : component MAVSDK.System
+    -- Other components specific to the code.
+    action : component MAVSDK.Action
+end DroneSystem.terminate_flight_thread.impl
+```
+Note that this model architecture assumes the existence of the `MAVSDK` and `DroneSystem` packages, as well as the necessary components and data defined within those packages. The code in each thread implementation component should be based on the corresponding parts of the given drone application code.

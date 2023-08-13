@@ -1,0 +1,39 @@
+The data-flow and control flow relations in the provided drone application code are as follows:
+
+1. The `usage` function is called at the beginning of `main` to provide information about how to use the application.
+
+2. The main function checks if the correct number of command-line arguments (connection URL) is provided. If not, it calls the `usage` function and returns with an error code.
+
+3. The `Mavsdk` object is created.
+
+4. The connection URL is passed to the `add_any_connection` method of the `Mavsdk` object to establish a connection with the drone. The result of the connection is stored in the `connection_result` variable.
+
+5. If the connection is not successful, an error message is printed, and the program returns with an error code.
+
+6. If the connection is successful, the `get_system` function is called to retrieve the system object representing the connected drone.
+
+7. The `get_system` function waits for the discovery of a new system with an autopilot for a maximum of 3 seconds. If no autopilot is found within that time, an error message is printed, and the function returns an empty shared pointer.
+
+8. Once an autopilot system is discovered, the system object is returned, and the main function continues.
+
+9. The `run_interactive_shell` function is called with the retrieved system object.
+
+10. Inside the `run_interactive_shell` function, a `Shell` object is instantiated with the system object.
+
+11. The `subscribe_receive` method of the `Shell` object is called to subscribe to receive outputs from the shell.
+
+12. A while loop is started to continuously read user commands from `std::cin`.
+
+13. If the command is "exit", the while loop breaks, and the function ends.
+
+14. If the command is not "exit", it is sent to the shell using the `send` method of the `Shell` object.
+
+15. The while loop continues until the user enters "exit".
+
+16. After exiting the while loop, a newline character is printed, indicating the end of the interactive shell.
+
+17. The `run_interactive_shell` function returns.
+
+18. The main function returns with a success code.
+
+The data-flow in this code is primarily in the form of passing the system object between different functions and objects. The control flow is determined by user input and conditionals, controlling the execution of different parts of the code.

@@ -1,0 +1,196 @@
+The Alloy model representing the given drone application source code can be written as follows:
+
+```alloy
+module DroneApp
+
+-- Declarations
+
+abstract sig ConnectionResult {}
+
+abstract sig System {
+    has_camera: Bool
+} {
+    has_camera = True
+}
+
+abstract sig Camera {
+    set_mode: Mode -> Camera,
+    set_setting: Setting -> Camera,
+    possible_setting_options: set SettingOption,
+    subscribe_current_settings: -> CurrentSettings
+}
+
+abstract sig Telemetry {
+    state: one State
+}
+
+abstract sig CurrentSettings {
+    settings: set Setting
+}
+
+abstract sig Mode {
+    Photo,
+    Video
+}
+
+abstract sig Setting {
+    setting_id: String,
+    option: one Option
+}
+
+abstract sig Option {
+    option_id: String,
+    option_description: String
+}
+
+abstract sig SettingOption {
+    setting_id: String,
+    setting_description: String,
+    options: set Option
+}
+
+abstract sig Input {
+    PrintCurrentSettings,
+    ChangeCameraMode,
+    ChangeSetting,
+    Quit
+}
+
+-- Associations
+
+-- Mavsdk and its operations
+abstract sig Mavsdk {
+    add_any_connection: lone String -> ConnectionResult,
+    systems: set System,
+    subscribe_on_new_system: lone (->),
+    wait: one (),
+    wait_until_discover: lone Int -> one ()
+}
+
+-- App and its operations
+abstract sig App {
+    mavsdk: one Mavsdk,
+    telemetry: one Telemetry,
+    camera: one Camera,
+    current_settings: one CurrentSettings,
+    usage: one (String),
+    show_settings: one (CurrentSettings),
+    change_camera_mode: one (Camera),
+    choose_setting: one (Camera, String, String) -> Bool,
+    change_camera_setting: one (Camera, CurrentSettings),
+    get_input: one () -> Input,
+    main: Int -> Int
+}
+
+-- Implementations and constraints
+
+-- Mavsdk implementation
+fact MavsdkImplementation {
+    all ms: Mavsdk | {
+        some cr: ConnectionResult, url: String {
+            add_any_connection[ms, url] = cr
+        } => cr in ms.add_any_connection[url]
+    }
+    all ms: Mavsdk | {
+        systems[ms] = System.has_camera
+    }
+    all ms: Mavsdk | {
+        some _ {
+            subscribe_on_new_system[ms]
+        }
+    }
+    all ms: Mavsdk | wait[ms] = ()
+    all ms: Mavsdk, su: Int | {
+        wait_until_discover[ms, su] = ()
+    }
+}
+
+-- Camera implementation
+fact CameraImplementation {
+    all c: Camera {
+        some m: Mode {
+            set_mode[c, m] = c
+        }
+    }
+    all c: Camera {
+        some s: Setting {
+            set_setting[c, s] = c
+        }
+    }
+    all c: Camera {
+        possible_setting_options[c] = SettingOption
+    }
+    all c: Camera {
+        some _ {
+            subscribe_current_settings[c]
+        }
+    }
+}
+
+-- App implementation
+fact AppImplementation {
+    all a: App, str: String {
+        a.usage[str] = ()
+    }
+    all a: App, cs: CurrentSettings {
+        a.show_settings[cs] = ()
+    }
+    all a: App, c: Camera {
+        a.change_camera_mode[c] = ()
+    }
+    all a: App, c: Camera, sid: String, oid: String | {
+        choose_setting[a, c, sid, oid] = False
+    }
+    all a: App, c: Camera, cs: CurrentSettings {
+        a.change_camera_setting[c, cs] = ()
+    }
+    all a: App {
+        some _ {
+            a.get_input[]
+        }
+    }
+    all a: App, argc: Int {
+        main[a, argc] = Int
+    }
+}
+
+-- Predicates and assertions
+
+-- Custom predicates and assertions can be added here
+
+-- Run assertions in the scope of the App signature
+pred runAppAssertions {
+    all a: App {
+        all cs: CurrentSettings {
+            a.show_settings[cs] => cs.settings in a.current_settings.^(settings)
+        }
+        all c: Camera {
+            all s: Setting {
+                a.change_camera_setting[c, s] => s in a.current_settings.settings
+            }
+        }
+        no io: Input {
+            a.get_input[] => io in Input
+        }
+    }
+}
+
+-- Run all assertions
+assert SystemInfoAssertion {
+    runAppAssertions
+}
+check SystemInfoAssertion for 5
+```
+
+In the above Alloy model:
+
+- The `ConnectionResult` and other classes from the source code are modeled as abstract signatures (`sig`) in Alloy.
+- The associations and operations between classes are defined as relationships between signatures using `lone` and `one` multiplicity constraints.
+- The `Mavsdk`, `Camera`, `Telemetry`, `CurrentSettings`, `Mode`, `Setting`, `Option`, `SettingOption`, and `Input` classes are represented as abstract signatures.
+- The `App` class is represented as a concrete signature that implements the required functionality and references the other classes.
+- The `MavsdkImplementation`, `CameraImplementation`, and `AppImplementation` facts define the relationships between the abstract signatures to model their behavior.
+- Custom predicates and assertions can be defined to capture additional constraints if required.
+- The `runAppAssertions` predicate specifies additional runtime assertions to check if the model satisfies the desired behavior.
+- The `SystemInfoAssertion` assertion runs all assertions defined in the `runAppAssertions` predicate and validates the model.
+
+Note: The Alloy model provides an abstract representation of the source code and captures the relationships and constraints between classes. It does not capture the complete semantics or implementation details of the actual C++ code. Additional modeling and constraints may be required to fully capture the behavior and constraints of the original application source code.

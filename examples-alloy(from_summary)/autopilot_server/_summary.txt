@@ -1,0 +1,41 @@
+The UML architecture description for the given drone application code is as follows:
+
+1. Components:
+- Main Thread: This component acts as the Ground Control Station (GCS) and communicates with the autopilot server plugins.
+- Autopilot Thread: This component runs the MAVLink "autopilot" using the MAVSDK server plugins on a separate thread.
+
+2. Interfaces:
+- main(): This function initializes and runs the GCS client plugins to communicate with the autopilot server plugins.
+- autopilotThread(): This function runs the autopilot server plugins and handles all the necessary functionalities.
+
+3. Connections:
+- main() connects to the autopilotThread() using std::thread.
+
+4. Code Syntax Explanation:
+- #include: This directive is used to include header files in the code.
+- using namespace: This statement brings the definitions of symbols from the specified namespace into the current scope.
+- std::chrono: This namespace provides facilities for time-related operations such as sleep durations.
+- std::this_thread: This namespace provides facilities for manipulating threads.
+- std::promise: This template class provides a facility to store a value or an exception that is to be acquired asynchronously.
+- std::shared_ptr: This template class provides shared ownership of a dynamically allocated object.
+- std::future: This template class provides a mechanism to access the result or the exception thrown by an asynchronous function.
+- std::vector: This template class represents a dynamic array.
+- std::cout: This object is used for printing output to the console.
+- std::cin: This object is used for reading input from the console.
+- mavsdk::Mavsdk: This class provides the main entry point for the MAVSDK library.
+- mavsdk::Mavsdk::Configuration: This nested class represents the configuration for the MAVSDK instance.
+- mavsdk::ConnectionResult: This enum class represents the result of a connection attempt.
+- mavsdk::System: This class represents a system (e.g., vehicle or component) running the MAVLink protocol.
+- mavsdk::ParamServer: This class represents a parameter server plugin for the MAVSDK server.
+- mavsdk::TelemetryServer: This class represents a telemetry server plugin for the MAVSDK server.
+- mavsdk::ActionServer: This class represents an action server plugin for the MAVSDK server.
+- mavsdk::MissionRawServer: This class represents a mission raw server plugin for the MAVSDK server.
+- mavsdk::Mission: This class represents a mission plugin for the MAVSDK client.
+- mavsdk::Telemetry: This class represents a telemetry plugin for the MAVSDK client.
+- mavsdk::Action: This class represents an action plugin for the MAVSDK client.
+- mavsdk::Param: This class represents a parameter plugin for the MAVSDK client.
+- mavsdk::Mission::MissionItem: This nested class represents a mission item for the MAVSDK mission plugin.
+- mavsdk::Mission::Result: This enum class represents the result of a mission operation.
+- mavsdk::Telemetry::Position: This struct represents the position of a vehicle.
+- mavsdk::Mission::MissionPlan: This struct represents a mission plan for the MAVSDK mission plugin.
+- mavsdk::Telemetry::FixType: This enum class represents the fix type of a GPS signal.

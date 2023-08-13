@@ -1,0 +1,243 @@
+The Alloy model for the given data and control-flow description is as follows:
+
+```alloy
+// Signatures
+sig ConnectionURL {}
+sig MissionPlanPath {}
+sig Argv {
+   connectionURL: one ConnectionURL,
+   missionPlanPath: one MissionPlanPath
+}
+sig Mavsdk {}
+sig System {}
+sig Autopilot {}
+sig Action {}
+sig MissionRaw {}
+sig Telemetry {}
+sig HealthStatus {}
+sig MissionItem {}
+sig MissionProgress {}
+sig Result {}
+
+// Facts
+fact CommandReadsURLAndMissionPath {
+   all argc: Int, argv: Argv |
+   argc = 3 implies {
+      let connectionURL = argv.connectionURL,
+          missionPlanPath = argv.missionPlanPath |
+         argc = connectionURL.~Argv.~connectionURL.~Argv.~length and
+         argc = missionPlanPath.~Argv.~missionPlanPath.~Argv.~length
+   }
+}
+
+fact ApplicationCreatesMavsdkObjectAndAddsConnection {
+   all app: Application, mavsdk: Mavsdk, argv: Argv |
+   app creates mavsdk implies
+   (app.argv = argv and mavsdk = app.createsMavsdk)
+}
+
+fact ApplicationCallsGetSystemToDiscoverSystemWithAutopilot {
+   all app: Application, mavsdk: Mavsdk, system: System, autopilot: Autopilot |
+   app.callsGetSystem implies
+   (app.createsMavsdk = mavsdk and mavsdk.createsSystem = system and system.~Mavsdk.createsSystem = autopilot)
+}
+
+fact ApplicationCreatesActionMissionRawTelemetryObjects {
+   all app: Application, mavsdk: Mavsdk, system: System,
+       action: Action, missionRaw: MissionRaw, telemetry: Telemetry |
+   app.createsActionMissionRawTelemetry implies
+   (app.createsMavsdk = mavsdk and system = mavsdk.createsSystem and
+    action = app.createsAction and missionRaw = app.createsMissionRaw and 
+    telemetry = app.createsTelemetry)
+}
+
+fact ApplicationWaitsForSystemToBeReady {
+   all app: Application, telemetry: Telemetry, healthStatus: HealthStatus |
+   app.waitsForSystem implies
+   (app.createsTelemetry = telemetry and
+    healthStatus = telemetry.~Telemetry.~Telemetry.healthStatus and
+    app.waitsForSystem = telemetry.~healthStatus)
+}
+
+fact ApplicationImportsMissionItems {
+   all app: Application, missionRaw: MissionRaw, missionItems: MissionItem |
+   app.importsMissionItems implies
+   (missionItems = app.importsMissionItems and missionItems = missionRaw.importsMissionItems)
+}
+
+fact ApplicationUploadsMissionItems {
+   all app: Application, missionRaw: MissionRaw, result: Result |
+   app.uploadsMissionItems implies
+   (result = app.uploadsMissionItems and result = missionRaw.uploadsMissionItems)
+}
+
+fact ApplicationArmsVehicle {
+   all app: Application, action: Action, result: Result |
+   app.armsVehicle implies
+   (result = app.armsVehicle and result = action.armsVehicle)
+}
+
+fact ApplicationStartsMission {
+   all app: Application, missionRaw: MissionRaw, result: Result |
+   app.startsMission implies
+   (result = app.startsMission and result = missionRaw.startsMission)
+}
+
+fact ApplicationWaitsForMissionFinish {
+   all app: Application, missionRaw: MissionRaw, missionProgress: MissionProgress |
+   app.waitsForMissionFinish implies
+   (missionProgress = app.subscribesToProgressUpdates and 
+    missionProgress = missionRaw.subscribesToProgressUpdates)
+}
+
+fact ApplicationCommandsRTL {
+   all app: Application, action: Action, result: Result |
+   app.commandsRTL implies
+   (result = app.commandsRTL and result = action.commandsRTL)
+}
+
+fact ControlFlowCheckCommandLineArguments {
+   all app: Application, argc: Int |
+   app.checksCommandLineArguments implies
+   (app.argv = argc implies (argc != 3 implies
+       (app.checksCommandLineArguments = argc.~App.checksCommandLineArguments) and
+       (argc = 3 implies app.checksCommandLineArguments = univ)))   
+}
+
+fact ControlFlowConnectionFails {
+   all app: Application, result: Result |
+   app.connectionFails implies
+   (result = app.connectionFails and result = app.connectionFails.~Result)   
+}
+
+fact ControlFlowNoSystemWithAutopilot {
+   all app: Application |
+   app.noSystemWithAutopilot implies
+   (app.noSystemWithAutopilot = univ and app.noSystemWithAutopilot = app.noSystemWithAutopilot.~app.noSystemWithAutopilot)   
+}
+
+fact ControlFlowImportMissionItemsFails {
+   all app: Application, result: Result |
+   app.importMissionItemsFails implies
+   (result = app.importMissionItemsFails and result = app.importMissionItemsFails.~Result)   
+}
+
+fact ControlFlowNoMissionItemsInPlan {
+   all app: Application |
+   app.noMissionItemsInPlan implies
+   (app.noMissionItemsInPlan = univ and app.noMissionItemsInPlan = app.noMissionItemsInPlan.~app.noMissionItemsInPlan)   
+}
+
+fact ControlFlowUploadMissionItemsFails {
+   all app: Application, result: Result |
+   app.uploadMissionItemsFails implies
+   (result = app.uploadMissionItemsFails and result = app.uploadMissionItemsFails.~Result)   
+}
+
+fact ControlFlowArmVehicleFails {
+   all app: Application, result: Result |
+   app.armVehicleFails implies
+   (result = app.armVehicleFails and result = app.armVehicleFails.~Result)   
+}
+
+fact ControlFlowMissionStartFails {
+   all app: Application, result: Result |
+   app.missionStartFails implies
+   (result = app.missionStartFails and result = app.missionStartFails.~Result)   
+}
+
+fact ControlFlowMissionDoesNotFinish {
+   all app: Application |
+   app.missionDoesNotFinish implies
+   (app.missionDoesNotFinish = univ and app.missionDoesNotFinish = app.missionDoesNotFinish.~app.missionDoesNotFinish)   
+}
+
+fact ControlFlowCommandRTLFails {
+   all app: Application, result: Result |
+   app.commandRTLFails implies
+   (result = app.commandRTLFails and result = app.commandRTLFails.~Result)   
+}
+
+fact ControlFlowEverythingSucceeds {
+   all app: Application |
+   app.everythingSucceeds implies
+   (app.everythingSucceeds = univ and app.everythingSucceeds = app.everythingSucceeds.~app.everythingSucceeds)   
+}
+
+fact ControlFlowReturns0OnSuccess {
+   all app: Application |
+   app.returns0OnSuccess implies
+   (app.everythingSucceeds = app.everythingSucceeds.~app.everythingSucceeds 
+    and app.returns0OnSuccess = app.everythingSucceeds.~app.everythingSucceeds)   
+}
+
+// Functions
+fun ApplicationWaitsForSystemToBeReadyLoop : Int -> Int {
+   ApplicationWaitsForSystemToBeReadyLoop = univ
+}
+
+fun ApplicationWaitsForSystemToBeReadyTimeout : Int -> Bool {
+   ApplicationWaitsForSystemToBeReadyTimeout = univ
+}
+
+fun ControlFlowMissionDoesNotFinishTimeout : Int -> Bool {
+   ControlFlowMissionDoesNotFinishTimeout = univ
+}
+
+fun ControlFlowEverythingSucceedsTimeout : Int -> Bool {
+   ControlFlowEverythingSucceedsTimeout = univ
+}
+
+fun ControlFlowReturns0OnSuccessValue : Bool {
+   ControlFlowReturns0OnSuccessValue = univ
+}
+
+// Assertions
+assert CorrectControlFlow {
+   all app: Application |
+   (app.checksCommandLineArguments or app.connectionFails or app.noSystemWithAutopilot or
+    app.importMissionItemsFails or app.noMissionItemsInPlan or app.uploadMissionItemsFails or
+    app.armVehicleFails or app.missionStartFails or app.missionDoesNotFinish or
+    app.commandRTLFails or app.everythingSucceeds or app.returns0OnSuccess)
+}
+
+assert ApplicationWaitsForSystemToBeReadyLoopCorrectness {
+   all app: Application, timeout: Int |
+   app.waitsForSystem implies
+   (app.waitsForSystem = app.waitsForSystem.univ.~app.waitsForSystem.univ.~app.waitsForSystem)
+}
+
+assert ApplicationWaitsForSystemToBeReadyTimeoutCorrectness {
+   all app: Application, timeout: Int |
+   app.waitsForSystem implies
+   (app.waitsForSystem.exists[ApplicationWaitsForSystemToBeReadyTimeout] and
+    app.waitsForSystem.~ApplicationWaitsForSystemToBeReadyTimeout = timeout)
+}
+
+assert ControlFlowMissionDoesNotFinishTimeoutCorrectness {
+   all app: Application, timeout: Int |
+   app.missionDoesNotFinish implies
+   (app.missionDoesNotFinish.exists[ControlFlowMissionDoesNotFinishTimeout] and
+    app.missionDoesNotFinish.~ControlFlowMissionDoesNotFinishTimeout = timeout)
+}
+
+assert ControlFlowEverythingSucceedsTimeoutCorrectness {
+   all app: Application, timeout: Int |
+   app.everythingSucceeds implies
+   (app.everythingSucceeds.exists[ControlFlowEverythingSucceedsTimeout] and
+    app.everythingSucceeds.~ControlFlowEverythingSucceedsTimeout = timeout)
+}
+
+assert ControlFlowReturns0OnSuccessValueCorrectness {
+   ControlFlowReturns0OnSuccessValue
+}
+
+run CorrectControlFlow for 10
+check ApplicationWaitsForSystemToBeReadyLoopCorrectness for 10
+check ApplicationWaitsForSystemToBeReadyTimeoutCorrectness for 10
+check ControlFlowMissionDoesNotFinishTimeoutCorrectness for 10
+check ControlFlowEverythingSucceedsTimeoutCorrectness for 10
+check ControlFlowReturns0OnSuccessValueCorrectness for 1
+```
+
+Note: This Alloy model assumes that the Application signature and appropriate predicates are defined separately. The model captures the data-flow relations, control-flow relations, and their correctness assertions. Each fact captures a data-flow relation, while each control-flow relation is captured in a separate fact. The model also includes additional functions and assertions to capture loop behavior and timeouts. The run and check commands are used to verify the correctness of the model.

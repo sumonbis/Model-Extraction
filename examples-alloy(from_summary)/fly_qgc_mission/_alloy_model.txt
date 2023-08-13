@@ -1,0 +1,269 @@
+open util/ordering[ComponentId]
+open util/relation
+
+-- ComponentId represents the unique identifier for each component
+sig ComponentId {}
+
+-- Component represents a component in the drone application
+abstract sig Component {
+    id: ComponentId
+}
+
+-- Interface represents a communication interface provided by a component
+abstract sig Interface {}
+
+-- Connection represents a connection between two components through their interfaces
+sig Connection {
+    source: Component,
+    target: Component,
+    interface: Interface
+}
+
+-- Mavsdk component
+one sig Mavsdk extends Component {}
+one sig MavsdkAddAnyConnection extends Interface {}
+one sig MavsdkSystem extends Interface {}
+
+-- System component
+one sig System extends Component {
+    hasAutopilot: one Bool
+}
+one sig SystemHasAutopilot extends Interface {}
+
+-- Action component
+one sig Action extends Component {}
+one sig ActionArm extends Interface {}
+one sig ActionReturnToLaunch extends Interface {}
+
+-- MissionRaw component
+one sig MissionRaw extends Component {}
+one sig MissionRawImportQGroundControlMission extends Interface {}
+one sig MissionRawUploadMission extends Interface {}
+one sig MissionRawStartMission extends Interface {}
+one sig MissionRawSubscribeMissionProgress extends Interface {}
+
+-- Telemetry component
+one sig Telemetry extends Component {}
+one sig TelemetryHealthAllOK extends Interface {}
+
+-- Relationships between components and interfaces
+fact {
+    -- Mavsdk is connected to System
+    Connection[source[Mavsdk], target[System], interface[MavsdkSystem]]
+    -- System is connected to Action, MissionRaw, and Telemetry
+    Connection[source[System], target[Action], interface[SystemHasAutopilot]]
+    Connection[source[System], target[MissionRaw], interface[MissionRawImportQGroundControlMission]]
+    Connection[source[System], target[MissionRaw], interface[MissionRawUploadMission]]
+    Connection[source[System], target[MissionRaw], interface[MissionRawStartMission]]
+    Connection[source[System], target[MissionRaw], interface[MissionRawSubscribeMissionProgress]]
+    Connection[source[System], target[Telemetry], interface[TelemetryHealthAllOK]]
+    -- MissionRaw is connected to Action and Telemetry
+    Connection[source[MissionRaw], target[Action], interface[MissionRawStartMission]]
+    Connection[source[MissionRaw], target[Telemetry], interface[MissionRawSubscribeMissionProgress]]
+}
+
+-- Code Syntax Explanation
+
+-- Drone application code
+abstract sig Code {}
+
+-- Represents a brief description of the example and the steps to run it
+one sig Description extends Code {}
+
+-- Represents the required libraries
+abstract sig Library extends Code {}
+one sig MavsdkLibrary extends Library {}
+one sig ActionLibrary extends Library {}
+one sig MissionRawLibrary extends Library {}
+one sig TelemetryLibrary extends Library {}
+one sig ChronoLibrary extends Library {}
+one sig FunctionalLibrary extends Library {}
+one sig FutureLibrary extends Library {}
+one sig IOLibrary extends Library {}
+one sig MemoryLibrary extends Library {}
+one sig ThreadLibrary extends Library {}
+
+-- Represents the namespaces declared for convenience
+abstract sig Namespace extends Code {}
+one sig MavsdkNamespace extends Namespace {}
+one sig StdChromoNamespace extends Namespace {}
+
+-- Represents the usage function
+one sig UsageFunction extends Code {}
+
+-- Represents the get_system function
+one sig GetSystemFunction extends Code {}
+
+-- Represents the main function
+one sig MainFunction extends Code {}
+
+-- Represents the check for correct number of command line arguments
+one sig CheckArguments extends Code {}
+
+-- Represents the instance of Mavsdk
+one sig MavsdkInstance extends Code {}
+
+-- Represents the connection to the drone system
+one sig AddAnyConnectionStep extends Code {}
+
+-- Represents the get drone system step
+one sig GetSystemStep extends Code {}
+
+-- Represents the creation of Action, MissionRaw, and Telemetry instances
+one sig CreateActionInstance extends Code {}
+one sig CreateMissionRawInstance extends Code {}
+one sig CreateTelemetryInstance extends Code {}
+
+-- Represents the awaiting drone telemetry readiness
+one sig WaitForTelemetry extends Code {}
+
+-- Represents the import mission items step
+one sig ImportMissionItemsStep extends Code {}
+
+-- Represents the check of imported mission items
+one sig CheckImportedMissionItems extends Code {}
+
+-- Represents the upload mission items step
+one sig UploadMissionItemsStep extends Code {}
+
+-- Represents the arming the drone step
+one sig ArmDroneStep extends Code {}
+
+-- Represents the starting the mission step
+one sig StartMissionStep extends Code {}
+
+-- Represents the waiting for mission completion step
+one sig WaitForMissionCompletion extends Code {}
+
+-- Represents the commanding the drone to return to launch position step
+one sig ReturnToLaunchStep extends Code {}
+
+-- Relationships between code steps
+fact {
+    -- Description is the first code step
+    first[Description]
+
+    -- Libraries are included in the code
+    Library in Code
+
+    -- Namespaces are declared in the code
+    Namespace in Code
+
+    -- Usage function is defined in the code
+    UsageFunction in Code
+
+    -- get_system function is defined in the code
+    GetSystemFunction in Code
+
+    -- main function is defined in the code
+    MainFunction in Code
+
+    -- Check for correct number of command line arguments is performed in the code
+    CheckArguments in Code
+
+    -- Mavsdk instance is created in the code
+    MavsdkInstance in Code
+
+    -- Connection to the drone system is established in the code
+    AddAnyConnectionStep in Code
+
+    -- Get drone system step is performed in the code
+    GetSystemStep in Code
+
+    -- Action, MissionRaw, and Telemetry instances are created in the code
+    CreateActionInstance in Code
+    CreateMissionRawInstance in Code
+    CreateTelemetryInstance in Code
+
+    -- Awaiting drone telemetry readiness is performed in the code
+    WaitForTelemetry in Code
+
+    -- Import mission items step is performed in the code
+    ImportMissionItemsStep in Code
+
+    -- Check imported mission items step is performed in the code
+    CheckImportedMissionItems in Code
+
+    -- Upload mission items step is performed in the code
+    UploadMissionItemsStep in Code
+
+    -- Arm drone step is performed in the code
+    ArmDroneStep in Code
+
+    -- Start mission step is performed in the code
+    StartMissionStep in Code
+
+    -- Wait for mission completion step is performed in the code
+    WaitForMissionCompletion in Code
+
+    -- Command drone to return to launch position step is performed in the code
+    ReturnToLaunchStep in Code
+
+    -- Last code step is ReturnToLaunchStep
+    last[ReturnToLaunchStep]
+
+    -- Specifies the ordering of code steps
+    before[Description, Library]
+    before[Description, Namespace]
+    before[Description, UsageFunction]
+    before[Description, GetSystemFunction]
+    before[Description, MainFunction]
+    before[Description, CheckArguments]
+    before[Description, MavsdkInstance]
+    before[Description, AddAnyConnectionStep]
+    before[Description, GetSystemStep]
+    before[Description, CreateActionInstance]
+    before[Description, CreateMissionRawInstance]
+    before[Description, CreateTelemetryInstance]
+    before[Description, WaitForTelemetry]
+    before[Description, ImportMissionItemsStep]
+    before[Description, CheckImportedMissionItems]
+    before[Description, UploadMissionItemsStep]
+    before[Description, ArmDroneStep]
+    before[Description, StartMissionStep]
+    before[Description, WaitForMissionCompletion]
+    before[Description, ReturnToLaunchStep]
+
+    before[Library, AddAnyConnectionStep]
+    before[Library, GetSystemStep]
+    before[Library, CreateActionInstance]
+    before[Library, CreateMissionRawInstance]
+    before[Library, CreateTelemetryInstance]
+    before[Library, WaitForTelemetry]
+    before[Library, ImportMissionItemsStep]
+    before[Library, CheckImportedMissionItems]
+    before[Library, UploadMissionItemsStep]
+    before[Library, ArmDroneStep]
+    before[Library, StartMissionStep]
+    before[Library, WaitForMissionCompletion]
+    before[Library, ReturnToLaunchStep]
+
+    before[MainFunction, CheckArguments]
+    before[MainFunction, MavsdkInstance]
+
+    before[GetSystemFunction, AddAnyConnectionStep]
+
+    before[AddAnyConnectionStep, GetSystemStep]
+    before[AddAnyConnectionStep, CreateActionInstance]
+    before[AddAnyConnectionStep, CreateMissionRawInstance]
+    before[AddAnyConnectionStep, CreateTelemetryInstance]
+    before[AddAnyConnectionStep, WaitForTelemetry]
+
+    before[GetSystemStep, CreateActionInstance]
+    before[GetSystemStep, CreateMissionRawInstance]
+    before[GetSystemStep, CreateTelemetryInstance]
+    before[GetSystemStep, WaitForTelemetry]
+
+    before[CreateActionInstance, ArmDroneStep]
+    before[CreateActionInstance, StartMissionStep]
+
+    before[CreateMissionRawInstance, ImportMissionItemsStep]
+    before[CreateMissionRawInstance, CheckImportedMissionItems]
+    before[CreateMissionRawInstance, UploadMissionItemsStep]
+    before[CreateMissionRawInstance, StartMissionStep]
+
+    before[CreateTelemetryInstance, WaitForMissionCompletion]
+
+    before[ImportMissionItemsStep, CheckImportedMissionItems]
+    before[CheckImportedMissionItems, UploadMissionItemsStep]
+}

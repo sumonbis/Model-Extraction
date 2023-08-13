@@ -1,0 +1,82 @@
+The AADL model architecture file for the given drone application code can be written as follows:
+
+```
+-- Drone Application Architecture
+
+package Drone_Application is
+
+   -- Subprograms
+   
+   subprogram calibrate_accelerometer(
+      calibration: in out Calibration;
+      calibration_promise: in out promise<Void>;
+      calibration_future: in out future<Void>
+   );
+   
+   subprogram calibrate_gyro(
+      calibration: in out Calibration;
+      calibration_promise: in out promise<Void>;
+      calibration_future: in out future<Void>
+   );
+   
+   subprogram calibrate_magnetometer(
+      calibration: in out Calibration;
+      calibration_promise: in out promise<Void>;
+      calibration_future: in out future<Void>
+   );
+   
+   --------------------------------------
+   
+   -- Process/Thread Implementation
+   
+   process Drone_Controller
+      features
+         system: requires System_Port;
+         calibration: provides Calibration_Port;
+         sensor: requires Sensor_Port;
+      end Drone_Controller;
+
+      properties
+         Source_Language => C;
+      end Drone_Controller;
+   
+   -- System Port
+   
+   data port System_Port
+      subcomponents
+         mavsdk: subcomponent mav_sdk;
+      end System_Port;
+      
+   data subcomponent mav_sdk
+      properties
+         Source_Language => C;
+      end mav_sdk;
+   
+   -- Calibration Port
+   
+   data port Calibration_Port
+      subcomponents
+         calibration: subcomponent Calibration;
+      end Calibration_Port;
+      
+   data subcomponent Calibration
+      properties
+         Source_Language => C;
+      end Calibration;
+   
+   -- Sensor Port
+   
+   data port Sensor_Port
+      subcomponents
+         accelerometer, gyro, magnetometer: subcomponent Sensor;
+      end Sensor_Port;
+      
+   data subcomponent Sensor
+      properties
+         Source_Language => C;
+      end Sensor;
+      
+end Drone_Application;
+```
+
+Please note that this is a basic model architecture that captures the major components and their connections based on the provided code. Further refinement and details may be required depending on the specific requirements and system design.

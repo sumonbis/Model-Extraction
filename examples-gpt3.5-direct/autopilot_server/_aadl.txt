@@ -1,0 +1,93 @@
+The AADL model architecture for the given drone application code is as follows:
+
+```
+package DroneApp
+public
+    with Data_Model;
+    with Implementation_Model;
+    with Deployment_Model;
+    
+    subcomponents
+        GCS: GroundControlStation;
+        Autopilot: AutopilotServer;
+        MavsdkTester: MavsdkTester;
+    connections
+        connection_GCS: Data_Connection from GCS.Out_Mission to Autopilot.In_Mission;
+        connection_Autopilot: Data_Connection from Autopilot.Out_Telemetry to GCS.In_Telemetry;
+        connection_Mavsdk: Command_Connection from GCS.Out_Command to MavsdkTester.In_Command;
+    end DroneApp;
+
+    thread DroneApp_controller {
+        Data_Connection_In_Mode_Mission: Data_Connection from GCS.Out_Mode_Mission to MavsdkTester.In_Mode;
+        Data_Connection_In_Position: Data_Connection from GCS.Out_Position to MavsdkTester.In_Position;
+        Data_Connection_Out_Command: Data_Connection from MavsdkTester.Out_Command to GCS.In_Command;
+        Data_Connection_Out_Telemetry: Data_Connection from MavsdkTester.Out_Telemetry to GCS.In_Telemetry;
+        Data_Connection_Out_Mode_Mission: Data_Connection from MavsdkTester.Out_Mode to GCS.In_Mode_Mission;
+    } calls RunMavsdkTester {
+        In_Command, In_Position, Out_Command, Out_Telemetry, Out_Mode -> MavsdkTester;
+    }
+
+    thread MavsdkTester_controller {
+        Data_Connection_In_Command: Data_Connection from GCS.Out_Command to Autopilot.In_Command;
+        Data_Connection_In_Telemetry: Data_Connection from GCS.Out_Telemetry to Autopilot.In_Telemetry;
+        Data_Connection_Out_Command: Data_Connection from Autopilot.Out_Command to GCS.In_Command;
+        Data_Connection_Out_Telemetry: Data_Connection from Autopilot.Out_Telemetry to GCS.In_Telemetry;
+    } calls RunAutopilotServer {
+        In_Command, In_Telemetry, Out_Command, Out_Telemetry -> Autopilot;
+    }
+
+    thread GCS_controller {
+        Data_Connection_In_Mode_Mission: Data_Connection from MavsdkTester.Out_Mode to DroneApp.Out_Mode_Mission;
+        Data_Connection_In_Position: Data_Connection from MavsdkTester.Out_Telemetry to DroneApp.Out_Position;
+        Data_Connection_Out_Command: Data_Connection from DroneApp.Out_Command to MavsdkTester.In_Command;
+        Data_Connection_Out_Telemetry: Data_Connection from DroneApp.Out_Telemetry to MavsdkTester.In_Telemetry;
+        Data_Connection_Out_Mode_Mission: Data_Connection from DroneApp.Out_Mode_Mission to MavsdkTester.In_Mode;
+    } calls RunGroundControlStation {
+        In_Command, In_Telemetry, Out_Command, Out_Telemetry, Out_Mode_Mission -> GCS;
+    }
+
+implementation
+    DroneApp.threads.DroneApp_controller [priority => 24, period => 100ms];
+    DroneApp.threads.MavsdkTester_controller [priority => 23, period => 100ms];
+    DroneApp.threads.GCS_controller [priority => 22, period => 100ms];
+
+    MavsdkTester.calls.RunAutopilotServer [connection_Autopilot];
+    GCS.calls.RunGroundControlStation [connection_GCS];
+    MavsdkTester.calls.RunMavsdkTester [connection_Mavsdk];
+end DroneApp;
+
+thread implementation RunGroundControlStation {
+    input port In_Command: out event data port GCSCommand;
+    input port In_Telemetry: out event data port GCSTelemetry;
+    output port Out_Command: in event data port GCSCommand;
+    output port Out_Telemetry: in event data port GCSTelemetry;
+    output port Out_Mode_Mission: in event data port GCSMode_Mission;
+}
+
+thread implementation RunMavsdkTester {
+    input port In_Command: out event data port MavsdkCommand;
+    input port In_Position: out event data port MavsdkPosition;
+    output port Out_Command: in event data port MavsdkCommand;
+    output port Out_Telemetry: in event data port MavsdkTelemetry;
+    output port Out_Mode: in event data port MavsdkMode;
+}
+
+thread implementation RunAutopilotServer {
+    input port In_Command: out event data port AutopilotCommand;
+    input port In_Telemetry: out event data port AutopilotTelemetry;
+    output port Out_Command: in event data port AutopilotCommand;
+    output port Out_Telemetry: in event data port AutopilotTelemetry;
+}
+
+data model {
+    data port GCSCommand;
+    data port GCSTelemetry;
+    data port GCSMode_Mission;
+    data port MavsdkCommand;
+    data port MavsdkPosition;
+    data port MavsdkTelemetry;
+    data port MavsdkMode;
+    data port AutopilotCommand;
+    data port AutopilotTelemetry;
+}
+```

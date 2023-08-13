@@ -1,0 +1,86 @@
+AADL (Architecture Analysis and Design Language) is a modeling language primarily used for real-time and embedded systems. Although it supports modeling certain aspects of software architecture, it may not be the best choice for representing UML class-level relationships and interactions.
+
+However, I can provide you with an example of how to represent the components and their connections using the AADL component-based modeling approach. Here's a simplified AADL model based on the given architecture description:
+
+```aadl
+-- Component definition
+package Drone_Application
+public
+with Data_Models;
+
+system Drone_System
+public
+with Data_Models;
+
+subprogram Mavsdk
+public
+features
+    connection_to_system: out Data_Models.System_Connection;
+end Mavsdk;
+
+subprogram Action
+public
+features
+    connection_to_system: in out Data_Models.System_Connection;
+end Action;
+
+subprogram Offboard
+public
+features
+    connection_to_system: in out Data_Models.System_Connection;
+end Offboard;
+
+subprogram Telemetry
+public
+features
+    connection_to_system: in out Data_Models.System_Connection;
+end Telemetry;
+
+end Drone_Application;
+
+-- Connection definition
+package Data_Models
+public
+
+data System_Connection
+end System_Connection;
+
+end Data_Models;
+
+-- System connection binding
+system implementation Drone_System.impl
+subcomponents
+    mavsdk: Mavsdk;
+    action: Action;
+    offboard: Offboard;
+    telemetry: Telemetry;
+end Drone_System.impl;
+
+connection binding System_Connection_to_Mavsdk
+data access connection_to_system
+end System_Connection_to_Mavsdk;
+
+connection binding System_Connection_to_Action
+data access connection_to_system
+end System_Connection_to_Action;
+
+connection binding System_Connection_to_Offboard
+data access connection_to_system
+end System_Connection_to_Offboard;
+
+connection binding System_Connection_to_Telemetry
+data access connection_to_system
+end System_Connection_to_Telemetry;
+
+bind Drone_System.impl.mavsdk.connection_to_system => Drone_System.impl_mavsdk_connection;
+bind Drone_System.impl.action.connection_to_system => Drone_System.impl_action_connection;
+bind Drone_System.impl.offboard.connection_to_system => Drone_System.impl_offboard_connection;
+bind Drone_System.impl.telemetry.connection_to_system => Drone_System.impl_telemetry_connection;
+
+end;
+
+```
+
+Please note that this is a simplified AADL model and you may need to further specify the interfaces, communication patterns, and properties based on your specific requirements and constraints. Additionally, you would need to provide more information about the data types and properties used in the model, which are not defined in the given architecture description.
+
+Feel free to customize and expand the AADL model as per your requirements.

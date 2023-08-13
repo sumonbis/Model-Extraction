@@ -1,0 +1,90 @@
+Here's an Alloy model capturing the data-flow and control-flow relations described:
+
+```alloy
+open util/boolean
+
+-- Data-flow relations
+sig Main {
+    connectionURL: lone String
+}
+sig Mavsdk {}
+sig System {}
+sig Plugin {}
+sig Action {}
+sig FollowMe {}
+sig Telemetry {}
+sig FakeLocationProvider {}
+
+-- Control-flow relations
+pred ValidateArguments(m: Main) {
+    #m.connectionURL = 1
+}
+
+pred EstablishConnection(m: Main, mavsdk: Mavsdk) {
+    mavsdk in Mavsdk
+}
+
+pred DiscoverSystem(mavsdk: Mavsdk, system: System) {}
+
+pred CheckAutopilot(system: System) {}
+
+pred DisplayErrorMessage {}
+
+pred WaitSystemReady(telemetry: Telemetry) {}
+
+pred Arm(action: Action) {}
+
+pred SubscribePositionUpdates(telemetry: Telemetry) {}
+
+pred SubscribeFlightModeUpdates(telemetry: Telemetry) {}
+
+pred Takeoff(action: Action) {}
+
+pred ConfigureFollowMe(followme: FollowMe) {}
+
+pred StartFollowMe(followme: FollowMe) {}
+
+pred RegisterLocationUpdates(fakeLocationProvider: FakeLocationProvider) {}
+
+pred SubscribeFollowMeStatus(telemetry: Telemetry) {}
+
+pred StopFollowMe(followme: FollowMe) {}
+
+pred TelemetryFlightModeUpdatesSubscriptionCancelled {}
+
+pred PerformLanding(action: Action) {}
+
+pred WaitDroneLanded {}
+
+pred WaitDroneDisarmed {}
+
+pred Exit {}
+
+run {
+    -- Data-flow relations
+    all m: Main | ValidateArguments[m]
+    
+    -- Control-flow relations
+    all m: Main, mavsdk: Mavsdk | EstablishConnection[m, mavsdk]
+    all mavsdk: Mavsdk, system: System | DiscoverSystem[mavsdk, system]
+    all system: System | CheckAutopilot[system]
+    all system: System | DisplayErrorMessage
+    all system: System, telemetry: Telemetry | WaitSystemReady[telemetry]
+    all system: System, action: Action | Arm[action]
+    all telemetry: Telemetry | SubscribePositionUpdates[telemetry]
+    all telemetry: Telemetry | SubscribeFlightModeUpdates[telemetry]
+    all action: Action | Takeoff[action]
+    all followme: FollowMe | ConfigureFollowMe[followme]
+    all followme: FollowMe | StartFollowMe[followme]
+    all fakeLocationProvider: FakeLocationProvider | RegisterLocationUpdates[fakeLocationProvider]
+    all telemetry: Telemetry | SubscribeFollowMeStatus[telemetry]
+    all followme: FollowMe | StopFollowMe[followme]
+    all telemetry: Telemetry | TelemetryFlightModeUpdatesSubscriptionCancelled
+    all action: Action | PerformLanding[action]
+    all telemerty: Telemetry | WaitDroneLanded
+    all telemetry: Telemetry | WaitDroneDisarmed
+    all: Exit
+} for 22 but exactly 2 Main, exactly 1 Mavsdk, exactly 1 System, exactly 3 Plugin, exactly 1 Action, exactly 1 FollowMe, exactly 1 Telemetry, exactly 1 FakeLocationProvider
+```
+
+Please note that this Alloy model captures the data-flow and control-flow relations described in a formal way. However, it may not capture all the details of your specific drone application code, as some implementation details may be missing. It is recommended to review and refine the Alloy model based on your specific codebase.

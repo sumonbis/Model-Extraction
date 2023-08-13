@@ -1,0 +1,119 @@
+The UML architecture description for the drone application code can be represented as follows:
+
+```
++---------------------------------------------------------------------+
+|                                Main                                 |
++---------------------------------------------------------------------+
+|  - main(int argc, char** argv)                                      |
+|  - get_system(Mavsdk& mavsdk) -> std::shared_ptr<System>            |
+|  - usage(const std::string& bin_name)                               |
++---------------------------------------------------------------------+
+               |
+               |
+               v
++---------------------------------------------------------------------+
+|                                Mavsdk                               |
++---------------------------------------------------------------------+
+|  - add_any_connection(const std::string& connection_url)             |
+|  - subscribe_on_new_system(const std::function<void()>& callback)    |
+|  - systems() -> std::vector<std::shared_ptr<System>>                |
++---------------------------------------------------------------------+
+               |
+               |
+               v
++---------------------------------------------------------------------+
+|                                System                               |
++---------------------------------------------------------------------+
+|  - has_autopilot() -> bool                                           |
+|  - subsystems() -> std::vector<std::shared_ptr<Subsystem>>          |
++---------------------------------------------------------------------+
+               |
+               |
+               v
++---------------------------------------------------------------------+
+|                              Telemetry                              |
++---------------------------------------------------------------------+
+|  - health_all_ok() -> bool                                           |
+|  - armed() -> bool                                                   |
++---------------------------------------------------------------------+
+               |
+               |
+               v
++---------------------------------------------------------------------+
+|                                Action                               |
++---------------------------------------------------------------------+
+|  - arm() -> Action::Result                                           |
+|  - return_to_launch() -> Action::Result                              |
++---------------------------------------------------------------------+
+               |
+               v
++---------------------------------------------------------------------+
+|                               Mission                               |
++---------------------------------------------------------------------+
+|  - upload_mission(const Mission::MissionPlan& mission_plan)          |
+|    -> Mission::Result                                                |
+|  - subscribe_mission_progress(const std::function<void(Mission::     |
+|    MissionProgress)>& callback)                                      |
+|  - start_mission() -> Mission::Result                                |
+|  - pause_mission() -> Mission::Result                                |
+|  - is_mission_finished() -> std::pair<bool, Mission::Result>        |
++---------------------------------------------------------------------+
+```
+
+Let's go through the code syntax and explain it in detail:
+
+- The `main()` function is the entry point of the application. It takes command-line arguments `argc` and `argv` as input.
+
+- The `usage()` function prints the usage instructions for the application if the command-line arguments are not provided correctly.
+
+- The `get_system()` function is used to discover a drone system. It waits for systems to be discovered, and once a system with an autopilot is found, it returns that system. It uses promises and futures for synchronization.
+
+- The `Mavsdk` class is the main class for connecting to and interacting with the MAVLink system. It provides functions to add connections, subscribe to new systems, and get a list of systems.
+
+- The `System` class represents a drone system. It provides functions to check if the system has an autopilot and get a list of subsystems.
+
+- The `Telemetry` class provides access to the telemetry data of the drone system. It provides functions to check if the system is ready and if it is armed.
+
+- The `Action` class provides actions that can be performed on the drone system. It provides functions to arm the system and command it to return to launch.
+
+- The `Mission` class provides functions for handling mission-related operations. It provides functions to upload a mission, subscribe to mission progress, start and pause a mission, and check if the mission is finished.
+
+- The `make_mission_item()` function is a helper function that creates a `MissionItem` object with the specified parameters.
+
+- In the `main()` function, the code first checks if the correct number of command-line arguments is provided. If not, it calls the `usage()` function and returns.
+
+- Next, the code creates an instance of the `Mavsdk` class and adds a connection using the provided command-line argument.
+
+- The `get_system()` function is called to get a drone system. If no system is found within 3 seconds, an error message is printed and the program exits.
+
+- Instances of the `Action`, `Mission`, and `Telemetry` classes are created using the drone system.
+
+- The code waits for the drone system to be ready by checking the telemetry health status. Once the system is ready, it proceeds with the mission.
+
+- A vector of `MissionItem` objects is created, representing the mission waypoints.
+
+- The mission is uploaded using the `upload_mission()` function of the `Mission` class.
+
+- The drone is armed using the `arm()` function of the `Action` class.
+
+- A flag (`want_to_pause`) is set to pause the mission after a certain waypoint.
+
+- The mission progress is subscribed to using the `subscribe_mission_progress()` function of the `Mission` class.
+
+- The mission is started using the `start_mission()` function of the `Mission` class.
+
+- The code waits until the flag indicating the pause is set.
+
+- The mission is paused using the `pause_mission()` function of the `Mission` class.
+
+- The code sleeps for 5 seconds.
+
+- The mission is resumed using the `start_mission()` function of the `Mission` class.
+
+- The code waits until the mission is finished.
+
+- The drone is commanded to return to launch using the `return_to_launch()` function of the `Action` class.
+
+- The code waits for the drone to be disarmed.
+
+- Finally, a message indicating that the drone is disarmed is printed and the program exits.

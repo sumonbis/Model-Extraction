@@ -1,0 +1,169 @@
+Here is an AADL model architecture for the given drone application code:
+
+```
+package Drone_Application
+public
+
+
+feature Connection_URL : Data_Port<{integer}>;
+
+
+process Main_Process
+public
+  subcomponents
+    mavsdk: Thread_Mavsdk;
+    shell_process: Process_Shell;
+  end mavsdk;
+
+connections
+  connection1: Connection_URL -> mavsdk.Connection_URL;
+  connection2: mavsdk.System -> shell_process.System;
+end Main_Process;
+
+
+process Thread_Mavsdk
+public
+  subcomponents
+    mavsdk_component: Mavsdk_Component;
+    system_component: System_Component;
+  end mavsdk_component, system_component;
+
+connections
+  connection1: Connection_URL -> mavsdk_component.Connection_URL;
+  connection2: mavsdk_component.System -> system_component.Mavsdk_System;
+end Thread_Mavsdk;
+
+
+process Process_Shell
+public
+  subcomponents
+    shell_component: Shell_Component;
+  end shell_component;
+
+connections
+  connection1: System -> shell_component.Shell_System;
+end Process_Shell;
+
+
+thread Mavsdk_Component
+public
+  subcomponents
+    mavsdk_function: Function_mavsdk;
+  end mavsdk_function;
+
+connections
+  connection1: Connection_URL -> mavsdk_function.Connection_URL;
+end Mavsdk_Component;
+
+
+function Function_mavsdk
+public
+  properties
+    Source_Text => "Mavsdk mavsdk;
+                    ConnectionResult connection_result = mavsdk.add_any_connection(argv[1]);
+
+                    if (connection_result != ConnectionResult::Success) {
+                        std::cerr << "Connection failed: " << connection_result << '\n';
+                        return 1;
+                    }
+
+                    auto system = get_system(mavsdk);
+                    if (!system) {
+                        return 1;
+                    }
+
+                    run_interactive_shell(system);
+
+                    return 0;";
+  end Function_mavsdk;
+  
+
+thread System_Component
+public
+  subcomponents
+    system_function: Function_System;
+  end system_function;
+
+connections
+  connection1: Function_mavsdk.Mavsdk_System -> system_function.Mavsdk_System;
+end System_Component;
+
+
+function Function_System
+public
+  properties
+    Source_Text => "std::shared_ptr<System> get_system(Mavsdk& mavsdk)
+                    {
+                        std::cout << \"Waiting to discover system...\\n\";
+                        auto prom = std::promise<std::shared_ptr<System>>{};
+                        auto fut = prom.get_future();
+
+                        // We wait for new systems to be discovered, once we find one that has an
+                        // autopilot, we decide to use it.
+                        mavsdk.subscribe_on_new_system([&mavsdk, &prom]() {
+                            auto system = mavsdk.systems().back();
+
+                            if (system->has_autopilot()) {
+                                std::cout << \"Discovered autopilot\\n\";
+
+                                // Unsubscribe again as we only want to find one system.
+                                mavsdk.subscribe_on_new_system(nullptr);
+                                prom.set_value(system);
+                            }
+                        });
+
+                        // We usually receive heartbeats at 1Hz, therefore we should find a
+                        // system after around 3 seconds max, surely.
+                        if (fut.wait_for(seconds(3)) == std::future_status::timeout) {
+                            std::cerr << \"No autopilot found.\\n\";
+                            return {};
+                        }
+
+                        // Get discovered system now.
+                        return fut.get();
+                    }";
+  end Function_System;
+
+
+thread Shell_Component
+public
+  subcomponents
+    shell_function: Function_Shell;
+  end shell_function;
+
+connections
+  connection1: Function_System.System -> shell_function.System;
+end Shell_Component;
+
+
+function Function_Shell
+public
+  properties
+    Source_Text => "void run_interactive_shell(std::shared_ptr<System> system)
+                    {
+                        Shell shell{system};
+
+                        shell.subscribe_receive([](const std::string output) { std::cout << output; });
+
+                        while (true) {
+                            std::string command;
+                            getline(std::cin, command);
+
+                            if (command == \"exit\") {
+                                break;
+                            }
+
+                            shell.send(command);
+                        }
+                        std::cout << '\n';
+                    }";
+  end Function_Shell;
+
+end Drone_Application;
+```
+
+This AADL model separates the main process into three sub-processes: Main_Process, Thread_Mavsdk, and Process_Shell. The Thread_Mavsdk is responsible for handling the connection to the MAVSDK and discovering the autopilot system. The Process_Shell runs the run_interactive_shell function to interact with the system. The Main_Process coordinates the connections between the Thread_Mavsdk and Process_Shell.
+
+The AADL model also defines the necessary threads and functions to implement the behavior described in the C++ code. Each thread has a corresponding function that contains the implementation code.
+
+Please note that this is a simplified model and you may need to adapt it to fit your specific needs.

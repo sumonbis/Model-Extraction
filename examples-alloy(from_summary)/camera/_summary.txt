@@ -1,0 +1,91 @@
+The UML architecture for the given drone application code can be represented as follows:
+
+```
++-------------------------------------+
+|                                     |
+|              Main Program            |
+|                                     |
++-------------------------------------+
+          |
+          | creates
+          |
++---------|---------------------------------------+
+|         v                                       |
+|   +------------+           +-------------+       |
+|   |  Mavsdk    |           |  Connection |       |
+|   |            |           |   Result    |       |
+|   +------------+           +-------------+       |
+|         |                        ^               |
+|         | uses                   | uses         |
+|         |                        |               |
+|         v                        |               |
+|   +------------+                 |               |
+|   | Telemetry  | <----------------               |
+|   |            |       +-----------------+        |
+|   +------------+       |     Camera      |        |
+|                        |                |        |
+|                        +----------------+        |
+|                               |                  |
+|                               | uses             |
+|                               v                  |
+|                        +----------------+        |
+|                        | Camera::Result |        |
+|                        +----------------+        |
+|                               |                  |
+|                               | extends          |
+|                               v                  |
+|                        +----------------+        |
+|                        | Camera::Mode   |        |
+|                        +----------------+        |
+|                               |                  |
+|                               | implements       |
+|                               v                  |
+|                        +----------------+        |
+|                        | Camera::Capture|        |
+|                        |    Info        |        |
+|                        +----------------+        |
++-------------------------------------------------+
+```
+
+Explanation of the code syntax:
+
+- Header files:
+  - `#include <mavsdk/mavsdk.h>`: Includes the library provided by MAVSDK, which allows communication with the drone.
+  - `#include <mavsdk/plugins/camera/camera.h>`: Includes the library for accessing and controlling the drone's camera.
+  - `#include <mavsdk/plugins/telemetry/telemetry.h>`: Includes the library for retrieving telemetry information from the drone.
+
+- Namespaces:
+  - `using namespace mavsdk;`: Brings the `mavsdk` namespace into scope for easier access to MAVSDK classes and functions.
+  - `using std::chrono::seconds;`: Brings the `seconds` class from the `chrono` namespace into scope for time-related operations.
+  - `using std::this_thread::sleep_for;`: Brings the `sleep_for` function from the `this_thread` namespace into scope for pausing the program execution.
+
+- `main` function:
+  - The entry point of the program.
+  - Reads the connection URL from the command line arguments.
+  - Creates an instance of `Mavsdk` to communicate with the drone.
+  - Attempts to add a connection with the specified URL.
+  - Waits for a system with a camera to be discovered.
+  - Once a camera is discovered, sets it as the system to use.
+  - Instantiates the `Telemetry` and `Camera` plugins.
+  - Sets the camera mode to photo mode.
+  - Subscribes to capture information events from the camera.
+  - Takes a photo.
+  - Pauses the program for 2 seconds.
+
+- `usage` function:
+  - Prints the usage instructions for the program.
+
+- `ConnectionResult`:
+  - Represents the result of a connection attempt.
+
+- `Telemetry` class:
+  - Provides access to telemetry information from the drone.
+
+- `Camera` class:
+  - Provides access to the drone's camera and its functions.
+  - `Camera::Mode` enum:
+    - Represents the different modes of the camera (e.g., photo, video, etc.).
+  - `Camera::Result` enum:
+    - Represents the result of a camera operation (e.g., success, failure, etc.).
+  - `Camera::CaptureInfo` struct:
+    - Contains information about a captured image (e.g., file URL).

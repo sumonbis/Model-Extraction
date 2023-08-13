@@ -1,0 +1,23 @@
+The data-flow relations in this code can be summarized as follows:
+
+1. Data flows from the `ReceiverData` struct to the `AttitudeData` class. The `ReceiverData` struct holds information about the system IDs and component IDs of the receiver and target devices.
+
+2. The `AttitudeData` class has various structs and enums that hold attitude and setpoint data. These data can be accessed through getter methods and can also be modified through setter methods.
+
+3. The `Sender` class receives an instance of the `AttitudeData` class and uses it to send autopilot state and attitude setpoint messages using the MAVLink protocol. The `Sender` class runs in a separate thread and periodically sends these messages.
+
+4. The `Tester` class also receives an instance of the `AttitudeData` class. It has several test methods that use the attitude and setpoint data to perform tests. These tests involve changing the attitude setpoints and verifying that the correct messages are sent.
+
+The control flow relations in this code can be summarized as follows:
+
+1. The main function initializes the necessary objects and starts the `Sender` and `Tester` objects.
+
+2. The `Sender` object runs in a separate thread and continuously sends autopilot state and attitude setpoint messages.
+
+3. The `Tester` object runs various test methods, which perform specific actions and check the results using the attitude and setpoint data.
+
+4. The `Sender` and `Tester` objects rely on the `AttitudeData` object to get and modify the attitude and setpoint data.
+
+5. The `Sender` object and the test methods in the `Tester` object both use the `AttitudeData` object to access and modify the attitude and setpoint data.
+
+Overall, this code implements a drone application that communicates with a gimbal device using the MAVLink protocol. The `Sender` object continuously sends autopilot state and attitude setpoint messages, while the `Tester` object runs various tests to verify the behavior of the gimbal device. The `AttitudeData` class acts as a shared data structure between the `Sender` and `Tester` objects, allowing them to access and modify the attitude and setpoint data.

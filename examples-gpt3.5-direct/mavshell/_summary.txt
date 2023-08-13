@@ -1,0 +1,43 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```plantuml
+@startuml
+skinparam component {
+    BorderColor snow
+    BackgroundColor lightcyan
+    FontColor darkblue
+}
+
+component "Mavsdk" as mavsdk
+component "Shell" as shell
+
+database "System" as system
+
+mavsdk --> shell
+shell --> system
+
+@enduml
+```
+
+Explanation:
+- The code starts by including necessary headers and libraries.
+- The `run_interactive_shell` function is defined, which takes in a shared pointer to a `System` object.
+- The `usage` function is defined to display the usage instructions of the application.
+- The `get_system` function is defined to get a discovered system with an autopilot from the Mavsdk.
+- The `main` function is the entry point of the application.
+- In the `main` function, it first checks the command line arguments, and if the argument count is not 2, it displays the usage instructions and returns.
+- An instance of `Mavsdk` is created.
+- The `add_any_connection` function of `Mavsdk` is called to add a connection using the provided connection URL.
+- If the connection result is not successful, it displays an error message and returns.
+- The `get_system` function is called to get a discovered system with an autopilot.
+- If no system is found, it returns.
+- The `run_interactive_shell` function is called, passing the `system` object.
+- In the `run_interactive_shell` function, a `Shell` object is instantiated with the given `system`.
+- The `subscribe_receive` function of `Shell` is called to subscribe to receive outputs from the shell.
+- A loop is started to read commands from the user.
+- If the command is "exit", the loop breaks.
+- Otherwise, the command is sent to the shell using the `send` function of `Shell`.
+- After the loop, a newline is printed.
+- Finally, the `main` function returns 0.
+
+Note: The UML architecture description only includes the components and their connections. It does not include the details of the internal structure of each component or any additional classes or functions that may be present in the actual implementation of the code.

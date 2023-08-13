@@ -1,0 +1,31 @@
+Data-flow relations:
+1. The main function takes command-line input arguments (remote_ip, remote_port, root_dir) and calls the usage function to display the correct usage if the number of arguments is not 4.
+2. An instance of the Mavsdk class (mavsdk) is created.
+3. An instance of the Mavsdk::Configuration class (configuration) is created with a usage type of "CompanionComputer".
+4. The configuration is set for the mavsdk instance using the set_configuration function.
+5. The setup_udp_remote function is called on the mavsdk instance with the remote_ip and remote_port arguments to establish a UDP connection with the remote MAVLink FTP server.
+6. The result of the connection is stored in the connection_result variable.
+7. If the connection_result is not Success, an error message is printed and the program returns with a status of 1.
+8. The first system in the connected systems list is obtained and stored in the system_cc variable.
+9. An instance of the Ftp class (ftp_server) is created with the system_cc instance as the parameter.
+10. The root directory for the FTP server is set using the set_root_directory function with the root_dir argument.
+11. The IP address, port, and component ID information are printed to the console.
+12. The program enters an infinite loop and sleeps for 1 second in each iteration.
+
+Control flow relations:
+1. The main function begins execution.
+2. The if statement checks if the number of command-line arguments is not equal to 4.
+3. If the condition is true, the usage function is called and the program returns with a status of 1.
+4. If the condition is false, the code inside the if statement is skipped.
+5. The Mavsdk instance is created.
+6. The Configuration instance is created with a usage type of CompanionComputer.
+7. The configuration is set for the mavsdk instance.
+8. The setup_udp_remote function is called to establish a UDP connection with the remote MAVLink FTP server.
+9. The result of the connection is stored in the connection_result variable.
+10. The connection_result is checked for success, and if it is not successful, an error message is printed and the program returns with a status of 1.
+11. The system_cc variable is assigned the first system in the connected systems list.
+12. The ftp_server instance is created with the system_cc instance as the parameter.
+13. The root directory for the FTP server is set with the set_root_directory function.
+14. Information about the FTP server is printed to the console.
+15. The program enters an infinite loop and sleeps for 1 second in each iteration.
+16. The program continues to loop indefinitely until terminated externally.

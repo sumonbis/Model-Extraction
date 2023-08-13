@@ -1,0 +1,55 @@
+The UML architecture description for the provided drone application code is as follows:
+
+```
++----------------------+
+|                      |
+|       MainApp        |
+|                      |
++----------------------+
+          |
+          |
+    +-----+------+
+    |            |
+    |   Mavsdk   |
+    |            |
+    +-----+------+
+          |
+          |
+    +-----+------+
+    |            |
+    |   System   |
+    |            |
+    +-----+------+
+          |
+          |
+    +-----+------+
+    |            |
+    |   Action   |
+    |            |
+    +-----+------+
+```
+
+Explanation:
+1. `MainApp`: This is the main application that controls the flow of the program. It handles user input, system discovery, and termination command.
+
+2. `Mavsdk`: This is the main class provided by the MAVSDK library. It acts as a bridge between the application and the MAVLink protocol. It is responsible for system discovery and managing connections.
+
+3. `System`: This represents a specific drone system that has been discovered. It provides access to various components and information about the system. In this code, it is used to check if the system has an autopilot.
+
+4. `Action`: This is a plugin provided by the MAVSDK library. It provides high-level commands for controlling the drone, such as takeoff, land, and terminate. In this code, it is used to send the termination command to the drone.
+
+Interfaces and Connections:
+- The `MainApp` creates an instance of `Mavsdk` and uses it to discover systems.
+- When a new system is discovered, the `MainApp` checks if it has an autopilot. If it does, it creates an instance of `Action` and sends the termination command.
+- The `MainApp` communicates with the user through standard input/output.
+
+Code Syntax Explanation:
+- The code uses the MAVSDK library for communication with the drone system.
+- The `mavsdk` object is created to interface with the MAVSDK library.
+- The `main` function takes the connection URL as a command-line argument.
+- The code subscribes to new system events using `mavsdk.subscribe_on_new_system()`.
+- The code adds a connection using `mavsdk.add_any_connection()` and checks if the connection was successful.
+- The code waits for a system with an autopilot to be discovered using `fut.wait_for()`.
+- The code then creates an instance of `Action` to send the termination command.
+- The code prompts the user for confirmation before sending the termination command.
+- If the user confirms, the code sends the termination command using `action.terminate()`.

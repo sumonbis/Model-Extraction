@@ -1,0 +1,31 @@
+Here is the Alloy model for the given drone application source code:
+
+```alloy
+sig Component {}
+
+one sig Sender, MavlinkPassthrough, AttitudeData, Tester extends Component {}
+
+pred connected(c1: Component, c2: Component) {
+  c1 != c2
+}
+
+pred usage(Sender, MavlinkPassthrough)
+pred usage(Sender, AttitudeData)
+pred usage(Tester, AttitudeData)
+
+fact {
+  connected[Sender, MavlinkPassthrough]
+  connected[Sender, AttitudeData]
+  connected[Tester, AttitudeData]
+
+  usage[Sender, MavlinkPassthrough]
+  usage[Sender, AttitudeData]
+  usage[Tester, AttitudeData]
+}
+```
+
+This Alloy model defines the four components Sender, MavlinkPassthrough, AttitudeData, and Tester. The `connected` predicate ensures that these components are connected in the architecture. The `usage` predicate defines which components are used by other components.
+
+The `fact` block enforces the connections and usages based on the provided description.
+
+Please note that this Alloy model provides a high-level representation of the architecture and connections between components. It does not describe the detailed class structure and function calls within each component.

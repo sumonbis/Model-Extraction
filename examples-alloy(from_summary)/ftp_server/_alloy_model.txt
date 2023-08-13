@@ -1,0 +1,66 @@
+The Alloy model for the given drone application source code can be represented as follows:
+
+```
+module DroneArchitecture
+
+open util/integer
+
+sig Mavsdk {
+    mavsdkConfiguration: Configuration,
+    udp_remote: ConnectionResult,
+    system_cc: System
+}
+
+sig Configuration {}
+
+abstract sig ConnectionResult {}
+
+sig System {
+    our_compid: Int,
+    ftp_server: Ftp
+}
+
+sig Ftp {
+    system_cc: System,
+    root_directory: String
+}
+
+fun usage(bin_name: String) {}
+
+pred main(drone_code: DroneCode, argc: Int, argv: String) {
+    // Checking for the correct number of command line arguments
+    argc = 2
+}
+
+// Functionality predicates for Mavsdk class
+
+pred setup_udp_remote(mavsdk: Mavsdk, ip: String, port: Int)
+
+pred systems(mavsdk: Mavsdk)
+
+pred set_configuration(mavsdk: Mavsdk, config: Configuration)
+
+// Functionality predicates for System class
+
+pred get_our_compid(system: System)
+
+// Functionality predicates for Ftp class
+
+pred set_root_directory(ftp: Ftp, directory: String)
+
+run main for 10
+```
+
+In this model:
+
+- The `DroneCode` signature represents the `DroneCode` class.
+- The `Mavsdk` signature represents the `Mavsdk` class.
+- The `System` signature represents the `System` class.
+- The `Ftp` signature represents the `Ftp` class.
+- The `Configuration` signature represents the `Configuration` class.
+- The `ConnectionResult` signature represents the abstract `ConnectionResult` class.
+- The `usage` function is represented as an empty function, as its implementation details are not provided.
+- The `main` predicate represents the main function of the `DroneCode` class.
+- The `setup_udp_remote`, `systems`, `set_configuration`, `get_our_compid`, and `set_root_directory` predicates represent the functionalities of the respective classes.
+
+Please note that this Alloy model represents the structure and relations between the classes and objects in the given code. The actual functionality and behavior of the classes and methods are not captured in this model.

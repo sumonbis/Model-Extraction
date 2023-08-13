@@ -1,0 +1,78 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```plaintext
+                                      +-----------------+
+                                      |                 |
+                                      |    Mavsdk       |
+                                      |                 |
+                                      +-----------------+
+                                      |                 |
+                                      |  add_connection |
+                                      |                 |
+                                      +-----------------+
+                                      |
+                                      |
+                                      |
+                  +-------------------|------------------+
+                  |                   |                  |
+                  |                   |                  |
+         +--------v-------+   +-------v-------+   +--------------+
+         |                |   |               |   |              |
+         |   Telemetry    |   |    Action     |   |    System    |
+         |                |   |               |   |              |
+         +--------^-------+   +-------^-------+   +------^-------+
+                  |                   |                  |
+          subscribe_position      arm, takeoff,          |
+                  |                land, etc.            |
+                  |                   |                  |
+                  |                   |                  |
+         +--------v-------+   +-------v-------+          |
+         |                |   |               |          |
+         |   Position     |   |     Result    |          |
+         |                |   |               |          |
+         +----------------+   +---------------+          |
+                                                          |
+                                                          |
+                                                          |
+                                               +----------v-----------+
+                                               |                      |
+                                               |    main() function    |
+                                               |                      |
+                                               +----------------------+
+```
+
+The main components in the architecture are as follows:
+
+1. Mavsdk: It represents the SDK for communication with the drone. It is responsible for adding connections and getting the system.
+2. Telemetry: It represents the plugin for getting and setting drone telemetry data like position, altitude, etc.
+3. Action: It represents the plugin for performing actions on the drone like arming, taking off, landing, etc.
+4. System: It represents the connected drone system. It is retrieved from Mavsdk after connection.
+5. Position: It represents the telemetry data structure for position information (e.g., relative_altitude_m).
+6. Result: It represents the action result data structure for arming, takeoff, land, etc.
+
+The connections between the components are as follows:
+
+1. Mavsdk has a connection to System. It adds the connection and retrieves the system.
+2. Telemetry and Action have a connection to System. They are instantiated with the system to perform telemetry and action operations.
+3. Telemetry has a connection to Position. It subscribes to the position updates and receives the position data structure.
+4. Action has a connection to Result. It returns the result of action operations like arming, takeoff, land, etc.
+5. System has connections to Telemetry and Action. It provides telemetry and action functionalities to the components.
+
+The syntax in the code:
+
+1. `#include <mavsdk/mavsdk.h>`: It includes the Mavsdk library header file for communication with the drone.
+2. `using namespace mavsdk;`: It imports the `mavsdk` namespace to provide access to the Mavsdk classes without explicit qualification.
+3. `shared_ptr<System>`: It is a shared pointer to the System class, representing a connected drone system.
+4. `auto prom = std::promise<std::shared_ptr<System>>{};` and `auto fut = prom.get_future();`: These lines create a promise and a future to get the shared pointer to the System object asynchronously.
+5. `mavsdk.subscribe_on_new_system`: It subscribes to new system discovery events and performs actions when a system with an autopilot is found.
+6. `Mavsdk mavsdk;`: It creates an instance of the Mavsdk class.
+7. `ConnectionResult connection_result = mavsdk.add_any_connection(argv[1]);`: It adds a connection to the drone using the provided connection URL.
+8. `auto system = get_system(mavsdk);`: It retrieves the system using the get_system function.
+9. `auto telemetry = Telemetry{system};` and `auto action = Action{system};`: These lines instantiate the Telemetry and Action plugins with the system to perform telemetry and action operations.
+10. `telemetry.subscribe_position`: It subscribes to position updates and performs actions when a new position is received.
+11. `telemetry.health_all_ok()`: It checks if the vehicle is ready to arm by checking the health status.
+12. `action.arm()`, `action.takeoff()`, `action.land()`: These lines perform the respective actions on the drone.
+13. `telemetry.in_air()`: It checks if the vehicle is still in the air.
+14. `sleep_for(seconds(1))`: It pauses the execution for the specified duration in seconds.
+
+Please note that the given code is for demonstration purposes and may require additional error handling and exception management for real-world applications.

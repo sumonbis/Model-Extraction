@@ -1,0 +1,29 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
++--------------------------------------------+
+|                   main()                   |
++--------------------------------------------+
+|                                            |
+| - Mavsdk object                            |
+| - ConnectionResult connection_result       |
+| - std::shared_ptr<System> system           |
+| - Ftp ftp                                  |
+| - Ftp::Result res                          |
++--------------------------------------------+
+                    |
+                    |
+                    |
+                    v
++--------------------------------------------+
+|                   usage()                  |
++--------------------------------------------+
+|                                            |
+| - const std::string& bin_name               |
++--------------------------------------------+
+
+The main() function sets up the Mavsdk object, establishes a connection to a drone system, instantiates the Ftp object, and executes various FTP commands depending on the command-line arguments provided.
+
+The usage() function prints out the usage instructions for the application.
+
+Note: I haven't included the helper functions (reset_server(), create_directory(), etc.) in the UML diagram as those functions are utility functions and not separate components.

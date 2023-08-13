@@ -1,0 +1,116 @@
+The Alloy model for the given data and control-flow description can be represented as follows:
+
+```alloy
+sig Command {}
+
+sig ConnectionURL {}
+
+sig System {}
+
+sig Action {
+  arm: System -> Command,
+  returnToLaunch: System -> Command
+}
+
+sig Mission {
+  createPlan: Sequence<MissionItem> -> Command
+}
+
+sig Telemetry {
+  getHealthStatus: System -> Command,
+  isSystemReady: System -> Command,
+  isDisarmed: System -> Command
+}
+
+sig MissionItem {}
+
+sig Sequence {
+  next: lone Sequence
+} {
+  some next
+}
+
+pred MainFlow {
+  // Data-flow relations
+  initMAVSDK: Command,
+  addConnection: Command,
+  getSystem: Command,
+  initModules: Command,
+  createMission: Command,
+  armSystem: Command,
+  subscribeMissionProgress: Command,
+  startMission: Command,
+  pauseMission: Command,
+  waitForPauseFlag: Command,
+  resumeMission: Command,
+  waitForMissionCompletion: Command,
+  returnToLaunch: Command,
+  waitForDisarm: Command
+  
+  // Control-flow relations
+  ctrl_main: one InitMAVSDK + addConnection + getSystem + initModules + createMission + armSystem + 
+    subscribeMissionProgress + startMission + pauseMission + waitForPauseFlag + resumeMission + 
+    waitForMissionCompletion + returnToLaunch + waitForDisarm,
+  
+  // Sequential control flow
+  ctrl_main.initMAVSDK = initMAVSDK,
+  ctrl_main.addConnection = addConnection,
+  ctrl_main.getSystem = getSystem,
+  ctrl_main.initModules = initModules,
+  ctrl_main.createMission = createMission,
+  ctrl_main.armSystem = armSystem,
+  ctrl_main.subscribeMissionProgress = subscribeMissionProgress,
+  ctrl_main.startMission = startMission,
+  ctrl_main.pauseMission = pauseMission,
+  ctrl_main.waitForPauseFlag = waitForPauseFlag,
+  ctrl_main.resumeMission = resumeMission,
+  ctrl_main.waitForMissionCompletion = waitForMissionCompletion,
+  ctrl_main.returnToLaunch = returnToLaunch,
+  ctrl_main.waitForDisarm = waitForDisarm,
+
+  // Loop with sleep for waiting system readiness and mission progression
+  Loop_sleep_wsr: some (ctrl_main.isSystemReady & waitForPauseFlag),
+  Loop_sleep_mp: some (ctrl_main.startMission & waitForMissionCompletion),
+  
+  // Asynchronous callbacks and subscriptions
+  Callback_initMAVSDK: one ctrl_main.initMAVSDK.m = addConnection,
+  Callback_addConnection: one ctrl_main.addConnection.m = getSystem,
+  Callback_getSystem1: one ctrl_main.getSystem.m = initModules,
+  Callback_getSystem2: one ctrl_main.getSystem.m = createMission,
+  Callback_initModules: one ctrl_main.initModules.m = some ctrl_main.armSystem,
+  Callback_createMission: one ctrl_main.createMission.m = subscribeMissionProgress,
+  Callback_armSystem: one ctrl_main.armSystem.m = startMission,
+  Callback_subscribeMissionProgress: one ctrl_main.subscribeMissionProgress.m = some ctrl_main.pauseMission,
+  Callback_pauseMission: one ctrl_main.pauseMission.m = waitForPauseFlag,
+  Callback_resumeMission: one ctrl_main.resumeMission.m = waitForMissionCompletion,
+  Callback_returnToLaunch: one ctrl_main.returnToLaunch.m = waitForDisarm,
+  
+  // Data-flow relations
+  cmd_initMAVSDK: initMAVSDK = one {Command},
+  cmd_addConnection: addConnection = one {Command},
+  cmd_getSystem: getSystem = one {Command},
+  cmd_initModules: initModules = one {Command},
+  cmd_createMission: createMission = one {Command},
+  cmd_armSystem: armSystem = one {Command},
+  cmd_subscribeMissionProgress: subscribeMissionProgress = one {Command},
+  cmd_startMission: startMission = one {Command},
+  cmd_pauseMission: pauseMission = one {Command},
+  cmd_waitForPauseFlag: waitForPauseFlag = one {Command},
+  cmd_resumeMission: resumeMission = one {Command},
+  cmd_waitForMissionCompletion: waitForMissionCompletion = one {Command},
+  cmd_returnToLaunch: returnToLaunch = one {Command},
+  cmd_waitForDisarm: waitForDisarm = one {Command},
+  
+  // Data-flow relations with arguments
+  arg_addConnection: addConnection = one {ConnectionURL},
+  arg_getSystem: getSystem = one {System},
+  arg_initModules: initModules = one {System},
+  arg_createMission: createMission = one {Sequence<MissionItem>},
+  arg_armSystem: armSystem = one {System},
+  arg_subscribeMissionProgress: subscribeMissionProgress = one {Mission}
+}
+
+run MainFlow for 10
+```
+
+Note: This Alloy model captures the data-flow and control-flow relations described in the documentation. However, it does not capture all the details and complexities of the actual implementation. It serves as a simplified representation to reason about the dependencies and interactions between different components and functions.

@@ -1,0 +1,57 @@
+open util/boolean
+
+sig Mavsdk, Calibration, System {}
+
+one sig Main {
+    argc: Int,
+    argv: seq String,
+    usage: Mavsdk -> univ,
+    main: Mavsdk -> System,
+    connection_result: univ,
+    get_system: Mavsdk -> System,
+    calibration: System -> Calibration,
+    calibrate_accelerometer: Calibration,
+    calibrate_gyro: Calibration,
+    calibrate_magnetometer: Calibration,
+    calibrate_accelerometer_async: Calibration -> univ,
+    calibrate_gyro_async: Calibration -> univ,
+    calibrate_magnetometer_async: Calibration -> univ,
+    create_calibration_callback: Calibration -> univ
+} {
+    // Data-flow relations
+    // 1. The main function receives command line arguments `argc` and `argv`
+    usage = { m: Mavsdk | argc in m }
+
+    // 2. The main function creates an instance of the Mavsdk class and adds a connection using the provided connection URL `argv[1]`
+    main = (m: Mavsdk) | (a: seq String) | (r: univ) | (argc in m) and (argv in m) and 
+            (argc = len a) and (a[1] = argv)
+
+    // 3. The `get_system` function is called with the Mavsdk instance as an argument to discover the system
+    get_system = (m: Mavsdk) | (s: System) | (m = main.m) and (s in m)
+
+    // 4. The main function instantiates the `Calibration` plugin using the discovered system
+    calibration = (s: System) | (c: Calibration) | (calibration.c = s)
+
+    // 5. Calibration functions `calibrate_accelerometer`, `calibrate_gyro`, and `calibrate_magnetometer` are called sequentially
+    calibrate_accelerometer = (c: Calibration) | (d: Calibration) | d = c
+    calibrate_gyro = (c: Calibration) | (d: Calibration) | d = c
+    calibrate_magnetometer = (c: Calibration) | (d: Calibration) | d = c
+
+    // Control flow relations
+    // 1. The main function checks if the number of command line arguments is correct
+    (argc = 2) => usage.m
+
+    // 2. If the connection is successful, the main function continues
+    (connection_result != failure) => get_system.m
+
+    // 3. If a system is discovered, the main function continues
+    (exists s: System | get_system.m = s) => calibration.s
+
+    // 4. The calibration functions are called sequentially
+    calibrate_accelerometer_async in calibrate_accelerometer.s
+    calibrate_gyro_async in calibrate_gyro.s
+    calibrate_magnetometer_async in calibrate_magnetometer.s
+
+    // 5. After the calibrations are completed, the main function returns
+    no exists d: Calibration | d in calibrate_magnetometer.s
+}

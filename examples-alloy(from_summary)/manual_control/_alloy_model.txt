@@ -1,0 +1,46 @@
+The Alloy model for the given drone application source code can be represented as follows:
+
+```alloy
+open util/boolean
+
+sig Joystick{
+  init: disj bool,
+  connect: disj bool,
+  disconnect: disj bool,
+  deinit: disj bool,
+  start_poll_loop: disj bool,
+  stop_poll_loop: disj bool,
+  set_initial_values: disj bool,
+  print_values: disj bool,
+  set_button: disj bool,
+  set_axis: disj bool,
+  get_axis: disj bool,
+  _joystick: one lone SDL_Joystick,
+  _state: one CompositeManager,
+  _thread: one Thread,
+  _should_exit: one Bool,
+  _state_mutex: one Mutex
+}
+
+sig CompositeManager {
+  set_button: disj bool,
+  set_axis: disj bool,
+  get_axis: disj bool
+}
+
+sig ButtonManager {}
+
+fact {
+  // Joystick creates an instance of CompositeManager and stores it as a member variable
+  all j: Joystick | j._state in CompositeManager
+
+  // Joystick creates an instance of ButtonManager and stores it as a member variable
+  all j: Joystick | j._state not in ButtonManager
+
+  // CompositeManager and ButtonManager are independent components and do not have any direct connections with each other
+  no cm: CompositeManager, bm: ButtonManager | cm in bm
+}
+
+```
+
+This Alloy model captures the main components, their functions, and the relationships between them as described in the explanation of the code. Note that the Alloy model does not capture the code syntax or the specific library functions used in the code, but focuses on the overall architecture and relationships between components.

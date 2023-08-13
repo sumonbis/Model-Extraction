@@ -1,0 +1,92 @@
+The UML architecture description for the provided drone application code can be represented as follows:
+
+```plantuml
+@startuml
+skinparam monochrome true
+
+interface IMavsdk {
+    + subscribe_on_new_system(callback: () => void): void
+    + systems(): System[]
+    + add_any_connection(url: string): ConnectionResult
+}
+
+interface ISystem {
+    + has_autopilot(): boolean
+}
+
+interface ITransponder {
+    + set_rate_transponder(rate: number): Transponder::Result
+    + subscribe_transponder(callback: (adsbVehicle: AdsbVehicle) => void): void
+}
+
+class Mavsdk {
+    - connections: Connection[]
+    - newSystemCallbacks: (() => void)[]
+    + add_any_connection(url: string): ConnectionResult
+    + subscribe_on_new_system(callback: () => void): void
+    + systems(): System[]
+    + notify_new_systems(): void
+}
+
+class System {
+    - autopilot: boolean
+    + has_autopilot(): boolean
+}
+
+class Transponder {
+    - system: System
+    - updateRate: number
+    + set_rate_transponder(rate: number): Transponder::Result
+    + subscribe_transponder(callback: (adsbVehicle: AdsbVehicle) => void): void
+}
+
+class Connection {
+    - url: string
+}
+
+enum ConnectionResult {
+    Success
+    NoSystemFound
+}
+
+class AdsbVehicle {
+    icao_address: uint64_t
+    latitude_deg: float
+    longitude_deg: float
+    absolute_altitude_m: float
+    heading_deg: float
+    horizontal_velocity_m_s: float
+    vertical_velocity_m_s: float
+    callsign: string
+    emitter_type: string
+    squawk: string
+}
+
+IMavsdk <-- Mavsdk
+ISystem <-- System
+ITransponder <-- Transponder
+Mavsdk <-- System
+System "1" -- "0..*" Transponder
+Mavsdk "1" -- "1..*" System
+Transponder "1" -- "1" System
+IGetSystem <-- Mavsdk
+
+@enduml
+```
+
+Explanation of code syntax:
+
+- `#include <mavsdk/mavsdk.h>`: This line includes the necessary header file for the MAVSDK library, which provides the API for interacting with the drone.
+- `using namespace mavsdk;`: This line brings the `mavsdk` namespace into the current scope, allowing direct access to its components without explicit qualification.
+- `std::shared_ptr<System> get_system(Mavsdk& mavsdk)`: This function takes a reference to a `Mavsdk` object and returns a shared pointer to a `System` object. It is responsible for discovering and returning an autopilot system.
+- `void usage(const std::string& bin_name)`: This function takes a reference to a string and prints out a usage message for the program.
+- `int main(int argc, char** argv)`: This is the main entry point of the program. It takes command line arguments for the connection URL and instantiates the necessary objects to listen to the transponder of the drone.
+- `Mavsdk mavsdk`: This object represents the MAVSDK instance and is used to set up connections with the drone.
+- `ConnectionResult connection_result = mavsdk.add_any_connection(argv[1])`: This line attempts to add a connection to the MAVSDK instance using the provided connection URL.
+- `auto system = get_system(mavsdk)`: This line calls the `get_system()` function to retrieve the autopilot system from the MAVSDK instance.
+- `auto transponder = Transponder{system}`: This line instantiates a `Transponder` object using the autopilot system obtained.
+- `const Transponder::Result set_rate_result = transponder.set_rate_transponder(1.0)`: This line sets the update rate for the transponder and captures the result in a variable.
+- `transponder.subscribe_transponder([](Transponder::AdsbVehicle adsbVehicle) { ... }`: This line sets up a callback function to be executed when new transponder data is available. The callback function prints out the transponder information received.
+- `sleep_for(seconds(60))`: This line pauses the program for 60 seconds before exiting.
+
+Note: The provided code is missing the definitions of some of the classes and interfaces it uses. The UML diagram includes placeholders for those missing definitions.

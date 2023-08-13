@@ -1,0 +1,50 @@
+Here's an AADL model for the provided architecture description:
+
+```
+package Drone_Application_Code is
+
+  thread MainApp
+    features
+      outgoing_Mavsdk : out event data port;
+    end MainApp;
+
+  thread Mavsdk
+    features
+      incoming_discovered_system : in event data port;
+      outgoing_action : out event data port;
+    end Mavsdk;
+
+  thread System
+    features
+      incoming_discovered_system : in event data port;
+      outgoing_action : out event data port;
+    end System;
+
+  thread Action
+    features
+      incoming_action : in event data port;
+    end Action;
+
+  process System_Discovery_Process
+    subcomponents
+      main : thread MainApp;
+      mavsdk : thread Mavsdk;
+      system : thread System;
+      action : thread Action;
+    connections
+      main.outgoing_Mavsdk -> mavsdk.incoming_discovered_system;
+      mavsdk.outgoing_action -> system.incoming_discovered_system;
+      mavsdk.outgoing_action -> action.incoming_action;
+    end System_Discovery_Process;
+
+end Drone_Application_Code;
+```
+
+In this AADL model:
+- The `MainApp` thread has an outgoing event data port, which is used to send the discovered systems to the `Mavsdk` thread.
+- The `Mavsdk` thread has an incoming event data port, which receives the discovered systems from the `MainApp` thread, and an outgoing event data port, which sends the termination command to the `System` thread.
+- The `System` thread has incoming and outgoing event data ports for receiving the discovered systems from the `Mavsdk` thread and receiving the termination command from the `Mavsdk` thread, respectively.
+- The `Action` thread has an incoming event data port for receiving the termination command from the `Mavsdk` thread.
+- The `System_Discovery_Process` process contains the `MainApp`, `Mavsdk`, `System`, and `Action` threads, and the connections between them.
+
+Note: This AADL model captures the communication and control flow between the different components of the drone application code. It does not capture the code execution or the specifics of the MAVSDK library.

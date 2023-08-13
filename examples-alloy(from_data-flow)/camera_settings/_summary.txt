@@ -1,0 +1,23 @@
+The data-flow and control flow relations in the given drone application code are as follows:
+
+1. Data-flow:
+   - The drone camera settings are obtained and stored in the `CurrentSettings` struct.
+   - The `CurrentSettings` struct is used to display the current camera settings.
+   - The `CurrentSettings` struct is used to provide the available camera settings for the user to choose from.
+   - The user selected camera settings are passed to the `Camera` object to change the camera mode and settings.
+
+2. Control flow:
+   - The program starts by checking the command-line argument for the connection URL.
+   - The `Mavsdk` object is created and the connection is established with the drone using the provided URL.
+   - The program waits for the system with the camera to be discovered.
+   - Once the camera system is discovered, the camera object is instantiated.
+   - The `CurrentSettings` struct is subscribed to receive and cache the current camera settings.
+   - The program enters a loop that continuously listens for user input.
+   - Based on the user input, different functions are called to perform specific actions:
+      - If the user selects "p", the current camera settings are displayed.
+      - If the user selects "m", the user is prompted to select the camera mode.
+      - If the user selects "s", the user is prompted to select a specific camera setting.
+      - If the user selects "q", the program exits.
+   - The loop continues until the user selects "q" to quit the program.
+
+Note: The code provided seems to be an example demonstrating how to change camera settings for a drone application. It uses the MAVSDK library to connect to a drone system, interact with the camera, and display/change camera settings.

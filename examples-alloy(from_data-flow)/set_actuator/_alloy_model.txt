@@ -1,0 +1,73 @@
+Here is an Alloy model representing the given data and control-flow description:
+
+```
+open util/boolean
+
+sig URL {}
+
+sig Index {}
+
+sig Value {}
+
+sig ConnectionResult {}
+
+sig System {}
+
+sig SetActuatorResult {}
+
+abstract sig Object {}
+
+one sig Mavsdk, ActionPlugin extends Object {}
+
+fun doesConnectionSucceed[c: ConnectionResult] : Boolean { ... }
+fun isAutopilotFound[s: System] : Boolean { ... }
+fun doesActuatorSetSucceed[r: SetActuatorResult] : Boolean { ... }
+
+one sig MainFunction extends Object {
+    connectionURL: URL,
+    actuatorIndex: Index,
+    actuatorValue: Value,
+    connectionResult: ConnectionResult,
+    system: System,
+    setActuatorResult: SetActuatorResult
+} {
+    doesConnectionSucceed[connectionResult] = true => doesActuatorSetSucceed[setActuatorResult] = true
+}
+
+pred CheckInputArguments(numArgs: Int) {
+    numArgs = 3 => #MainFunction = 1
+}
+
+pred EstablishConnection {
+    doesConnectionSucceed[main.connectionResult] = true
+}
+
+pred DiscoverSystem {
+    isAutopilotFound[main.system] = true
+}
+
+pred SetActuator {
+    doesActuatorSetSucceed[main.setActuatorResult] = true
+}
+
+pred MainFlow(numArgs: Int) {
+    CheckInputArguments[numArgs]
+    EstablishConnection
+    DiscoverSystem
+    SetActuator
+}
+
+assert SuccessfulExecution {
+    all main: MainFunction | MainFlow[3]
+    (all main: MainFunction | main.doesConnectionSucceed[main.connectionResult] = true) <=> (all main: MainFunction | main.doesActuatorSetSucceed[main.setActuatorResult] = true)
+}
+
+assert ExitCode {
+    all main: MainFunction | (all main: MainFunction | main.setActuatorResult = SetActuatorResult) => (all main: MainFunction | main.doesActuatorSetSucceed[main.setActuatorResult] = true)
+}
+
+check SuccessfulExecution for 3
+check ExitCode for 3
+```
+
+Note: The functions `doesConnectionSucceed`, `isAutopilotFound`, and `doesActuatorSetSucceed` need to be defined based on the specific logic in the code. These functions should return true or false based on the given conditions described in the data-flow and control-flow relations.

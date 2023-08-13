@@ -16,6 +16,7 @@ def timeout_handler(signum, frame):
 
 class ChatGPTCall(object):
     def __init__(self, api_key_file="api_key.txt", model_name="gpt-3.5-turbo"):
+    # def __init__(self, api_key_file="api_key.txt", model_name="gpt-4"):
         self.api_key = self.load_api(api_key_file)
         self.model_name = model_name
 
@@ -112,6 +113,7 @@ def write_to_file(file_path, text):
 def truncate_to_token_limit(text, token_limit):
     # enc = tiktoken.get_encoding("p50k_base")
     enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
+    # enc = tiktoken.encoding_for_model("gpt-4")
     tokens = enc.encode(text)
 
     if len(tokens) <= token_limit:
@@ -132,12 +134,35 @@ def summarize(file_name):
     arch_desc = get_answer(arch_cmd + code)
     return arch_desc
 
-def get_aadl(summary, ):
+def get_aadl(summary):
     arch_cmd = 'Write an AADL model for the following architecture description:\n'
     print('Generating AADL ...')
     aadl_model = get_answer(arch_cmd + summary)
     # aadl_model = get_answer(arch_cmd + "implementation code: \n " + code + "\n Summary:\n" + summary)
     return aadl_model
+
+def summarize_relations(file_name):
+    arch_cmd = 'Describe the data-flow and control flow relations for the following drone application code.\n'
+    code = load_query(file_name)
+    code = truncate_to_token_limit(code, 3000)
+    print('Generating summary ...')
+    arch_desc = get_answer(arch_cmd + code)
+    return arch_desc
+
+def get_alloy(summary):
+    # arch_cmd = 'Write the Alloy model for the following data and control-flow description:\n'
+    arch_cmd = 'Write the Alloy model for the following description of drone application source code:\n'
+    print('Generating Alloy ...')
+    alloy_model = get_answer(arch_cmd + summary)
+    return alloy_model
+
+def get_aadl_direct(file_name):
+    arch_cmd = 'Write an AADL model architecture (.aadl) for the following drone application code.\n'
+    code = load_query(file_name)
+    code = truncate_to_token_limit(code, 3000)
+    print('Generating summary ...')
+    arch_desc = get_answer(arch_cmd + code)
+    return arch_desc
 
 
 if __name__ == "__main__":
@@ -148,7 +173,6 @@ if __name__ == "__main__":
     else:
         print("No argument provided.")
 
-    # Using os.listdir() to get a list of immediate subdirectories in the given path
     subdirectories = [entry for entry in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, entry))]
 
     # Iterating through the immediate subdirectories
@@ -162,10 +186,32 @@ if __name__ == "__main__":
             if(file_name.endswith(".cpp")):
                 print(f"Files in {subdirectory_path}:")
                 print(file_name)
+
+                ## Generate AADL model directly from code
+                # aadl = get_aadl_direct(os.path.join(subdirectory_path, file_name))
+                # write_to_file(subdirectory_path + "/_aadl.txt", aadl)
                 
+                ## Generate AADL model via summary
+                ## Step 1
+                # summary = summarize(os.path.join(subdirectory_path, file_name))
+                # write_to_file(subdirectory_path + "/_summary.txt", summary)
+
+                ## Step 2    
+                # aadl = get_aadl(summary)
+                # write_to_file(subdirectory_path + "/_aadl_model.txt", aadl)
+
+                # Generate Alloy model via data- and control-flow relations
+                # Step 1
+                ## via data- and control flow
+                # summary = summarize_relations(os.path.join(subdirectory_path, file_name))
+                # write_to_file(subdirectory_path + "/_summary.txt", summary)
+
+                ## via UML summary
                 summary = summarize(os.path.join(subdirectory_path, file_name))
                 write_to_file(subdirectory_path + "/_summary.txt", summary)
 
-                aadl = get_aadl(summary)
-                write_to_file(subdirectory_path + "/_aadl_model.txt", aadl)
+                # Step 2    
+                aadl = get_alloy(summary)
+                write_to_file(subdirectory_path + "/_alloy_model.txt", aadl)
+
                 print("====================================")

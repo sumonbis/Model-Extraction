@@ -1,0 +1,85 @@
+The UML architecture description for the drone application code can be represented as follows:
+
+```
+---------------------------------
+|        Drone Application      |
+---------------------------------
+| - main(argc, argv)            |
+---------------------------------
+| + usage(bin_name)             |
+| - get_system(mavsdk)          |
+| - offb_ctrl_ned(offboard)     |
+| - offb_ctrl_pos_global(...)   |
+| - offb_ctrl_body(offboard)    |
+| - offb_ctrl_attitude(offboard)|
+---------------------------------
+
+--------------------------------------
+|             Mavsdk                  |
+--------------------------------------
+|                                    |
+--------------------------------------
+|                                    |
+-------------------------------------
+|         ConnectionResult           |
+-------------------------------------
+| - Success                         |
+| - Failure                         |
+-------------------------------------
+
+-------------------------------------
+|           System                   |
+-------------------------------------
+| + system_id                       |
+| + has_autopilot()                 |
+-------------------------------------
+
+-------------------------------------
+|           Action                   |
+-------------------------------------
+|                                    |
+-------------------------------------
+| + arm                              |
+| + disarm                           |
+-------------------------------------
+
+--------------------------------------
+|          Offboard                   |
+--------------------------------------
+|                                     |
+--------------------------------------
+| + start()                          |
+| + stop()                           |
+| + set_velocity_ned(...)            |
+| + set_position_global(...)         |
+| + set_velocity_body(...)           |
+| + set_attitude(...)                |
+--------------------------------------
+
+--------------------------------------
+|          Telemetry                  |
+--------------------------------------
+|                                     |
+--------------------------------------
+| + health_all_ok()                   |
+| + get_gps_global_origin()           |
+--------------------------------------
+
+```
+
+Explanation of the code syntax:
+
+- The `using` statement is used to import symbols from namespaces `mavsdk` and `std::chrono`.
+- The `void usage(const std::string& bin_name)` function takes a `bin_name` parameter of type `std::string&` and prints usage instructions for the program.
+- The `std::shared_ptr<System> get_system(Mavsdk& mavsdk)` function takes a reference to a `Mavsdk` object and returns a shared pointer to a `System` object. It discovers systems and waits for a system with an autopilot to be found before returning the shared pointer to the system.
+- The `bool offb_ctrl_ned(mavsdk::Offboard& offboard)` function takes a reference to an `Offboard` object and performs offboard control using NED coordinates. It starts offboard control, performs a series of maneuvers, and stops offboard control.
+- The `bool offb_ctrl_pos_global(mavsdk::Offboard& offboard, mavsdk::Telemetry& telemetry)` function takes references to an `Offboard` object and a `Telemetry` object and performs offboard control using global coordinates. It starts offboard control, performs a series of maneuvers, and stops offboard control.
+- The `bool offb_ctrl_body(mavsdk::Offboard& offboard)` function takes a reference to an `Offboard` object and performs offboard control using body coordinates. It starts offboard control, performs a series of maneuvers, and stops offboard control.
+- The `bool offb_ctrl_attitude(mavsdk::Offboard& offboard)` function takes a reference to an `Offboard` object and performs offboard control using attitude commands. It starts offboard control, performs a series of maneuvers, and stops offboard control.
+- The `int main(int argc, char** argv)` function is the entry point of the program. It parses command line arguments, initializes the Mavsdk and its associated plugins, waits for the system to be ready, and performs offboard control using different coordinate systems based on user input.
+- The `Mavsdk` class represents the Mavsdk library and provides methods for adding connections to drones.
+- The `ConnectionResult` enum represents the result of a connection attempt (e.g., success or failure).
+- The `System` class represents a remote system (e.g., a drone) and provides information about the system and its components.
+- The `Action` class represents the action plugin and provides methods for arming and disarming the drone.
+- The `Offboard` class represents the offboard plugin and provides methods for starting and stopping offboard control, and setting velocity, position, and attitude commands.
+- The `Telemetry` class represents the telemetry plugin and provides methods for obtaining telemetry information, such as GPS global origin and health status.

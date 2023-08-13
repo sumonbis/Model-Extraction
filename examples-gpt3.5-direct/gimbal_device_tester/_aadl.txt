@@ -1,0 +1,111 @@
+Here is the AADL model architecture for the given drone application code:
+
+```aadl
+-- MAVLink Gimbal Device AADL Model
+
+with Data_Models;
+with MAVLink_Passthrough;
+
+system MAVLink_Gimbal_Device is
+   data Receiver_Data : composite
+      sysid              : uint8;
+      compid             : uint8;
+      target_sysid       : uint8;
+      target_compid      : uint8;
+      mav_type           : uint8;
+   end Receiver_Data;
+
+   data Attitude_Data : composite
+      Gimbal_Attitude : composite
+         roll_deg  : float;
+         pitch_deg : float;
+         yaw_deg   : float;
+      end Gimbal_Attitude;
+
+      Gimbal_Limits : composite
+         roll_min_deg  : float;
+         roll_max_deg  : float;
+         pitch_min_deg : float;
+         pitch_max_deg : float;
+         yaw_min_deg   : float;
+         yaw_max_deg   : float;
+      end Gimbal_Limits;
+
+      Vehicle_Attitude : composite
+         roll_deg  : float;
+         pitch_deg : float;
+         yaw_deg   : float;
+      end Vehicle_Attitude;
+
+      Mode : enumeration (Follow, Lock);
+
+      Attitude_Setpoint : composite
+         mode             : Mode;
+         roll_deg         : float;
+         pitch_deg        : float;
+         yaw_deg          : float;
+         roll_rate_deg    : float;
+         pitch_rate_deg   : float;
+         yaw_rate_deg     : float;
+      end Attitude_Setpoint;
+   end Attitude_Data;
+
+   thread Sender_Thread;
+
+   thread Tester_Thread;
+
+end MAVLink_Gimbal_Device;
+
+process implementation MAVLink_Gimbal_Device.process
+subcomponents
+   Mavlink_Passthrough : process MAVLink_Passthrough.Process;
+
+   Sender_Component : thread Sender_Thread.Port
+      provides { ping_input; }
+
+   Tester_Component : thread Tester_Thread.Port
+      provides { ping_input; }
+
+connections
+   Sender_Component.out -> Mavlink_Passthrough.in;
+   Mavlink_Passthrough.out -> Sender_Component.in;
+
+   Tester_Component.out -> Mavlink_Passthrough.in;
+   Mavlink_Passthrough.out -> Tester_Component.in;
+
+   Tester_Thread.largest_delayly_input_port.all -> Tester_Thread.largest_delayly_output_port.all;
+
+end MAVLink_Gimbal_Device.process;
+
+thread implementation Sender_Thread.Port
+subcomponents
+   Mavlink_Passthrough : access MAVLink_Gimbal_Device.Mavlink_Passthrough.Port;
+   Attitude_Data : access MAVLink_Gimbal_Device.Attitude_Data;
+
+implementations
+   implementation I1
+   subcomponents
+      Sender : subcomponent Sender;
+   connections
+      Sender._mavlink_passthrough -> Mavlink_Passthrough;
+      Sender._attitude_data -> Attitude_Data;
+   end I1;
+
+end Sender_Thread.Port;
+
+thread implementation Tester_Thread.Port
+subcomponents
+   Attitude_Data : access MAVLink_Gimbal_Device.Attitude_Data;
+
+implementations
+   implementation I1
+   subcomponents
+      Tester : subcomponent Tester;
+   connections
+      Tester._attitude_data -> Attitude_Data;
+   end I1;
+
+end Tester_Thread.Port;
+```
+
+Please note that the code provided is missing necessary header files and function implementations, so the AADL model architecture only includes the required components based on the provided code.

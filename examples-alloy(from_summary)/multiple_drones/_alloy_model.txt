@@ -1,0 +1,67 @@
+abstract sig Component {}
+
+sig Mavsdk extends Component {
+    add_any_connection: ConnectionUrl -> Mavsdk,
+    subscribe_on_new_system: (System -> none) -> Mavsdk
+}
+
+sig System extends Component {}
+
+sig Telemetry extends Component {
+    set_rate_position: Rate -> Telemetry,
+    subscribe_position: (Position -> none) -> Telemetry,
+    health_all_ok: () -> Boolean,
+    in_air: () -> Boolean
+}
+
+sig Action extends Component {
+    arm: () -> none,
+    takeoff: () -> none,
+    land: () -> none
+}
+
+sig ConnectionUrl {}
+
+sig Rate {}
+
+sig Position {}
+
+fact {
+    all m: Mavsdk, url: ConnectionUrl |
+        let m' = m.add_any_connection[url] |
+        m'.subscribe_on_new_system[createSystem[m']] in
+    no disjoint s1, s2: System |
+        s1 in s2.mavsdk and s2 in s1.mavsdk
+}
+
+fact {
+    all s: System |
+        one m: Mavsdk |
+        s in m.subscribe_on_new_system.event
+}
+
+fact {
+    all t: Telemetry |
+        one s: System |
+        one m: Mavsdk |
+        let t' = t.set_rate_position[r] |
+        let t'' = t'.subscribe_position[createPosition[t']] |
+        let t''' = t''.health_all_ok[] |
+        let t'''' = t'''.in_air[] |
+        t'''' in s.telemetry
+}
+
+fact {
+    all a: Action |
+        one s: System |
+        let a' = a.arm[] |
+        let a'' = a'.takeoff[] |
+        let a''' = a''.land[] |
+        a''' in s.action
+}
+
+fun createSystem(m: Mavsdk): System {}
+
+fun createPosition(t: Telemetry): Position {}
+
+fun createCallback(m: Mavsdk): (System -> none) {}

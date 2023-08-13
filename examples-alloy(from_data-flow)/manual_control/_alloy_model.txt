@@ -1,0 +1,161 @@
+open util/ordering[Event]
+
+sig Joystick {
+  _joystick: one univ,
+  _state: State,
+  _should_exit: lone bool,
+  _poll_thread: lone Thread,
+  _is_connected: bool,
+  _is_initialized: bool,
+  _is_polling: bool
+}
+
+sig State {
+  buttons: set Button,
+  axes: set Axis
+}
+
+sig Button {
+  id: one Int,
+  state: one Bool
+}
+
+sig Axis {
+  id: one Int,
+  value: one Int
+}
+
+sig Event {
+  source: Joystick,
+  eventType: EventType,
+  eventData: lone EventData
+}
+
+abstract sig EventType {}
+one sig AxisMotion, ButtonPress, ButtonRelease, DeviceAdded, DeviceRemoved, Terminate extends EventType {}
+
+sig AxisMotionData extends EventData {
+  axis: one Axis,
+  newValue: one Int
+}
+
+sig ButtonPressData extends EventData {
+  button: one Button
+}
+
+sig ButtonReleaseData extends EventData {
+  button: one Button
+}
+
+sig DeviceAddedData extends EventData {}
+
+sig DeviceRemovedData extends EventData {}
+
+sig TerminateData extends EventData {}
+
+abstract sig EventData {}
+
+fact {
+  // Initialization and connection
+  all j: Joystick |
+    (j._is_initialized implies (one e: Event | e.source = j && e.eventType in DeviceAdded + DeviceRemoved)) &&
+    (j._is_connected implies (one e: Event | e.source = j && e.eventType in DeviceAdded + DeviceRemoved)) &&
+    (j._is_initialized implies one b: Button | b in j._state.buttons) &&
+    (j._is_initialized implies one a: Axis | a in j._state.axes)
+
+  // Polling loop
+  all j: Joystick |
+    (j._is_polling implies (one e: Event | e.source = j && e.eventType in AxisMotion + ButtonPress + ButtonRelease + DeviceAdded + DeviceRemoved + Terminate)) &&
+    (j._is_polling implies one ed: EventData | ed in j._events.eventData)
+
+  // Setters
+  all j: Joystick, b: Button |
+    (j._is_polling implies (one e: Event | e.source = j && e.eventType = ButtonPress && e.eventData = b)) &&
+    (j._is_polling implies (one e: Event | e.source = j && e.eventType = ButtonRelease && e.eventData = b))
+
+  all j: Joystick, a: Axis, v: Int |
+    (j._is_polling implies ((one e: Event | e.source = j && e.eventType = AxisMotion &&
+      e.eventData = a->v) &&
+      (one a': a->v' | a' in j._state.axes && v' = v && a' != a)))
+
+  // Getters
+  all j: Joystick, a: Axis |
+    (j._is_polling implies (one e: Event | e.source = j && e.eventType = AxisMotion &&
+      e.eventData = a->a.value))
+
+  // Control flow relations
+  all j: Joystick |
+    (j._is_initialized iff (one e: Event | e.source = j && e.eventType in DeviceAdded + DeviceRemoved)) &&
+    (j._is_connected iff (one e: Event | e.source = j && e.eventType in DeviceAdded + DeviceRemoved)) &&
+    (j._is_polling iff (one e: Event | e.source = j && e.eventType in AxisMotion + ButtonMotion +
+      ButtonPress + ButtonRelease + DeviceAdded + DeviceRemoved + Terminate))
+
+  // Stopping the polling loop
+  all j: Joystick |
+    (j._should_exit iff (one e: Event | e.source = j && e.eventType = Terminate)) &&
+    (j._should_exit implies (one t: Thread | t = j._poll_thread)) &&
+    (j._should_exit implies (one e: Event | e.source = j && e.eventType = Terminate)) &&
+    (j._should_exit implies t.isTerminated)
+
+  // Cleanup and destruction
+  all j: Joystick |
+    (j._is_connected implies (one e: Event | e.source = j && e.eventType = DeviceRemoved)) &&
+    (j._is_initialized implies (one e: Event | e.source = j && e.eventType = DeviceRemoved)) &&
+    ((j._is_initialized || j._is_connected) implies (one e: Event |
+      e.source = j && e.eventType = DeviceRemoved)) &&
+    ((j._is_initialized || j._is_connected) implies (one e: Event |
+      e.source = j && e.eventType = DeviceRemoved)) &&
+    (j._is_initialized implies j.print_values)
+}
+
+pred init(j: Joystick) {
+  j._is_initialized = true
+  j._is_connected = false
+  j._is_polling = false
+  j._state = one State
+  j._should_exit = none
+  j._poll_thread = none
+  j._state.buttons = {}
+  j._state.axes = {}
+}
+
+pred connect(j: Joystick) {
+  j._is_connected = true
+  j._should_exit = false
+}
+
+pred set_initial_values(j: Joystick) {
+  j._state.buttons = {}
+  j._state.axes = {}
+}
+
+pred disconnect(j: Joystick) {
+  j._is_connected = false
+}
+
+pred deinit(j: Joystick) {
+  j._is_initialized = false
+  j._is_connected = false
+}
+
+pred create(j: Joystick) {
+  init(j)
+  connect(j)
+  start_poll_loop(j)
+}
+
+pred start_poll_loop(j: Joystick) {
+  j._is_polling = true
+}
+
+pred stop_poll_loop(j: Joystick) {
+  j._is_polling = false
+  j._should_exit = true
+  j._event_data = #{TerminationData}
+}
+
+pred print_values(j: Joystick) {
+  // Implementation not shown
+}
+
+run {} for 5 but 5 Button, 5 Axis, 1 Joystick, 5 Event, 5 EventType, 4 EventData, 0 State, 4 Thread

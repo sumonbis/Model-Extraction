@@ -1,0 +1,101 @@
+```
+open util/boolean
+
+sig Mavsdk {}
+
+sig Gimbal {
+  controlMode: ControlMode,
+  pitch: Int,
+  yaw: Int,
+  pitchRate: Int,
+  yawRate: Int,
+  roiLocation: Location
+}
+
+enum ControlMode {
+  primary,
+  secondary
+}
+
+sig Telemetry {
+  rateCameraAttitude: Int,
+  cameraAttitudeEuler: EulerAngle
+}
+
+sig System {
+  connectionResult: ConnectionResult,
+  telemetry: one Telemetry,
+  gimbal: one Gimbal
+}
+
+enum ConnectionResult {
+  success,
+  failed
+}
+
+sig EulerAngle {
+  roll: Int,
+  pitch: Int,
+  yaw: Int
+}
+
+sig Location {
+  latitude: Int,
+  longitude: Int,
+  altitude: Int
+}
+
+fun mainExists[m : Mavsdk, t : Telemetry, g : Gimbal] : Bool {
+  some s : System | s.mavsdk = m and s.telemetry = t and s.gimbal = g
+}
+
+pred AddAnyConnection[m: Mavsdk] {
+  m in Mavsdk
+}
+
+fact MainExists {
+  all m : Mavsdk, t : Telemetry, g : Gimbal | mainExists[m, t, g]
+}
+
+pred DroneApplication[m : Mavsdk, t : Telemetry, g : Gimbal] {
+  AddAnyConnection[m] &&
+  loadMavsdkPlugins[m, t, g] &&
+  setGimbalMode[g] &&
+  setGimbalAngles[g] &&
+  releaseGimbalControl[g]
+}
+
+pred loadMavsdkPlugins[m : Mavsdk, t : Telemetry, g : Gimbal] {
+  m in Mavsdk &&
+  t in m.telemetry &&
+  g in m.gimbal
+}
+
+pred setGimbalMode[g : Gimbal] {
+  g.controlMode = ControlMode.primary
+}
+
+pred setGimbalAngles[g : Gimbal] {
+  g.pitch = 0 &&
+  g.yaw = 0 &&
+  g.pitchRate = 0 &&
+  g.yawRate = 0 &&
+  g.roiLocation.latitude = 0 &&
+  g.roiLocation.longitude = 0 &&
+  g.roiLocation.altitude = 0
+}
+
+pred releaseGimbalControl[g : Gimbal] {
+  g.controlMode = ControlMode.secondary
+}
+
+pred Success[c : ConnectionResult] {
+  c = ConnectionResult.success
+}
+
+pred Failed[c : ConnectionResult] {
+  c = ConnectionResult.failed
+}
+```
+
+The Alloy model represents the UML architecture description of the drone application code. It includes the necessary signatures and predicates to capture the relationships between the Mavsdk, Gimbal, Telemetry, System, and ConnectionResult classes. The model also includes predicates to represent the different steps of the drone application code, such as loading Mavsdk plugins, setting gimbal mode and angles, and releasing gimbal control. Finally, additional predicates are defined to represent the success or failure of the connection result.

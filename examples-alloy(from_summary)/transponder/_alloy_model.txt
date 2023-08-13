@@ -1,0 +1,46 @@
+The Alloy model for the given drone application source code can be represented as follows:
+
+```alloy
+enum ConnectionResult {
+  success, 
+  fail
+}
+
+enum TransponderResult {
+  success, 
+  fail
+}
+
+abstract sig MainProgram {
+  main: Int -> Int -> set ConnectionResult,
+  usage: String -> set (),
+  get_system: Mavsdk -> some System
+}
+
+abstract sig Mavsdk {
+  add_any_connection: String -> ConnectionResult,
+  systems: set System,
+  subscribe_on_new_system: (System -> none) -> none
+}
+
+abstract sig System {
+  has_autopilot: Bool,
+  subscribe_on_new_vehicle: (Vehicle -> none) -> none
+}
+
+abstract sig Transponder {
+  system: one System,
+  set_rate_transponder: Float -> TransponderResult,
+  subscribe_transponder: (TransponderResult -> none) -> none
+}
+
+abstract sig Vehicle {}
+
+// Associations
+fact {
+  MainProgram.main->ConnectionResult in Mavsdk.add_any_connection
+  MainProgram.get_system->System in Mavsdk.systems
+  Mavsdk.systems->System in System.subscribe_on_new_vehicle
+  Transponder.system->System in Mavsdk.systems
+}
+```

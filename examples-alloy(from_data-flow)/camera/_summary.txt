@@ -1,0 +1,22 @@
+The data-flow and control flow relations for the provided drone application code can be summarized as follows:
+
+Data-flow relations:
+1. The connection URL is provided as a command-line argument.
+2. The connection URL is passed to the `add_any_connection` method of the `Mavsdk` class, which establishes a connection to the drone system.
+3. The `subscribe_on_new_system` method is called to wait for new systems to be discovered.
+4. When a system with a camera is discovered, the `system` object is assigned.
+5. The `system` object is passed to the constructors of the `Telemetry` and `Camera` classes to instantiate the plugins.
+6. The camera mode is set to Photo mode.
+7. The `subscribe_capture_info` method is called to subscribe to information about pictures that are taken.
+8. The `take_photo` method is called to capture a photo.
+
+Control flow relations:
+1. The main function starts by checking the command-line arguments. If there is not exactly one argument, the `usage` function is called and the program exits.
+2. The connection to the drone system is established, and if the connection fails, an error message is printed and the program exits.
+3. The program waits for new systems to be discovered and assigns the system with a camera to the `system` object.
+4. If no camera is found within 3 seconds, an error message is printed and the program exits.
+5. The plugins are instantiated.
+6. The camera mode is set to Photo mode, and if the mode switch fails, an error message is printed and the program exits.
+7. The program subscribes to capture information and takes a photo using the camera.
+8. The program sleeps for 2 seconds to allow time for the capture information to be displayed.
+9. The program exits with a return value of 0, indicating successful execution.

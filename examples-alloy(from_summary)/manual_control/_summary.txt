@@ -1,0 +1,60 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
+              1
+         +----------+
+         | Joystick |
+         +-----+----+
+               |
+               | creates
+               |
+         +-----+-----+
+         |           |
+         v           v
+CompositeManager  ButtonManager
+```
+
+1. Joystick: The main component that controls the joystick functionality. It provides methods to initialize the joystick, connect to the joystick device, start and stop the poll loop, and get button and axis values. It also has private helper functions to set initial values, handle events, and print values. It uses the SDL library for joystick management.
+
+2. CompositeManager: This component is responsible for managing the composite data related to the joystick, including the button and axis states. It provides methods to set button and axis values, and get axis values.
+
+3. ButtonManager: This component is responsible for managing the button data related to the joystick. It provides methods to set button values.
+
+The connections between the components are as follows:
+- Joystick creates an instance of CompositeManager and stores it as a member variable.
+- Joystick creates an instance of ButtonManager and stores it as a member variable.
+- CompositeManager and ButtonManager are independent components and do not have any direct connections with each other.
+
+Now, let's explain the code syntax in detail:
+
+- The code starts with the inclusion of necessary headers: joystick.h, cmath, csignal, iostream, and memory.
+
+- The class Joystick is defined, which has the following public member functions:
+  - Joystick(): Default constructor.
+  - ~Joystick(): Destructor. It calls stop_poll_loop(), disconnect(), and deinit() functions.
+
+- The class Joystick also has a private static member function called create() that returns a unique_ptr to a Joystick object. It initializes SDL, connects to the joystick device, starts the poll loop, and returns the created object if successful, otherwise null.
+
+- The class Joystick has the following private member functions:
+  - init(): Initializes SDL and returns true if successful, otherwise false.
+  - connect(): Connects to the joystick device and returns true if successful, otherwise false.
+  - disconnect(): Disconnects from the joystick device.
+  - deinit(): Deinitializes SDL.
+  - start_poll_loop(): Starts the poll loop in a separate thread.
+  - stop_poll_loop(): Stops the poll loop by setting the _should_exit flag to true and joining the thread.
+  - set_initial_values(): Sets the initial values for buttons and axes.
+  - print_values(): Prints the current button and axis values.
+  - set_button(int button, bool value): Updates the state of the specified button.
+  - set_axis(int axis, float value): Updates the state of the specified axis.
+  - get_axis(unsigned axis): Returns the value of the specified axis.
+
+- The class Joystick has private member variables:
+  - _joystick: A pointer to SDL_Joystick object.
+  - _state: An instance of CompositeManager to store the button and axis state.
+  - _thread: A thread object to run the poll loop.
+  - _should_exit: A flag to indicate whether the poll loop should exit.
+  - _state_mutex: A mutex to synchronize access to the button and axis state.
+
+- The main function is not provided in the code, but it can use the Joystick class to interact with the joystick and get button and axis values.
+
+Note: The code assumes the existence of the SDL library for joystick management, which provides functions such as SDL_Init, SDL_JoystickOpen, SDL_JoystickClose, etc.

@@ -1,0 +1,34 @@
+The data-flow and control flow relations for the given drone application code can be described as follows:
+
+Data-flow relations:
+1. The main function receives the connection URL as a command line argument.
+2. The Mavsdk instance is created.
+3. The connection URL is added to the Mavsdk instance to establish a connection with the drone.
+4. The get_system function is called to discover the system with an autopilot.
+5. The system instance is obtained from the promise/future mechanism in the get_system function.
+6. Plugin instances (Action, FollowMe, Telemetry) are created using the obtained system instance.
+7. Telemetry position updates are subscribed, and the position data is printed to the console.
+8. Telemetry flight mode updates are subscribed, and the flight mode data is printed to the console.
+9. The FakeLocationProvider registers for location updates and sets the target location for FollowMe.
+10. FollowMe start/stop commands are sent based on the FakeLocationProvider updates.
+
+Control flow relations:
+1. The main function checks the command line argument count and displays usage information if count is not 2.
+2. Connection is established with the drone using the Mavsdk instance.
+3. The get_system function waits for the discovery of a system with an autopilot within a timeout period.
+4. If a system with an autopilot is discovered, the autopilot is used; otherwise, an error message is printed, and the program exits.
+5. The main while loop waits for the system to be ready by checking telemetry health status.
+6. The system is armed using the Action plugin.
+7. Telemetry position updates are subscribed, and the position data is printed to the console.
+8. Telemetry flight mode updates are subscribed, and the flight mode data is printed to the console.
+9. The Action plugin is used to perform takeoff.
+10. FollowMe configuration is set using the FollowMe plugin.
+11. FollowMe is started using the FollowMe plugin.
+12. The FakeLocationProvider registers for location updates and sets the target location for FollowMe.
+13. The main while loop waits for the FakeLocationProvider to be running.
+14. FollowMe is stopped using the FollowMe plugin.
+15. Telemetry flight mode updates subscription is canceled.
+16. The Action plugin is used to perform landing.
+17. The main while loop waits for the drone to land.
+18. The main while loop waits for the drone to be disarmed.
+19. The program exits with a return value of 0.

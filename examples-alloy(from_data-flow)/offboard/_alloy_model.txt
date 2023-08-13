@@ -1,0 +1,245 @@
+module drone
+
+-- This module describes the data and control-flow of a code snippet that establishes a connection with a drone system, waits for it to be ready, and demonstrates different methods of offboard control.
+
+open util/ordering[Function]
+
+-- Data definition
+
+sig System {
+    autopilot: one Node,
+    connectedTo: set Node
+}
+
+sig Node {}
+
+-- Control-flow definition
+
+sig Function {
+    parameters: set Node,
+    returns: Node,
+    calls: set Function
+}
+
+-- Functions
+
+fun main: Function {
+    parameters = {},
+    returns = target_system,
+    calls = {mavsdk_init, connect_to_drone, initialize_plugins, get_system, wait_for_system_ready}
+}
+
+fun mavsdk_init: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun connect_to_drone: Function {
+    parameters = {},
+    returns = {},
+    calls = {connect_to_system, initialize_telemetry, initialize_offboard, initialize_action}
+}
+
+fun connect_to_system: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun initialize_telemetry: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun initialize_offboard: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun initialize_action: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun get_system: Function {
+    parameters = {},
+    returns = target_system,
+    calls = {wait_for_system_discovery, set_target_system}
+}
+
+fun wait_for_system_discovery: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun set_target_system: Function {
+    parameters = {},
+    returns = target_system,
+    calls = {}
+}
+
+fun wait_for_system_ready: Function {
+    parameters = {},
+    returns = {},
+    calls = {check_health_status}
+}
+
+fun check_health_status: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun offb_ctrl_ned: Function {
+    parameters = {},
+    returns = {},
+    calls = {set_offboard_mode, set_ned_commands}
+}
+
+fun offb_ctrl_pos_global: Function {
+    parameters = {},
+    returns = {},
+    calls = {set_offboard_mode, set_pos_global_commands}
+}
+
+fun offb_ctrl_body: Function {
+    parameters = {},
+    returns = {},
+    calls = {set_offboard_mode, set_body_commands}
+}
+
+fun offb_ctrl_attitude: Function {
+    parameters = {},
+    returns = {},
+    calls = {set_offboard_mode, set_attitude_commands}
+}
+
+fun set_offboard_mode: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun set_ned_commands: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun set_pos_global_commands: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun set_body_commands: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+fun set_attitude_commands: Function {
+    parameters = {},
+    returns = {},
+    calls = {}
+}
+
+-- Order of function calls
+
+fact {
+    Function.^calls = Function.calls
+}
+
+-- Call to main starts the execution
+
+first = main
+
+-- Return type of main is target_system
+
+fact {
+    main.returns = target_system
+}
+
+-- Each function must have unique parameter and return types
+
+fact {
+    all f: Function |
+        lone f.parameters
+        lone f.returns
+}
+
+-- Entry point must have no parameters
+
+fact {
+    no main.parameters
+}
+
+-- Entry point does not call any functions
+
+fact {
+    no main.calls
+}
+
+-- The target_system must be the autopilot for the system
+
+fact {
+    all s: System | s.autopilot in s.connectedTo
+}
+
+-- Each function call must return a node that is connected to the target system
+
+fact {
+    all f: Function, s: System |
+        f.returns in s.connectedTo implies f in target_system
+}
+
+-- Helper fact to check if a function is an initialization function
+
+fact {
+    all f: Function |
+        f in initialize_plugins ||
+        f in initialize_telemetry ||
+        f in initialize_offboard ||
+        f in initialize_action ||
+        f in connect_to_system ||
+        f in wait_for_system_discovery ||
+        f in set_target_system
+}
+
+-- Initialization functions must be called by main
+
+fact {
+    all f: Function |
+        f in initialize_plugins ||
+        f in initialize_telemetry ||
+        f in initialize_offboard ||
+        f in initialize_action ||
+        f in connect_to_system ||
+        f in wait_for_system_discovery ||
+        f in set_target_system implies f in main.calls
+}
+
+-- Offboard control functions must be called by main
+
+fact {
+    all f: Function |
+        f in offb_ctrl_ned ||
+        f in offb_ctrl_pos_global ||
+        f in offb_ctrl_body ||
+        f in offb_ctrl_attitude implies f in main.calls
+}
+
+-- Offboard control functions can only be called if the target system has been set
+
+fact {
+    all f: Function |
+        f in offb_ctrl_ned ||
+        f in offb_ctrl_pos_global ||
+        f in offb_ctrl_body ||
+        f in offb_ctrl_attitude implies set_target_system in f.parameters
+}

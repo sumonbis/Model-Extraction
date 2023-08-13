@@ -1,0 +1,48 @@
+The Alloy model for the given description of the drone application source code can be written as follows:
+
+```
+sig Main {}
+
+sig Mavsdk {
+    connection : one Connection,
+    system : one System
+}
+
+sig Connection {
+    add_any_connection : one ConnectionResult
+}
+
+sig System {
+    action : one Action
+}
+
+sig ConnectionResult {
+    Success, Failed : one
+}
+
+sig Action {
+    terminate : one action
+}
+
+fact {
+    all m : Mavsdk | m.connection.add_any_connection = Success implies m.system.action.terminate = terminate
+}
+```
+
+Explanation:
+
+- `Main`, `Mavsdk`, `Connection`, `System`, `ConnectionResult`, and `Action` are declared as signatures representing the corresponding components in the UML architecture.
+
+- `Main` does not have any additional properties or relations.
+
+- `Mavsdk` has two fields: `connection` of type `Connection` and `system` of type `System`.
+
+- `Connection` has one field `add_any_connection` of type `ConnectionResult`. The `add_any_connection` field represents the result of adding a connection.
+
+- `System` has one field `action` of type `Action`. The `action` field represents the Action plugin associated with the system.
+
+- `ConnectionResult` has two possible values: `Success` and `Failed`.
+
+- `Action` has one action `terminate` representing the termination command.
+
+- The fact specifies that for any instance of `Mavsdk`, if the `add_any_connection` field of `Mavsdk.connection` is `Success`, then `Mavsdk.system.action.terminate` must be equal to `terminate`. This ensures that the `terminate` action is available only when the connection is successful.

@@ -1,0 +1,98 @@
+The AADL model for the given architecture can be represented as follows:
+
+```
+package Drone_Application is
+    public
+       with Data_Model, Devices, Properties, Units;
+
+    system Main
+        features
+            connection : out event port;
+        properties
+            MultiCore_Status_Designate => Processor_Capacity; -- Assuming multi-core system
+    end Main;
+
+    system MAVSDK_Library
+        subcomponents
+            connection_plugin : feature group connection;
+        properties
+            Processor_Affinity => Platform_Capacity;
+    end MAVSDK_Library;
+
+    system Camera_Plugin
+        subcomponents
+            discovery : feature group discovery;
+            capture : feature group capture;
+        connections
+            connect_system: access connection -> MAVSDK_Library.connection_plugin;
+        properties
+            Processor_Affinity => Platform_Capacity;
+    end Camera_Plugin;
+
+    system Telemetry_Plugin
+        subcomponents
+            telemetry_info : feature group telemetry_info;
+        connections
+            connect_system: access connection -> MAVSDK_Library.connection_plugin;
+        properties
+            Processor_Affinity => Platform_Capacity;
+    end Telemetry_Plugin;
+
+    system System
+        subcomponents
+            mavsdk : MAVSDK_Library;
+            camera : Camera_Plugin;
+            telemetry : Telemetry_Plugin;
+        connections
+            connect_camera: access connection -> camera.connect_system;
+            connect_telemetry: access connection -> telemetry.connect_system;
+        properties
+            Processor_Affinity => Platform_Capacity;
+    end System;
+
+    data CaptureInfo
+        properties
+            Data_Mode => User_Defined;
+    end CaptureInfo;
+
+    data Future
+    end Future;
+
+    data Promise
+    end Promise;
+
+    thread sleep_for
+        properties
+            Dispatch_Protocol => Protected;
+        subcomponents
+            sleep : subprogram access Thread_Subprogram;
+    end sleep_for;
+
+    thread Console_IO
+        properties
+            Dispatch_Protocol => Protected;
+        Data_Model::Data_Representation => Conventional; -- Assuming conventional data representations
+        Data_Model::Encoding => ASCII; -- Assuming ASCII encoding
+        Data_Model::Representation => UTF_8; -- Assuming UTF-8 representation
+    end Console_IO;
+
+    process Drone_Application_Process
+        subcomponents
+            main : Main;
+            system : System;
+            capture_info : CaptureInfo;
+            future : Future;
+            promise : Promise;
+            sleep_for_thread : sleep_for;
+            console_io : Console_IO;
+        properties
+            Process_Default_End_To_End_Time => Required_Time;
+        connections
+            connect_main_system : access connection -> main.connection;
+        flows
+            telemetry_data : flow source system.connect_telemetry.telemetry_info -> console_io;
+            capture_info_data : flow sink console_io -> capture_info;
+     end Drone_Application_Process;
+end Drone_Application;
+```
+This AADL model represents the different system components and their interactions as described in the UML architecture. It captures the relationships between the main class, MAVSDK library, Camera plugin, Telemetry plugin, System, CaptureInfo class, Future and Promise classes, sleep_for and Console I/O components. Connections and flows are also defined to denote communication between the components.

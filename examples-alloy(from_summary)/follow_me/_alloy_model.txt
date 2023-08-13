@@ -1,0 +1,119 @@
+open util/ordering[e] 
+
+sig Component {
+  id: one Int,
+  name: one Name,
+}
+
+abstract sig Plugin extends Component {}
+
+sig Mavsdk extends Component {}
+
+sig ActionPlugin extends Plugin {}
+
+sig FollowMePlugin extends Plugin {}
+
+sig TelemetryPlugin extends Plugin {}
+
+sig FakeLocationProvider extends Component {}
+
+sig Interface {
+  id: one Int,
+  name: one Name,
+}
+
+abstract sig PluginInterface extends Interface {}
+
+sig MavsdkInterface extends Interface {}
+
+sig ActionInterface extends PluginInterface {}
+
+sig FollowMeInterface extends PluginInterface {}
+
+sig TelemetryInterface extends PluginInterface {}
+
+abstract sig Connection {
+  component: one Component,
+  interface: one Interface,
+}
+
+sig MavsdkToActionConnection extends Connection {}
+
+sig MavsdkToFollowMeConnection extends Connection {}
+
+sig MavsdkToTelemetryConnection extends Connection {}
+
+sig FakeLocationProviderToFollowMeConnection extends Connection {}
+
+fact {
+  Mavsdk.id = 1
+  ActionPlugin.id = 2
+  FollowMePlugin.id = 3
+  TelemetryPlugin.id = 4
+  FakeLocationProvider.id = 5
+  
+  MavsdkInterface.id = 1
+  ActionInterface.id = 2
+  FollowMeInterface.id = 3
+  TelemetryInterface.id = 4
+  
+  MavsdkToActionConnection.component = Mavsdk
+  MavsdkToActionConnection.interface = ActionInterface
+  
+  MavsdkToFollowMeConnection.component = Mavsdk
+  MavsdkToFollowMeConnection.interface = FollowMeInterface
+  
+  MavsdkToTelemetryConnection.component = Mavsdk
+  MavsdkToTelemetryConnection.interface = TelemetryInterface
+  
+  FakeLocationProviderToFollowMeConnection.component = FakeLocationProvider
+  FakeLocationProviderToFollowMeConnection.interface = FollowMeInterface
+}
+
+fact {
+  all c: Component - Mavsdk | c in Plugin
+}
+ 
+fact {
+  all c: Component - FakeLocationProvider | c not in Plugin
+}
+
+fact {
+  all i: Interface - MavsdkInterface | i in PluginInterface
+}
+
+fact {
+  all i: Interface - PluginInterface | i not in MavsdkInterface
+}
+
+fact {
+  all c1, c2: Component, i1, i2: Interface | (c1->i1) in Connection and (c2->i2) in Connection implies c1 = c2 or i1 != i2
+}
+
+fact {
+  all c: Component | one disj c->PluginInterface
+}
+
+fact {
+  all i: Interface | one disj i.Component
+}
+
+fact {
+  all c1, c2: Component | c1 != c2 implies no c1->PluginInterface & c2->PluginInterface
+}
+
+fact {
+  all c: Component - FakeLocationProvider | no c->FollowMeInterface
+}
+
+fact {
+  all c: Component - Mavsdk | no c->MavsdkInterface
+}
+
+fact {
+  all c: Component - Plugin | one c->MavsdkInterface
+}
+
+fact {
+  all c: Component, i1, i2: Interface | (c->i1) in Connection implies i2 != MavsdkInterface implies (c->i1) not in Connection
+}

@@ -1,0 +1,56 @@
+The Alloy model for the given drone application source code can be represented as follows:
+
+```alloy
+open util/ordering[Time]
+
+sig Mavsdk {}
+
+sig Main {
+  mavsdk: one Mavsdk,
+  system: lone System,
+  telemetry: lone Telemetry,
+  action: lone Action
+}
+
+sig System {
+  mavsdk: one Mavsdk
+}
+
+sig Telemetry {
+  system: one System,
+  rate_position: Time,
+  position: Time -> lone Position
+}
+
+sig Position {
+  latitude: one Double,
+  longitude: one Double
+}
+
+sig Action {
+  system: one System
+}
+
+fun Main.connectedSystem(): Time {
+  system.mavsdk in mavsdk
+}
+
+fun Main.initializedTelemetry(): Time {
+  telemetry.system in system
+}
+
+fun Main.initializedAction(): Time {
+  action.system in system
+}
+
+fun Main.waitingForArming(): Time {
+  some p: Position | p.latitude = NAN and p.longitude = NAN and p in telemetry.position.pre
+}
+
+fact {
+  all m: Main, t: Time |
+    t in m.connectedSystem() implies t in m.initializedTelemetry() and t in m.initializedAction()
+}
+
+run {} for exactly 5 Time
+```

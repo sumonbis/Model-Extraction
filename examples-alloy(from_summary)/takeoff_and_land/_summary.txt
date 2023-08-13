@@ -1,0 +1,60 @@
+The UML architecture for the given drone application code can be described as follows:
+
+1. Main Component
+   - The main component is the entry point of the program and controls the overall flow of execution.
+   - It interacts with Mavsdk, the connection manager, and the drone system.
+
+2. Mavsdk Component
+   - The Mavsdk component represents the Mavsdk library.
+   - It provides the functionality to manage connections to the drone and discover drone systems.
+
+3. Connection Manager Component
+   - The connection manager component handles the connection to the drone system.
+   - It adds a connection URL provided as a command-line argument to the Mavsdk component.
+   - It receives a connection result from the Mavsdk component.
+
+4. Drone System Component
+   - The drone system component represents the discovered drone system.
+   - It communicates with the Mavsdk component for system discovery and provides access to system-level operations.
+
+5. Telemetry Component
+   - The telemetry component provides access to telemetry data from the drone system.
+   - It subscribes to the position updates at a rate of 1 Hz and prints the altitude of the drone.
+   - It checks the overall health of the drone system.
+
+6. Action Component
+   - The action component provides access to actions that can be performed by the drone system.
+   - It controls arming, taking off, landing, and disarming of the drone.
+
+7. Sleep Component
+   - The sleep component represents the program delay using the sleep_for function from the std::this_thread namespace.
+
+8. Promises and Futures
+   - std::promise and std::future are used to handle asynchronous programming and wait for the discovery of a drone system.
+
+The connections between the components are as follows:
+- The main component communicates with the connection manager component to add a connection URL and retrieve the connection result.
+- The connection manager component communicates with the Mavsdk component to add the connection URL and receive the result.
+- The Mavsdk component communicates with the drone system component to discover the drone system.
+- The main component communicates with the telemetry and action components to instantiate them with the drone system.
+- The telemetry component communicates with the drone system to set the telemetry update rate and subscribe to position updates.
+- The action component communicates with the drone system to perform actions like arming, taking off, landing, and disarming.
+- The main component communicates with the sleep component to introduce delays in the program execution.
+
+Syntax Explanation:
+- The code uses the MAVSDK library, which is a C++ library for communicating with drones using MAVLink protocol.
+- Various headers are included to use different classes and functions from the MAVSDK library.
+- Namespaces like std and mavsdk are used to qualify the names of classes and functions.
+- Chrono library is used for time-related operations.
+- Shared_ptr and promise-future are used for handle management.
+- The main function accepts a connection URL as a command-line argument.
+- The usage function prints the usage instructions if the correct number of arguments is not provided.
+- The get_system function waits for the discovery of a drone system with an autopilot and returns a shared_ptr to the system.
+- The main function creates an instance of Mavsdk, adds a connection URL, retrieves the system, and instantiates telemetry and action components.
+- The position update callback is set to print the altitude of the drone.
+- The program waits until the drone system is ready to arm.
+- The drone is armed, taken off, and landed with appropriate checks and error handling.
+- The program waits until the drone lands and prints "Landed!".
+- The program waits for a while before finishing the execution.
+
+Note: The UML architecture diagram doesn't cover the detailed function signatures and member functions of the classes in the MAVSDK library.

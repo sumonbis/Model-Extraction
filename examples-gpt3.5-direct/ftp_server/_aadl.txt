@@ -1,0 +1,66 @@
+The AADL model architecture for the given drone application code can be represented as follows:
+
+```
+-- Main System
+system Main_System
+public
+  subcomponents
+    mavsdk: UAV_Controlling_System;
+end Main_System;
+
+-- UAV Controlling System
+system UAV_Controlling_System
+public
+  subcomponents
+    mavlink_server: Mavlink_FTP_Server;
+end UAV_Controlling_System;
+
+-- Mavlink FTP Server
+system Mavlink_FTP_Server
+features
+  root_directory : in String;
+  remote_ip : in String;
+  remote_port : in String;
+end Mavlink_FTP_Server;
+
+system implementation Main_System.impl
+subcomponents
+  mavsdk: UAV_Controlling_System.impl;
+end Main_System.impl;
+
+system implementation UAV_Controlling_System.impl
+subcomponents
+  mavlink_server: Mavlink_FTP_Server.impl;
+end UAV_Controlling_System.impl;
+
+system implementation Mavlink_FTP_Server.impl
+subcomponents
+  ftp_server: FTP_Server;
+end Mavlink_FTP_Server.impl;
+
+subprogram FTP_Server
+end FTP_Server;
+
+subprogram implementation FTP_Server.impl
+end FTP_Server.impl;
+
+connection root_directory_conn
+from mavlink_server.root_directory
+to ftp_server.root_directory;
+
+connection remote_ip_conn
+from mavlink_server.remote_ip
+to ftp_server.remote_ip;
+
+connection remote_port_conn
+from mavlink_server.remote_port
+to ftp_server.remote_port;
+```
+
+This AADL model architecture represents a system consisting of three components: the Main_System, UAV_Controlling_System, and Mavlink_FTP_Server. The Main_System is the top-level system, and it contains the UAV_Controlling_System. The UAV_Controlling_System contains the Mavlink_FTP_Server.
+
+The Mavlink_FTP_Server component implements the FTP_Server subprogram. It has three input features: root_directory, remote_ip, and remote_port. These features will receive values from the Mavsdk application code.
+
+The connection statements establish connections between the features of the Mavlink_FTP_Server component and the corresponding features in the FTP_Server subprogram implementation. The values of root_directory, remote_ip, and remote_port will be passed from the Mavlink_FTP_Server to the FTP_Server implementation.
+
+This AADL model architecture assumes that there are appropriate data types defined for the features root_directory, remote_ip, and remote_port.

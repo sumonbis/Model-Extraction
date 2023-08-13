@@ -1,0 +1,63 @@
+// AADL model architecture for the drone application
+
+// Description: This AADL model architecture represents the structure of the drone application code.
+// It consists of the main component, which represents the main function in the code.
+// The main component is connected to the MAVSDK component and the Ftp component.
+// The MAVSDK component is responsible for handling the connection with the drone system.
+// The Ftp component is responsible for the FTP operations with the drone's file system.
+
+// Main Component
+component Main {
+  // Connections
+  connection Main_MAVSDK_Connection: out MAVSDK.out -> MAVSDK.in;
+  connection Main_Ftp_Connection: out Ftp.in -> Ftp.in;
+  
+  // Subcomponents
+  subcomponent MAVSDK: MAVSDK_Component;
+  subcomponent Ftp: Ftp_Component;
+}
+
+// MAVSDK Component
+component MAVSDK_Component {
+  // Port
+  port in: in event data MAV_SDK_Evt;
+  port out: out event data MAV_SDK_Cmd;
+  
+  // Methods
+  method get_system(entity: MAVSDK_Component);
+}
+
+// Ftp Component
+component Ftp_Component {
+  // Port
+  port in: in event data FTP_Cmd;
+  port out: out event data FTP_Result;
+  
+  // Methods
+  method reset_server(entity: Ftp_Component);
+  method create_directory(entity: Ftp_Component, path: string);
+  method remove_file(entity: Ftp_Component, path: string);
+  method remove_directory(entity: Ftp_Component, path: string, recursive: bool);
+  method list_directory(entity: Ftp_Component, path: string);
+  method download_file(entity: Ftp_Component, remote_file_path: string, local_path: string);
+  method upload_file(entity: Ftp_Component, local_file_path: string, remote_path: string);
+  method rename_file(entity: Ftp_Component, old_name: string, new_name: string);
+}
+
+// Connection between Main and MAVSDK
+connection Main_MAVSDK_Connection {
+  source port out: Main.out;
+  sink port in: MAVSDK.in;
+}
+
+// Connection between Main and Ftp
+connection Main_Ftp_Connection {
+  source port out: Main.out;
+  sink port in: Ftp.in;
+}
+
+// Connection between MAVSDK and Ftp
+connection MAVSDK_Ftp_Connection {
+  source port out: MAVSDK.out;
+  sink port in: Ftp.in;
+}

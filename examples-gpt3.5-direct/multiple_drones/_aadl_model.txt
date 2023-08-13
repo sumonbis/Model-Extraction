@@ -1,0 +1,99 @@
+Here is an AADL model representation of the given architecture description:
+
+```
+package Drone_Application_Code
+public
+	with Data_Model;
+
+system Drone_Application
+	features
+		telemetry : out Data_Model::Telemetry_Data;
+	end Drone_Application;
+
+	subcomponents
+		main : process Main;
+		thread_1 : process Thread;
+		thread_2 : process Thread;
+		thread_3 : process Thread;
+	end Drone_Application;
+
+	system Main
+		features
+			telemetry_interface : provides Data_Model::Telemetry_Data;
+			action_interface : requires Data_Model::Drone_Action;
+		end Main;
+
+		subcomponents
+			mavsdk : Data_Model::MAVSDK;
+
+	end Main;
+
+	system Thread
+		features
+			telemetry_interface : requires Data_Model::Telemetry_Data;
+			action_interface : requires Data_Model::Drone_Action;
+		end Thread;
+
+		subcomponents
+			telemetry : Data_Model::Telemetry;
+			action : Data_Model::Action;
+
+	calls
+		takeoff_and_land
+			asynchronous;
+
+	end Thread;
+
+	data Data_Model::Telemetry_Data
+	end Data_Model::Telemetry_Data;
+
+	data Data_Model::Drone_Action
+	end Data_Model::Drone_Action;
+
+	data Data_Model::MAVSDK
+	end Data_Model::MAVSDK;
+
+	system Data_Model::Telemetry
+		features
+			position_update_rate : in Data_Model::Position_Update_Rate;
+		end Data_Model::Telemetry;
+
+		subcomponents
+			telemetry_impl : Data_Model::Telemetry_Impl;
+
+	end Data_Model::Telemetry;
+
+	data Data_Model::Position_Update_Rate
+	end Data_Model::Position_Update_Rate;
+
+	system Data_Model::Action
+		features
+			arm : in Data_Model::Arm;
+			take_off : in Data_Model::Take_Off;
+			land : in Data_Model::Land;
+		end Data_Model::Action;
+
+		subcomponents
+			action_impl : Data_Model::Action_Impl;
+
+	end Data_Model::Action;
+
+	data Data_Model::Arm
+	end Data_Model::Arm;
+
+	data Data_Model::Take_Off
+	end Data_Model::Take_Off;
+
+	data Data_Model::Land
+	end Data_Model::Land;
+
+	system Data_Model::Telemetry_Impl
+	end Data_Model::Telemetry_Impl;
+
+	system Data_Model::Action_Impl
+	end Data_Model::Action_Impl;
+
+end Drone_Application_Code;
+```
+
+Please note that this AADL model provides a high-level representation of the architecture design and may need further refinements and details based on specific implementation requirements.

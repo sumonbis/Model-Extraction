@@ -1,0 +1,96 @@
+The UML architecture description for the given drone application code is as follows:
+
+Components:
+
+1. Main: The main component handles the overall execution of the calibration process. It performs the following tasks: 
+   - It sets up the MAVSDK library, establishes the connection, and gets the system.
+   - Instantiates the Calibration plugin and runs the calibration functions.
+
+2. Calibration: The Calibration component is responsible for performing the sensor calibration. It provides the following methods:
+   - calibrate_accelerometer: Initiates the accelerometer calibration process asynchronously.
+   - calibrate_gyro: Initiates the gyro calibration process asynchronously.
+   - calibrate_magnetometer: Initiates the magnetometer calibration process asynchronously.
+
+3. create_calibration_callback: This utility function creates a callback function that handles the calibration progress and result. It takes a promise object as an input and returns a lambda function that captures the promise object and the calibration progress and result parameters. The callback function is executed when there is progress or a result update during the calibration process.
+
+Interfaces and Connections:
+
+1. Main -> Calibration: The Main component instantiates the Calibration component and calls the calibration functions.
+
+2. Calibration -> Main: The Calibration component calls the create_calibration_callback function to create a callback function for handling calibration progress and results.
+
+3. Main -> System: The Main component interacts with the System component to get the MAVSDK system.
+
+Syntax Explanation:
+
+1. #include: It is a preprocessor directive that includes the specified header files.
+
+2. using namespace: It is a using directive that allows the usage of all names from a namespace without specifying the namespace explicitly.
+
+3. std::chrono::seconds: It defines a duration type representing a time interval of seconds with a resolution of 1 second.
+
+4. std::function: It is a function object that can hold functions with different signatures.
+
+5. std::promise: It is a synchronization primitive that allows a value or an exception to be passed between threads.
+
+6. std::shared_ptr: It is a smart pointer that retains shared ownership of an object through a pointer.
+
+7. Mavsdk: It is a class representing the main entry-point of the MAVSDK library.
+
+8. Calibration: It is a class representing the calibration plugin in the MAVSDK library.
+
+9. std::cerr: It is an output stream object to output errors to the standard error stream.
+
+10. std::cout: It is an output stream object to output data to the standard output stream.
+
+11. std::string: It is a class providing string manipulation functionalities.
+
+12. main: It is the entry point of the program. It takes command-line arguments and performs the calibration process.
+
+13. calibrate_accelerometer, calibrate_gyro, calibrate_magnetometer: These functions initiate the calibration process for the accelerometer, gyro, and magnetometer respectively.
+
+14. usage: This function is responsible for displaying the usage of the program.
+
+15. get_system: This function waits for the discovery of a system with an autopilot and returns the shared pointer to the system.
+
+16. create_calibration_callback: This function creates a callback function that handles the calibration progress and result. It captures the promise object and the calibration progress and result parameters and sets the promise value when the calibration is complete.
+
+17. std::future: It is a class template representing a future object that can retrieve the value or the exception thrown by an associated asynchronous task.
+
+18. subscribe_on_new_system: This method subscribes to notifications for new systems being discovered.
+
+19. calibration.calibrate_accelerometer_async, calibration.calibrate_gyro_async, calibration.calibrate_magnetometer_async: These methods initiate the calibration process asynchronously for the accelerometer, gyro, and magnetometer respectively.
+
+20. fut.wait_for: It waits until the specified future value is ready or the timeout duration has been reached.
+
+21. ConnectionResult: It is an enumeration representing the result of a connection attempt.
+
+22. system->has_autopilot: It checks whether the system has an autopilot.
+
+23. system->systems: It returns a vector of all discovered systems.
+
+24. system->system_id: It returns the system ID of the system.
+
+25. mavsdk.subscribe_on_new_system: It subscribes to notifications for new systems being discovered.
+
+26. connection_result: It stores the result of a connection attempt.
+
+27. mavsdk.add_any_connection: It tries to establish a connection to a MAVSDK supported service.
+
+28. std::move: It moves the value or ownership of an object to another object.
+
+29. nullptr: It represents a null pointer.
+
+30. std::chrono::seconds(3): It creates a duration of 3 seconds.
+
+31. std::cerr: It is an output stream object to output errors to the standard error stream.
+
+32. argv: It is a pointer to an array of pointers to null-terminated characters representing the command-line arguments.
+
+33. get_future: It returns a future associated with the promise.
+
+34. set_value: It sets the value of a promise.
+
+35. switch-case: It evaluates the result of the calibration process and performs the required actions based on the result.
+
+36. create_calibration_callback: It creates a callback function that handles the calibration progress and result. It captures the promise object and the calibration progress and result parameters and sets the promise value when the calibration is complete.

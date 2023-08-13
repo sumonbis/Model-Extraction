@@ -1,0 +1,96 @@
+The AADL model for the provided architecture description would consist of the following components and connections:
+
+```
+package Drone_Application is
+   public with Ada.Text_IO; -- for outputting messages
+   
+   system MAVSDK is -- The MAVSDK system
+      data   Mavsdk_Subscribe_On_New_System : access procedure; -- Callback for subscribing to new system events
+      data   Mavsdk_Systems : access array (1 .. 10) of System_ID; -- Array of system IDs
+      data   Mavsdk_Add_Any_Connection : access function(Url : in String) return Connection_Result; -- Function for adding any connection
+      data   Mavsdk_Add_System_Callbacks : access procedure; -- Notify new systems
+      
+      connection MAVSDK_Connection; --
+      end MAVSDK;
+   
+   system System is -- Represents an autopilot system
+      data   System_Has_Autopilot : Boolean; -- Indicates if the system has an autopilot
+      end System;
+   
+   system Transponder is -- Represents the transponder for a system
+      data   Transponder_Set_Rate : access function(Rate : in Float) return Transponder_Result; -- Set the transponder update rate
+      data   Transponder_Subscribe : access procedure(Callback : in Ada.Unchecked_Conversion.Function_Pointer); -- Subscribe to transponder events
+      
+      connection Transponder_System_Connection; --
+      end Transponder;
+   
+   data   Adsb_Vehicle is -- Represents an ADS-B vehicle
+      icao_address : Unsigned_64; -- ICAO address
+      latitude_deg : Float; -- Latitude in degrees
+      longitude_deg : Float; -- Longitude in degrees
+      absolute_altitude_m : Float; -- Absolute altitude in meters
+      heading_deg : Float; -- Heading in degrees
+      horizontal_velocity_m_s : Float; -- Horizontal velocity in meters per second
+      vertical_velocity_m_s : Float; -- Vertical velocity in meters per second
+      callsign : String(1 .. 256); -- Callsign
+      emitter_type : String(1 .. 256); -- Emitter type
+      squawk : String(1 .. 16); -- Squawk code
+      end Adsb_Vehicle;
+   
+   data   Connection_Result is (Success, No_System_Found);
+   
+   data   Transponder_Result; -- Placeholder for the Transponder result enumeration
+   
+   connection MAVSDK_System_Connection : out access MAVSDK.Mavsdk_Subscribe_On_New_System (entry);
+   connection MAVSDK_Connection_Result : out access MAVSDK.Mavsdk_Add_Any_Connection (entry);
+   connection MAVSDK_Systems_Connection : out access MAVSDK.Mavsdk_Systems (entry);
+   
+   connection System_Has_Autopilot_Connection : out access System.System_Has_Autopilot (entry);
+   
+   connection Transponder_Set_Rate_Connection : out access Transponder.Transponder_Set_Rate (entry);
+   connection Transponder_Subscribe_Connection : out access Transponder.Transponder_Subscribe (entry);
+   
+   connection Adsb_Vehicle_Connection : out Adsb_Vehicle (entry);
+   
+   system DRONE_APPLICATION is
+      feature {MAVSDK} -- Access to MAVSDK system features
+         Mavsdk_Subscribe_On_New_System_Callback : access procedure;
+         Mavsdk_Systems : access array (1 .. 10) of System_ID;
+         Mavsdk_Add_Any_Connection : access function(Url : in String) return Connection_Result;
+         Mavsdk_Add_System_Callbacks : access procedure;
+         end MAVSDK_Features;
+      
+      feature {System} -- Access to System features
+         System_Has_Autopilot : Boolean;
+         end System_Features;
+      
+      feature {Transponder} -- Access to Transponder features
+         Transponder_Set_Rate : access function(Rate : in Float) return Transponder_Result;
+         Transponder_Subscribe : access procedure(Callback : in Ada.Unchecked_Conversion.Function_Pointer);
+         end Transponder_Features;
+      
+      feature -- Data Port connections
+         Adsb_Vehicle : in Adsb_Vehicle;
+         end DRONE_APPLICATION;
+      
+      feature -- Command Port connections
+         Start : in out Boolean; -- Control start/stop of the application
+         end DRONE_APPLICATION;
+      
+      feature -- Event Port connections
+         Transponder_Data : out Adsb_Vehicle; -- Output transponder data
+         end DRONE_APPLICATION;
+      
+      end DRONE_APPLICATION;
+      
+   DRONE_APPLICATION : DRONE_APPLICATION;
+   
+   connection DRONE_APPLICATION_Start_Connection : out access DRONE_APPLICATION.Start;
+   connection DRONE_APPLICATION_Transponder_Data_Connection : in access DRONE_APPLICATION.Transponder_Data;
+
+end Drone_Application;
+```
+
+The `Drone_Application` package represents the application code that utilizes the MAVSDK system, the System, and the Transponder. It defines features that allow interaction with these components. The `DRONE_APPLICATION` system represents the overall application and connects the ports of the components.
+
+Please note that this AADL model only captures the component structure and connections, and additional behaviors (e.g., task scheduling, data flow, etc.) need to be added for a complete model.

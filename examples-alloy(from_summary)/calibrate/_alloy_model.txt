@@ -1,0 +1,212 @@
+The Alloy model for the given drone application source code can be represented as follows:
+
+```alloy
+module DroneApplication
+
+open util/boolean
+
+-- Components
+abstract sig Component {}
+
+one sig Main, Calibration extends Component {}
+
+-- Interfaces and Connections
+abstract sig Interface {}
+one sig MainToCalibration, CalibrationToMain extends Interface {}
+
+-- Function
+fun create_calibration_callback: Interface -> Interface {
+    CalibrationToMain
+}
+
+-- Associations
+abstract sig Association {
+    source: Component,
+    target: Component,
+    interface: Interface
+}
+
+one sig MtoC extends Association {
+    source = Main,
+    target = Calibration,
+    interface = MainToCalibration
+}
+
+one sig CtoM extends Association {
+    source = Calibration,
+    target = Main,
+    interface = CalibrationToMain
+}
+
+-- Facts
+fact ComponentInterfacesDisjoint {
+    all c: Component | disj[c, Interface]
+}
+
+fact ComponentAssociations {
+    all c: Component | one a: Association | a.source = c or a.target = c
+}
+
+fact InterfaceAssociations {
+    all i: Interface | one a: Association | a.interface = i
+}
+
+-- Syntax
+abstract sig Syntax {}
+
+one sig PreprocessorDirective extends Syntax {
+    content: lone String
+}
+
+one sig UsingDirective extends Syntax {
+    content: String
+}
+
+one sig DurationType extends Syntax {
+    content: String
+}
+
+one sig FunctionObject extends Syntax {
+    content: String
+}
+
+one sig SmartPointer extends Syntax {
+    content: String
+}
+
+one sig Class extends Syntax {
+    content: String
+}
+
+one sig OutputStream extends Syntax {
+    content: String
+}
+
+one sig InputOutputStream extends Syntax {
+    content: String
+}
+
+one sig Function extends Syntax {
+    content: String
+}
+
+one sig FunctionPointer extends Syntax {
+    content: String
+}
+
+one sig Enumeration extends Syntax {
+    content: String
+}
+
+one sig Pointer extends Syntax {
+    content: String
+}
+
+-- Code Elements
+abstract sig CodeElement {
+    syntax: lone Syntax
+}
+
+one sig IncludeDirective, NamespaceDeclaration extends CodeElement {}
+
+sig Execution extends CodeElement {
+    function: lone Function,
+    arguments: lone String
+}
+
+sig Method extends CodeElement {
+    name: String,
+    returnType: lone String,
+    parameters: lone String
+}
+
+-- Associations
+abstract sig ElementAssociation {
+    element: CodeElement,
+    syntax: Syntax
+}
+
+one sig SyntaxAssociation extends ElementAssociation {}
+
+-- Facts
+fact CodeElementsDisjoint {
+    all ce: CodeElement | disj[ce, Syntax]
+}
+
+fact CodeElementAssociations {
+    all ce: CodeElement | one ea: ElementAssociation | ea.element = ce
+}
+
+-- Main Component
+Main.syntax = Class[content = "Main"]
+
+IncludeDirective.syntax = PreprocessorDirective[content = "#include"]
+Execution.function = Main
+Execution.arguments = "char** argv"
+ElementAssociation.syntax = SyntaxAssociation
+
+MainToCalibration in MtoC.interface
+CalibrationToMain in CtoM.interface
+MtoC.interface in create_calibration_callback[syntax -> SyntaxAssociation].interface
+CtoM.interface in create_calibration_callback[syntax -> SyntaxAssociation].interface
+
+-- Calibration Component
+Calibration.syntax = Class[content = "Calibration"]
+
+-- Associations
+Calibration in MtoC.source
+Main in MtoC.target
+MainToCalibration in MtoC.interface
+
+Calibration in CtoM.source
+Main in CtoM.target
+CalibrationToMain in CtoM.interface
+
+-- Syntax
+PreprocessorDirective in SyntaxAssociation.syntax
+UsingDirective in SyntaxAssociation.syntax
+DurationType in SyntaxAssociation.syntax
+FunctionObject in SyntaxAssociation.syntax
+SmartPointer in SyntaxAssociation.syntax
+Class in SyntaxAssociation.syntax
+OutputStream in SyntaxAssociation.syntax
+InputOutputStream in SyntaxAssociation.syntax
+Function in SyntaxAssociation.syntax
+FunctionPointer in SyntaxAssociation.syntax
+Enumeration in SyntaxAssociation.syntax
+Pointer in SyntaxAssociation.syntax
+
+-- Associating Syntax with Code Elements
+IncludeDirective in SyntaxAssociation.element
+NamespaceDeclaration in SyntaxAssociation.element
+Execution in SyntaxAssociation.element
+Method in SyntaxAssociation.element
+
+-- Related Syntax
+PreprocessorDirective.syntax = PreprocessorDirective
+NamespaceDeclaration.syntax = UsingDirective
+DurationType.syntax = DurationType
+SmartPointer.syntax = SmartPointer
+Class.syntax = Class
+OutputStream.syntax = OutputStream
+InputOutputStream.syntax = InputOutputStream
+Function.syntax = Function
+Enumeration.syntax = Enumeration
+
+FunctionObject.syntax = SmartPointer[content = "std::function"]
+FunctionPointer.syntax = Pointer[content = "std::function"]
+Execution.function.syntax = Function
+Method.syntax = Function
+Method.parameters.syntax = Pointer[content = "std::shared_ptr"]
+Main.syntax = Class[content = "System"]
+Main.syntax = Class[content = "Mavsdk"]
+Execution.arguments.syntax = PreprocessorDirective[content = "argv"]
+Enumeration.syntax = Enumeration[content = "ConnectionResult"]
+
+-- Constraints
+fact {
+    all ce1, ce2: CodeElement, s: Syntax | ce1.syntax = s and ce2.syntax = s implies ce1 = ce2
+}
+```
+
+Note: This Alloy model represents the structural aspects of the drone application code, focusing on the components, interfaces, and connections. It does not capture the behavior or details of the code implementation.

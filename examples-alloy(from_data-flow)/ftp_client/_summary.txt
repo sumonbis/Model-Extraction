@@ -1,0 +1,22 @@
+The data-flow and control flow relations for the given drone application code can be described as follows:
+
+Data-Flow:
+1. The program takes command line arguments for the connection URL, server component ID, command, and parameters.
+2. The connection URL and server component ID are used to establish a connection with the drone system and create an instance of the FTP plugin.
+3. Depending on the command provided, the program may perform operations like uploading, downloading, renaming, creating, listing, or removing files or directories.
+4. The FTP plugin asynchronously interacts with the drone system to perform the requested operations.
+5. The result of each operation is stored in a variable and may be printed to the console.
+
+Control Flow:
+1. The program starts by checking if the required command line arguments are provided. If not, it displays the usage instructions and exits.
+2. The Mavsdk library is initialized, and a connection is established with the drone system using the provided connection URL.
+3. The program attempts to discover a drone system with an autopilot. If no system is found within a timeout of 3 seconds, the program exits.
+4. Once a system is discovered, an instance of the FTP plugin is created and the target component ID is set.
+5. The "reset_server" function is called to reset the FTP server.
+6. The command provided in the command line arguments is checked to determine which operation needs to be performed.
+7. Depending on the command, one of the functions like "upload_file", "download_file", "rename_file", "create_directory", "remove_directory", or "list_directory" is called.
+8. Each function asynchronously interacts with the FTP plugin to perform the requested operation.
+9. The result of each operation is checked and appropriate messages are printed to the console.
+10. The program returns 0 if all operations are successful, 1 if there is a general error, and 2 if a file or directory does not exist.
+
+Note: The control flow may vary depending on the result and conditions of the operations.

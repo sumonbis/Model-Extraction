@@ -1,0 +1,40 @@
+Data-Flow:
+1. The main function receives the connection URL as an argument.
+2. The connection URL is used to establish a connection to the drone through the Mavsdk library.
+3. The get_system function is called to retrieve the system information of the connected drone.
+4. The Telemetry and Action plugins are instantiated with the system object.
+5. The telemetry plugin is set to receive position updates from the drone at a rate of 1Hz.
+6. A callback function is set up to monitor the altitude of the drone.
+7. The program waits until the drone is ready for arming.
+8. The action plugin is used to arm the drone.
+9. The action plugin is used to initiate takeoff.
+10. The program waits for 10 seconds while the drone takes off.
+11. The action plugin is used to transition the drone to fixed-wing mode.
+12. The program waits for 30 seconds while the drone loiters in fixed-wing mode.
+13. The action plugin is used to send the drone to a specific location.
+14. The program waits for 20 seconds while the drone reaches the specified location.
+15. The action plugin is used to transition the drone back to multicopter mode.
+16. The program waits for 5 seconds for the transition to be carried out.
+17. The action plugin is used to initiate landing.
+18. The program waits until the drone has landed and disarmed.
+
+Control-Flow:
+1. The main function checks the number of command line arguments and displays usage instructions if incorrect.
+2. The main function uses the Mavsdk library to establish a connection to the drone using the provided connection URL.
+3. The get_system function is called to retrieve the system object representing the connected drone.
+4. The Telemetry and Action plugins are instantiated with the system object.
+5. The telemetry plugin is set to receive position updates from the drone at a rate of 1Hz.
+6. A callback function is set up to monitor the altitude of the drone.
+7. The program enters a loop and waits until the telemetry reports that the drone is ready for arming.
+8. The action plugin is used to arm the drone.
+9. The action plugin is used to initiate takeoff.
+10. The program waits for 10 seconds while the drone takes off.
+11. The action plugin is used to transition the drone to fixed-wing mode.
+12. The program waits for 30 seconds while the drone loiters in fixed-wing mode.
+13. The action plugin is used to send the drone to a specific location.
+14. The program waits for 20 seconds while the drone reaches the specified location.
+15. The action plugin is used to transition the drone back to multicopter mode.
+16. The program waits for 5 seconds for the transition to be carried out.
+17. The action plugin is used to initiate landing.
+18. The program enters a loop and waits until the telemetry reports that the drone has landed and disarmed.
+19. The program exits with a success status code.

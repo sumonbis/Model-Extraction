@@ -1,0 +1,33 @@
+The data-flow and control flow relations for the given drone application code are as follows:
+
+Data flow:
+1. The main function receives the connection URLs as command line arguments.
+2. The connection URLs are passed to the Mavsdk object.
+3. The Mavsdk object establishes connections to the vehicles using the provided connection URLs.
+4. The main function waits for system discovery to complete.
+5. Once the systems are discovered, the main function creates threads to handle each system.
+6. Each thread calls the takeoff_and_land function with a System object.
+7. Inside the takeoff_and_land function, telemetry and action objects are created for the system.
+8. The telemetry object sets the position update rate.
+9. The telemetry object subscribes to position updates and prints the altitude.
+10. The takeoff_and_land function checks if the vehicle is ready to arm using telemetry.health_all_ok().
+11. If the vehicle is not ready, it waits for 1 second and checks again.
+12. If the vehicle is ready, the action object arms the vehicle.
+13. The action object then takes off the vehicle.
+14. After a 20 second delay, the action object lands the vehicle.
+15. The takeoff_and_land function checks if the vehicle is still in the air using telemetry.in_air().
+16. If the vehicle is still in the air, it waits for 1 second and checks again.
+17. Once the vehicle has landed, the function waits for 5 seconds and then prints "Finished".
+
+Control flow:
+1. The main function checks if the connection URLs are provided as command line arguments.
+2. If not, it prints an error message and exits.
+3. The main function creates an instance of the Mavsdk object.
+4. The main function adds the connection URLs to the Mavsdk object.
+5. The main function subscribes to new system events and waits for system discovery.
+6. Once the systems are discovered, the main function creates threads and calls the takeoff_and_land function for each system.
+7. The threads execute in parallel.
+8. After all threads have finished, the main function exits.
+9. The takeoff_and_land function sets the position update rate, subscribes to position updates, and checks if the vehicle is ready to arm in a loop.
+10. If the vehicle is ready to arm, the function arms the vehicle, takes off, lands, and checks if the vehicle is still in the air in a loop.
+11. Once the vehicle has landed, the function waits for a few seconds and then finishes.

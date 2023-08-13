@@ -1,0 +1,112 @@
+The Alloy model for the described drone application source code can be written as follows:
+
+```alloy
+open util/boolean
+
+sig URL {}
+
+sig Mavsdk {}
+sig System {}
+
+sig Autopilot {}
+
+sig Telemetry {}
+sig MavlinkPassthrough {}
+
+one sig Main {
+    main: one MainFunction,
+}
+
+one sig GetSystem {
+    get_system: one GetSystemFunction,
+}
+
+one sig SubscribeArmed {
+    subscribe_armed: one SubscribeArmedFunction,
+}
+
+one sig SendBatteryStatus {
+    send_battery_status: one SendBatteryStatusFunction,
+}
+
+sig MainFunction {
+    sdk_instance: one Mavsdk,
+    url: one URL,
+    system: lone System,
+    telemetry: lone Telemetry,
+    mavlink_passthrough: lone MavlinkPassthrough,
+    armed_subscription: lone SubscribeArmedFunction,
+    battery_status_sent: one SendBatteryStatusFunction
+}
+
+sig GetSystemFunction {
+    mavsdk_instance: one Mavsdk,
+    system_found: one System,
+    promise_set: one Bool
+}
+
+sig SubscribeArmedFunction {
+    telemetry_instance: one Telemetry
+}
+
+sig SendBatteryStatusFunction {
+    mavlink_passthrough_instance: one MavlinkPassthrough
+}
+
+fact {
+    // Ensure Main has a reference to the MainFunction instance
+    Main.main.sdk_instance = Main.mainFunction.sdk_instance
+    Main.main.url = Main.mainFunction.url
+    Main.main.system = Main.mainFunction.system
+    Main.main.telemetry = Main.mainFunction.telemetry
+    Main.main.mavlink_passthrough = Main.mainFunction.mavlink_passthrough
+    Main.main.armed_subscription = Main.subscribeArmedFunction
+    Main.main.battery_status_sent = Main.sendBatteryStatusFunction
+
+    // Ensure GetSystem has a reference to the GetSystemFunction instance
+    GetSystem.get_system.mavsdk_instance = GetSystem.getSystemFunction.mavsdk_instance
+    GetSystem.get_system.system_found = GetSystem.getSystemFunction.system_found
+    GetSystem.get_system.promise_set = GetSystem.getSystemFunction.promise_set
+
+    // Ensure SubscribeArmed has a reference to the Telemetry instance
+    SubscribeArmed.subscribe_armed.telemetry_instance = SubscribeArmed.subscribeArmedFunction.telemetry_instance
+
+    // Ensure SendBatteryStatus has a reference to the MavlinkPassthrough instance
+    SendBatteryStatus.send_battery_status.mavlink_passthrough_instance = SendBatteryStatus.sendBatteryStatusFunction.mavlink_passthrough_instance
+
+    // Ensure Main connects to the MAVLink system through the Mavsdk library
+    Main.main.sdk_instance = GetSystem.get_system.mavsdk_instance
+
+    // Ensure Main adds a connection using the provided URL
+    Main.main.url = GetSystem.get_system.mavsdk_instance.add_connection.url
+
+    // Ensure GetSystem waits for a new system to be discovered
+    GetSystem.get_system.system_found = GetSystem.get_system.mavsdk_instance.subscribe_on_new_system.system
+
+    // Ensure GetSystem sets the value of a promise and unsubscribes from further system events
+    GetSystem.get_system.promise_set = GetSystem.get_system.system_found.has_autopilot
+
+    // Ensure GetSystem returns an empty shared pointer if no autopilot is found within 3 seconds
+    not GetSystem.get_system.system_found.has_autopilot => GetSystem.get_system.promise_set
+
+    // Ensure Main instantiates the telemetry and mavlink_passthrough plugins using the discovered system
+    Main.main.telemetry = Main.main.system.instantiate_telemetry
+    Main.main.mavlink_passthrough = Main.main.system.instantiate_mavlink_passthrough
+
+    // Ensure SubscribeArmed subscribes to the armed state updates
+    SubscribeArmed.subscribe_armed.telemetry_instance = Main.main.telemetry
+
+    // Ensure SendBatteryStatus sends a battery status message using the MAVLink protocol
+    SendBatteryStatus.send_battery_status.mavlink_passthrough_instance = Main.main.mavlink_passthrough
+
+    // Ensure Main calls the get_system function to get a shared pointer to the discovered system with an autopilot
+    Main.main.system = GetSystem.get_system.get_system.Main.main.sdk_instance
+
+    // Ensure Main enters a loop to periodically send battery status
+    Main.main.battery_status_sent = Main.main.system.send_battery_status
+}
+
+run {} for 4 but 3 Int, 2 URL
+```
+
+Note: The Alloy model assumes the existence of some functions/operations like `add_connection.url`, `instantiate_telemetry`, `instantiate_mavlink_passthrough`, `subscribe_on_new_system.system`, and `send_message`. These functions/operations are not explicitly defined in the provided code description, so they need to be implemented appropriately based on the actual code implementation.

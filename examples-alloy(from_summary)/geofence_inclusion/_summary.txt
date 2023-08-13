@@ -1,0 +1,54 @@
+The UML architecture description for the given drone application code is as follows:
+
+Components:
+1. Mavsdk: This component represents the SDK for communication with the drone's autopilot system. It provides the functionality for adding connections, subscribing to new systems, and getting the discovered system.
+   - Interface(s): add_any_connection(), subscribe_on_new_system(), systems()
+   - Connections: This component creates and manages connections with the drone's autopilot system.
+
+2. ConnectionResult: This component represents the result of a connection attempt to the drone's autopilot system.
+   - Interface(s): None
+
+3. Telemetry: This component represents the telemetry plugin of the Mavsdk. It provides access to the telemetry information of the drone, such as health status.
+   - Interface(s): health_all_ok()
+   - Connections: This component communicates with the Mavsdk component to retrieve telemetry information from the drone.
+
+4. Geofence: This component represents the geofence plugin of the Mavsdk. It provides functionalities for managing the geofence, such as adding points and uploading the geofence mission.
+   - Interface(s): upload_geofence()
+   - Connections: This component communicates with the Mavsdk component to add and upload the geofence mission.
+
+5. Geofence::Point: This component represents a point in the geofence. It has latitude and longitude attributes.
+   - Interface(s): None
+
+6. Geofence::Polygon: This component represents a polygon in the geofence. It has a fence type (inclusion/exclusion) and a set of points.
+   - Interface(s): None
+
+Connections:
+1. Mavsdk -> Telemetry: The Mavsdk component uses the Telemetry component to check the health status of the drone.
+2. Mavsdk -> Geofence: The Mavsdk component uses the Geofence component to add and upload the geofence mission.
+3. Geofence -> Geofence::Point: The Geofence component uses the Geofence::Point component to create points for the geofence.
+4. Geofence -> Geofence::Polygon: The Geofence component uses the Geofence::Polygon component to create polygons for the geofence.
+
+Explanation of Code Syntax:
+
+1. Main Function:
+   - Parses the command-line arguments to obtain the connection URL.
+   - Initializes the Mavsdk and adds the connection.
+   - Gets the system using the get_system() function.
+   - Instantiates the Telemetry and Geofence plugins.
+   - Waits for the system's health to be ok.
+   - Creates and uploads the geofence using a set of points.
+   - Returns 0 on success.
+
+2. Usage Function:
+   - Prints the usage instructions for the binary.
+
+3. get_system() Function:
+   - Waits for new systems to be discovered using promises and futures.
+   - Retrieves the system with an autopilot (if found) and returns it.
+   - Returns an empty shared_ptr if no autopilot system is found.
+
+4. add_point() Function:
+   - Creates a new Geofence::Point with the given latitude and longitude.
+   - Returns the newly created point.
+
+Note: The UML architecture description provided here is a simplified representation of the code's structure and connections. It may not include all possible components and connections that the actual codebase may have.

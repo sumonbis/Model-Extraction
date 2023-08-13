@@ -1,0 +1,77 @@
+Here is an example of an AADL model architecture (.aadl) for the given drone application code:
+
+```aadl
+-------------------------------------
+-- DroneApp Architecture Definition --
+-------------------------------------
+
+-- Import necessary AADL packages
+with AADL;
+
+-- Define the namespace for the drone application architecture
+package DroneApp
+public
+   with SEI;
+
+   -- Define the system type for the drone application
+   system DroneApp_System
+      properties
+         with Deployment::Actual_Processor_Binding => Name;
+      end properties;
+
+      -- Define the subcomponents of the drone application system
+      subcomponents
+         DroneSDK : process MAVSDK_Processor;
+      end subcomponents;
+
+      -- Define the connection between subcomponents
+      connectionset MyConnectionSet
+         connections
+            DroneSDK.DeploymentConnection -> Transponder.Subscription;
+            DroneSDK.SubscriptionConnection -> Transponder.Subscription;
+         end connections;
+      end connectionset;
+   end DroneApp_System;
+
+   -- Define the processor type for the drone application
+   process type MAVSDK_Processor
+      features
+         Deployment : out SEI::String_Type;
+      end features;
+
+      -- Define the subcomponents of the MAVSDK processor
+      subcomponents
+         Transponder : process Transponder_Processor;
+      end subcomponents;
+
+      -- Define the connection between subcomponents
+      connectionset DeploymentConnectionSet
+         connections
+            Transponder.DeploymentConnection -> Deployment;
+         end connections;
+      end connectionset;
+   end MAVSDK_Processor;
+
+   -- Define the processor type for the Transponder
+   process type Transponder_Processor
+      features
+         DeploymentConnection : out SEI::String_Type;
+         Subscription : in SEI::String_Type;
+      end features;
+
+      -- Define the subprograms of the Transponder processor
+      subprograms
+         Main : subprogram MainEntry;
+      end subprograms;
+   end Transponder_Processor;
+
+   -- Define the subprogram MainEntry for the Transponder processor
+   subprogram subprogram MainEntry
+      properties
+         Compute_Execution_Time => 5 ms;
+      end properties;
+   end MainEntry;
+end DroneApp;
+```
+
+Please note that this AADL model is a simplified representation and may require additional components, features, and connections depending on the overall system architecture and requirements.

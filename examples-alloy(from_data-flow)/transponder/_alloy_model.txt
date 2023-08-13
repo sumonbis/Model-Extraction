@@ -1,0 +1,108 @@
+open util/ordering[Time]
+
+sig Command {
+    args: seq String
+}
+
+abstract sig Function {
+    input: Command
+    output: Command
+}
+
+sig Main extends Function {
+}
+
+sig AddAnyConnection extends Function {
+    connectionResult: String
+}
+
+sig GetSystem extends Function {
+    system: String
+}
+
+sig TransponderPlugin extends Function {
+    system: String
+}
+
+sig SetRateTransponder extends Function {
+    setRateResult: String
+}
+
+sig SubscribeTransponder extends Function {
+}
+
+sig Sleep extends Function {
+}
+
+sig Exit extends Function {
+}
+
+sig Program {
+    commands: Time -> Function
+}
+
+fact {
+    // Data Flow
+    all t: Time - last |
+    let current = t, next = t.next |
+    (
+        commands[next].input = commands[current].output and
+        (
+            (commands[current] in Main and commands[next] in AddAnyConnection) or
+            (commands[current] in AddAnyConnection and commands[next] in GetSystem) or
+            (commands[current] in GetSystem and commands[next] in TransponderPlugin) or
+            (commands[current] in TransponderPlugin and commands[next] in SetRateTransponder) or
+            (commands[current] in SetRateTransponder and commands[next] in SubscribeTransponder) or
+            (commands[current] in SubscribeTransponder and commands[next] in Sleep) or
+            (commands[current] in Sleep and commands[next] in Exit)
+        )
+    )
+    
+    // Control Flow
+    all t: Time - last |
+    let current = t, next = t.next |
+    (
+        commands[next].input = commands[current].output and
+        (
+            commands[current] in Main implies (
+                (commands[next] in AddAnyConnection or commands[next] in Exit) and
+                commands[current].output = commands[next].input
+            )
+        ) and
+        (
+            commands[current] in AddAnyConnection implies (
+            (commands[next] in GetSystem and commands[current].output = commands[next].input) or
+            (commands[next] in Exit and commands[current].output = commands[next].input)
+            )
+        ) and
+        (
+            commands[current] in GetSystem implies (
+            (commands[next] in TransponderPlugin and commands[current].output = commands[next].input) or
+            (commands[next] in Exit and commands[current].output = commands[next].input)
+            )
+        ) and
+        (
+            commands[current] in TransponderPlugin implies (
+            (commands[next] in SetRateTransponder and commands[current].output = commands[next].input) or
+            (commands[next] in Exit and commands[current].output = commands[next].input)
+            )
+        ) and
+        (
+            commands[current] in SetRateTransponder implies (
+            (commands[next] in SubscribeTransponder and commands[current].output = commands[next].input) or
+            (commands[next] in Exit and commands[current].output = commands[next].input)
+            )
+        ) and
+        (
+            commands[current] in SubscribeTransponder implies (
+            (commands[next] in Sleep and commands[current].output = commands[next].input) or
+            (commands[next] in Exit and commands[current].output = commands[next].input)
+            )
+        ) and
+        (
+            commands[current] in Sleep implies (
+            (commands[next] in Exit and commands[current].output = commands[next].input)
+            )
+        )
+    )
+}

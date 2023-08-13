@@ -1,0 +1,31 @@
+The data-flow and control flow relations in the given drone application code can be described as follows:
+
+Data-Flow Relations:
+1. The connection URL (argv[1]) is passed to the `add_any_connection` function of the `Mavsdk` object to establish a connection with the drone.
+2. The connected system instance is obtained from the `mavsdk.systems()` vector.
+3. Telemetry and Action plugins are instantiated, using the connected system instance.
+4. The telemetry rate is set to 1 Hz using the `set_rate_position` function of the Telemetry plugin.
+5. The `subscribe_position` callback function is set to receive altitude updates from the drone.
+6. The `health_all_ok` function is used to check the health status of the drone.
+7. The `arm` function of the Action plugin is called to arm the drone.
+8. The `takeoff` function of the Action plugin is called to initiate the drone takeoff.
+9. The program waits for 10 seconds using `sleep_for` function before landing the drone.
+10. The `land` function of the Action plugin is called to initiate the drone landing.
+11. The program continuously checks if the drone is still in the air using the `in_air` function of the Telemetry plugin.
+12. After the drone has landed, the program waits for 3 seconds using `sleep_for` function.
+13. The program finishes execution.
+
+Control Flow Relations:
+1. The main function first checks the command line arguments and shows the usage if the argument count is not 2.
+2. The Mavsdk object is created and the connection with the drone is established using the connection URL.
+3. The `get_system` function is called to obtain the connected drone system.
+4. If no system is found within 3 seconds, the program exits.
+5. The Telemetry and Action plugins are instantiated using the obtained system instance.
+6. The telemetry rate is set, and the altitude callback is registered.
+7. The program enters a while loop and waits until the drone is ready to arm.
+8. After the vehicle is ready, the drone is armed using the Action plugin.
+9. Takeoff is initiated by calling the takeoff function of the Action plugin.
+10. The program waits for 10 seconds for the drone to hover.
+11. The drone is landed using the Action plugin's land function.
+12. A while loop is used to wait until the drone has landed completely.
+13. After landing, the program waits for 3 seconds before finishing execution.

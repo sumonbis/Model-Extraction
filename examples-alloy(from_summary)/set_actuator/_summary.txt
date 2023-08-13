@@ -1,0 +1,53 @@
+The UML architecture for the given drone application code consists of several components with their interfaces and connections. Here is the description:
+
+1. Mavsdk Component:
+- Interface(s): add_any_connection(const std::string& connection_url), subscribe_on_new_system(const std::function<void()>& callback)
+- Connection(s): connection_url
+- Description: This component represents the MAVSDK library and provides methods to add any connection and subscribe to new systems.
+
+2. Action Component:
+- Interface(s): Action(System& system), set_actuator(int index, float value)
+- Connection(s): system
+- Description: This component represents the Action plugin and provides methods to control actions on the drone, such as setting the actuator.
+
+3. System Component:
+- Interface(s): has_autopilot()
+- Description: This component represents the discovered system and provides information about whether it has an autopilot.
+
+4. std::promise and std::shared_ptr Components:
+- Interface(s): None
+- Description: These components are used for asynchronous communication and data passing between different parts of the code.
+
+5. main Component:
+- Interface(s): main(int argc, char** argv), usage(const std::string& bin_name)
+- Connection(s): None
+- Description: This component represents the main function of the code and provides the entry point for the application. It also handles command line arguments and displays usage instructions.
+
+Note: The connections between components are represented using function calls and shared object pointers.
+
+Syntax Explanation:
+- #include: This keyword is used to include external C++ libraries or header files.
+- using namespace: This statement allows access to all the names in the specified namespace without having to qualify them with their namespace.
+- int main(int argc, char** argv): This is the main function of the application, which is the entry point of the program. It accepts command line arguments.
+- std::string: It is a standard C++ class that represents a sequence of characters.
+- std::cerr: It is an output stream object used for error messages.
+- std::stod: It is a function that converts a string to a double.
+- std::stof: It is a function that converts a string to a float.
+- std::chrono: It is a C++ library for measuring and manipulating time.
+- std::promise: It is a class that provides a facility to store a value or an exception that can be accessed asynchronously.
+- std::future: It is a class that provides a mechanism to access the result of an asynchronous operation.
+- std::cout: It is an output stream object used for standard output.
+- <<: It is the stream insertion operator used to write data items into a stream.
+- << '\n': It is used to insert a newline character into the output stream.
+- auto: It is a keyword used to automatically deduce the type of a variable from its initializer.
+- const: It is a keyword used to declare a constant value that remains unchanged throughout the program.
+- :: (scope resolution operator): It is used to access members of a namespace or class.
+- if statement: It is a control flow statement that executes a block of code if a specified condition is true.
+- return: It is a keyword used to terminate the execution of a function and return a value to the caller.
+- nullptr: It is a pointer literal representing a null pointer.
+- std::function: It is a function object class that can store a generic function pointer.
+- lambda function: It is an anonymous function that can be used as an argument to another function.
+- wait_for: It is a function that waits for a specified period of time for a future object to become ready.
+- std::cerr: It is an output stream object used for error messages.
+- . (dot operator): It is used to access members or methods of an object.
+- Result::Success: It is an enum value that represents a successful result of an operation.
