@@ -1,0 +1,106 @@
+This source code implements a state machine that runs the MAVSDK server plugins on a separate thread and uses the main thread as a ground station. The state machine manages the following states and events:
+
+States:
+1. GroundStation: Represents the ground station state where the main thread is running as a GCS.
+2. Autopilot: Represents the state where the MAVSDK server plugins are running on a separate thread.
+
+Events:
+1. ConnectionSuccess: Indicates that a connection between the ground station and the autopilot has been established.
+2. ConnectionTimeout: Indicates that a connection between the ground station and the autopilot could not be established within a given timeout.
+3. NewSystemDiscovered: Indicates that a new system (autopilot) has been discovered.
+4. TakeoffSuccess: Indicates that the vehicle has successfully taken off.
+
+Transitions:
+1. GroundStation -> ConnectionSuccess -> Autopilot: Transition from the GroundStation state to the Autopilot state when a connection with the autopilot is successfully established.
+2. GroundStation -> ConnectionTimeout -> GroundStation: Transition from the GroundStation state back to itself when a connection with the autopilot could not be established within a timeout.
+3. Autopilot -> NewSystemDiscovered -> Autopilot: Transition from the Autopilot state back to itself when a new system (autopilot) is discovered.
+4. Autopilot -> TakeoffSuccess -> Autopilot: Transition from the Autopilot state back to itself when the vehicle successfully takes off.
+
+Here is the C code representation of the state machine:
+
+```c
+typedef enum {
+    STATE_GroundStation,
+    STATE_Autopilot
+} State;
+
+typedef enum {
+    EVENT_ConnectionSuccess,
+    EVENT_ConnectionTimeout,
+    EVENT_NewSystemDiscovered,
+    EVENT_TakeoffSuccess
+} Event;
+
+State current_state = STATE_GroundStation;
+
+void on_event(Event event)
+{
+    switch (current_state) {
+        case STATE_GroundStation:
+            switch (event) {
+                case EVENT_ConnectionSuccess:
+                    current_state = STATE_Autopilot;
+                    break;
+                case EVENT_ConnectionTimeout:
+                    // No transition, stay in the same state
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case STATE_Autopilot:
+            switch (event) {
+                case EVENT_NewSystemDiscovered:
+                    // No transition, stay in the same state
+                    break;
+                case EVENT_TakeoffSuccess:
+                    // No transition, stay in the same state
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+int main()
+{
+    // ...
+
+    // Transition from GroundStation to Autopilot upon ConnectionSuccess
+    if (result == mavsdk::ConnectionResult::Success) {
+        on_event(EVENT_ConnectionSuccess);
+        std::cout << "Connected autopilot server side!" << std::endl;
+    } else {
+        // Transition from GroundStation to GroundStation upon ConnectionTimeout
+        on_event(EVENT_ConnectionTimeout);
+    }
+
+    // ...
+
+    // Transition from Autopilot to Autopilot upon NewSystemDiscovered
+    mavsdkTester.subscribe_on_new_system([&mavsdkTester, &prom]() {
+        std::cout << "Discovered MAVSDK GCS" << std::endl;
+        auto system = mavsdkTester.systems().back();
+        mavsdkTester.subscribe_on_new_system(nullptr);
+        prom.set_value(system);
+        
+        on_event(EVENT_NewSystemDiscovered);
+    });
+
+    // ...
+
+    // Transition from Autopilot to Autopilot upon TakeoffSuccess
+    actionServer.subscribe_takeoff([&position](ActionServer::Result result, bool takeoff) {
+        if (result == ActionServer::Result::Success) {
+            position.relative_altitude_m = 10;
+            on_event(EVENT_TakeoffSuccess);
+        }
+    });
+
+    // ...
+}
+```
+Note: The given code snippet has been modified to illustrate the state machine description and C code representation.

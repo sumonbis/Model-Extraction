@@ -1,0 +1,108 @@
+P Code:
+```
+module JoystickStateMachine()
+{
+    enum State {
+        Connected,
+        Disconnected
+    }
+
+    enum Event {
+        JoystickRemoved,
+        JoystickAdded,
+        Quit,
+        ButtonPressed,
+        ButtonReleased,
+        AxisMotion
+    }
+
+    state current_state = Disconnected;
+
+    void process_event(event)
+    {
+        switch (current_state)
+        {
+            case Connected:
+                switch (event)
+                {
+                    case JoystickRemoved:
+                        output("joystick removed");
+                        // Call functions to disconnect from joystick
+                        current_state = Disconnected;
+                        break;
+
+                    case Quit:
+                        // Call functions to disconnect from joystick, deinitialize SDL and raise SIGINT
+                        current_state = Disconnected;
+                        break;
+
+                    case ButtonPressed:
+                    case ButtonReleased:
+                    case AxisMotion:
+                        // Update the state of the joystick
+                        break;
+
+                    else:
+                        break;
+                }
+                break;
+
+            case Disconnected:
+                switch (event)
+                {
+                    case JoystickAdded:
+                        // Call functions to connect to joystick
+                        current_state = Connected;
+                        break;
+
+                    else:
+                        break;
+                }
+                break;
+        }
+    }
+
+    void main()
+    {
+        // Call functions to initialize SDL and create joystick
+        loop 
+        {
+            event = wait_event_timeout(100);
+
+            switch (event)
+            {
+                case JoystickRemoved:
+                    process_event(JoystickRemoved);
+                    break;
+
+                case JoystickAdded:
+                    process_event(JoystickAdded);
+                    break;
+
+                case Quit:
+                    process_event(Quit);
+                    break;
+
+                case ButtonPressed:
+                    process_event(ButtonPressed);
+                    break;
+
+                case ButtonReleased:
+                    process_event(ButtonReleased);
+                    break;
+
+                case AxisMotion:
+                    process_event(AxisMotion);
+                    break;
+
+                default:
+                    break;
+            }
+
+            // Call function to print values if needed
+        }
+
+        // Call functions to stop poll loop and clean up
+    }
+}
+```

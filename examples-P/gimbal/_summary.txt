@@ -1,0 +1,244 @@
+State machine description:
+
+States:
+1. Idle
+2. Discovering
+3. TakingControl
+4. SetModeLock
+5. LookNorth
+6. LookEast
+7. LookSouth
+8. LookWest
+9. SetModeFollow
+10. Center
+11. TiltDown
+12. TiltUp
+13. SlowlyTiltUp
+14. BackToHorizontal
+15. PanRight
+16. BackToCenter
+17. PanLeft
+18. SetROI
+19. BackToCenter2
+20. ReleasingControl
+21. Finished
+
+Events:
+1. DiscoveredAutopilot
+2. GimbalControlTaken
+3. LockModeSet
+4. LookedNorth
+5. LookedEast
+6. LookedSouth
+7. LookedWest
+8. FollowModeSet
+9. Centered
+10. TiltedDown
+11. TiltedUp
+12. SlowlyTiltedUp
+13. BackToHorizontalSet
+14. PanRightSet
+15. BackToCenterSet
+16. PanLeftSet
+17. ROILocationSet
+18. BackToCenter2Set
+19. GimbalControlReleased
+
+Transitions:
+1. Idle -> Discovering (on start)
+2. Discovering -> TakingControl (on DiscoveredAutopilot)
+3. TakingControl -> SetModeLock (on GimbalControlTaken)
+4. SetModeLock -> LookNorth (on LockModeSet)
+5. LookNorth -> LookEast (on LookedNorth)
+6. LookEast -> LookSouth (on LookedEast)
+7. LookSouth -> LookWest (on LookedSouth)
+8. LookWest -> SetModeFollow (on LookedWest)
+9. SetModeFollow -> Center (on FollowModeSet)
+10. Center -> TiltDown (on Centered)
+11. TiltDown -> TiltUp (on TiltedDown)
+12. TiltUp -> SlowlyTiltUp (on TiltedUp)
+13. SlowlyTiltUp -> BackToHorizontal (on SlowlyTiltedUp)
+14. BackToHorizontal -> PanRight (on BackToHorizontalSet)
+15. PanRight -> BackToCenter (on PanRightSet)
+16. BackToCenter -> PanLeft (on BackToCenterSet)
+17. PanLeft -> SetROI (on PanLeftSet)
+18. SetROI -> BackToCenter2 (on ROILocationSet)
+19. BackToCenter2 -> ReleasingControl (on BackToCenter2Set)
+20. ReleasingControl -> Finished (on GimbalControlReleased)
+
+C code for the state machine:
+
+```c
+#include <stdio.h>
+#include <stdbool.h>
+
+typedef enum {
+    STATE_IDLE,
+    STATE_DISCOVERING,
+    STATE_TAKING_CONTROL,
+    STATE_SET_MODE_LOCK,
+    STATE_LOOK_NORTH,
+    STATE_LOOK_EAST,
+    STATE_LOOK_SOUTH,
+    STATE_LOOK_WEST,
+    STATE_SET_MODE_FOLLOW,
+    STATE_CENTER,
+    STATE_TILT_DOWN,
+    STATE_TILT_UP,
+    STATE_SLOWLY_TILT_UP,
+    STATE_BACK_TO_HORIZONTAL,
+    STATE_PAN_RIGHT,
+    STATE_BACK_TO_CENTER,
+    STATE_PAN_LEFT,
+    STATE_SET_ROI,
+    STATE_BACK_TO_CENTER2,
+    STATE_RELEASING_CONTROL,
+    STATE_FINISHED
+} State;
+
+typedef enum {
+    EVENT_DISCOVERED_AUTOPILOT,
+    EVENT_GIMBAL_CONTROL_TAKEN,
+    EVENT_LOCK_MODE_SET,
+    EVENT_LOOKED_NORTH,
+    EVENT_LOOKED_EAST,
+    EVENT_LOOKED_SOUTH,
+    EVENT_LOOKED_WEST,
+    EVENT_FOLLOW_MODE_SET,
+    EVENT_CENTERED,
+    EVENT_TILTED_DOWN,
+    EVENT_TILTED_UP,
+    EVENT_SLOWLY_TILTED_UP,
+    EVENT_BACK_TO_HORIZONTAL_SET,
+    EVENT_PAN_RIGHT_SET,
+    EVENT_BACK_TO_CENTER_SET,
+    EVENT_PAN_LEFT_SET,
+    EVENT_ROI_LOCATION_SET,
+    EVENT_BACK_TO_CENTER2_SET,
+    EVENT_GIMBAL_CONTROL_RELEASED
+} Event;
+
+State handle_event(State current_state, Event event) {
+    State next_state = current_state;
+
+    switch (current_state) {
+        case STATE_IDLE:
+            if (event == EVENT_DISCOVERED_AUTOPILOT) {
+                next_state = STATE_DISCOVERING;
+            }
+            break;
+        case STATE_DISCOVERING:
+            if (event == EVENT_GIMBAL_CONTROL_TAKEN) {
+                next_state = STATE_TAKING_CONTROL;
+            }
+            break;
+        case STATE_TAKING_CONTROL:
+            if (event == EVENT_LOCK_MODE_SET) {
+                next_state = STATE_SET_MODE_LOCK;
+            }
+            break;
+        case STATE_SET_MODE_LOCK:
+            if (event == EVENT_LOOKED_NORTH) {
+                next_state = STATE_LOOK_NORTH;
+            }
+            break;
+        case STATE_LOOK_NORTH:
+            if (event == EVENT_LOOKED_EAST) {
+                next_state = STATE_LOOK_EAST;
+            }
+            break;
+        case STATE_LOOK_EAST:
+            if (event == EVENT_LOOKED_SOUTH) {
+                next_state = STATE_LOOK_SOUTH;
+            }
+            break;
+        case STATE_LOOK_SOUTH:
+            if (event == EVENT_LOOKED_WEST) {
+                next_state = STATE_LOOK_WEST;
+            }
+            break;
+        case STATE_LOOK_WEST:
+            if (event == EVENT_FOLLOW_MODE_SET) {
+                next_state = STATE_SET_MODE_FOLLOW;
+            }
+            break;
+        case STATE_SET_MODE_FOLLOW:
+            if (event == EVENT_CENTERED) {
+                next_state = STATE_CENTER;
+            }
+            break;
+        case STATE_CENTER:
+            if (event == EVENT_TILTED_DOWN) {
+                next_state = STATE_TILT_DOWN;
+            }
+            break;
+        case STATE_TILT_DOWN:
+            if (event == EVENT_TILTED_UP) {
+                next_state = STATE_TILT_UP;
+            }
+            break;
+        case STATE_TILT_UP:
+            if (event == EVENT_SLOWLY_TILTED_UP) {
+                next_state = STATE_SLOWLY_TILT_UP;
+            }
+            break;
+        case STATE_SLOWLY_TILT_UP:
+            if (event == EVENT_BACK_TO_HORIZONTAL_SET) {
+                next_state = STATE_BACK_TO_HORIZONTAL;
+            }
+            break;
+        case STATE_BACK_TO_HORIZONTAL:
+            if (event == EVENT_PAN_RIGHT_SET) {
+                next_state = STATE_PAN_RIGHT;
+            }
+            break;
+        case STATE_PAN_RIGHT:
+            if (event == EVENT_BACK_TO_CENTER_SET) {
+                next_state = STATE_BACK_TO_CENTER;
+            }
+            break;
+        case STATE_BACK_TO_CENTER:
+            if (event == EVENT_PAN_LEFT_SET) {
+                next_state = STATE_PAN_LEFT;
+            }
+            break;
+        case STATE_PAN_LEFT:
+            if (event == EVENT_ROI_LOCATION_SET) {
+                next_state = STATE_SET_ROI;
+            }
+            break;
+        case STATE_SET_ROI:
+            if (event == EVENT_BACK_TO_CENTER2_SET) {
+                next_state = STATE_BACK_TO_CENTER2;
+            }
+            break;
+        case STATE_BACK_TO_CENTER2:
+            if (event == EVENT_GIMBAL_CONTROL_RELEASED) {
+                next_state = STATE_RELEASING_CONTROL;
+            }
+            break;
+        case STATE_RELEASING_CONTROL:
+            next_state = STATE_FINISHED;
+            break;
+        default:
+            break;
+    }
+
+    return next_state;
+}
+
+int main() {
+    State current_state = STATE_IDLE;
+
+    // TODO: Replace with actual event handling
+
+    while (current_state != STATE_FINISHED) {
+        // TODO: Get event
+
+        // TODO: Handle event
+        current_state = handle_event(current_state, /* event */);
+    }
+
+    return 0;
+}
+```

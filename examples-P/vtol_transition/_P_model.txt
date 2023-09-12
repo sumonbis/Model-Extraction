@@ -1,0 +1,135 @@
+Here's the equivalent code in P language:
+
+```p
+package state_machine
+
+type State {
+    Idle
+    DiscoveringSystem
+    ArmVehicle
+    Takeoff
+    FixedWingFlight
+    Loiter
+    GotoLocation
+    TransitionMulticopter
+    Landing
+    Disarmed
+}
+
+type Event {
+    NewSystemDiscovered
+    VehicleReadyToArm
+    VehicleArmingSuccessful
+    TakeoffSuccessful
+    FixedWingTransitionSuccessful
+    LoiterComplete
+    GotoCommandSuccessful
+    TransitionMulticopterSuccessful
+    LandingSuccessful
+    VehicleDisarmed
+}
+
+global state: State = Idle
+
+main {
+    on main.Idle() {
+        state = DiscoveringSystem
+    }
+
+    on main.DiscoveringSystem() {
+        state = ArmVehicle
+    }
+
+    on main.ArmVehicle() {
+        state = Takeoff
+    }
+
+    on main.Takeoff() {
+        state = FixedWingFlight
+    }
+
+    on main.FixedWingFlight() {
+        state = Loiter
+    }
+
+    on main.Loiter() {
+        state = GotoLocation
+    }
+
+    on main.GotoLocation() {
+        state = TransitionMulticopter
+    }
+
+    on main.TransitionMulticopter() {
+        state = Landing
+    }
+
+    on main.Landing() {
+        state = Disarmed
+    }
+}
+
+system {
+    event discovery_thread() {
+        while (state != DiscoveringSystem) {
+            yield 1s
+        }
+        emit main.DiscoveringSystem()
+    }
+
+    event arming_thread() {
+        while (state != ArmVehicle) {
+            yield 1s
+        }
+        emit main.ArmVehicle()
+        emit main.VehicleReadyToArm()
+        emit main.VehicleArmingSuccessful()
+    }
+
+    event takeoff_thread() {
+        while (state != Takeoff) {
+            yield 1s
+        }
+        emit main.Takeoff()
+        emit main.TakeoffSuccessful()
+    }
+
+    event fixed_wing_flight_thread() {
+        while (state != FixedWingFlight) {
+            yield 1s
+        }
+        emit main.FixedWingFlight()
+        emit main.FixedWingTransitionSuccessful()
+        emit main.LoiterComplete()
+    }
+
+    event loiter_thread() {
+        while (state != Loiter) {
+            yield 1s
+        }
+        emit main.Loiter()
+        emit main.GotoCommandSuccessful()
+    }
+
+    event transition_multicopter_thread() {
+        while (state != TransitionMulticopter) {
+            yield 1s
+        }
+        emit main.TransitionMulticopter()
+        emit main.TransitionMulticopterSuccessful()
+    }
+
+    event landing_thread() {
+        while (state != Landing) {
+            yield 1s
+        }
+        emit main.Landing()
+        emit main.VehicleDisarmed()
+        emit main.LandingSuccessful()
+    }
+}
+```
+
+This P code defines the state machine using state and event types. It then defines the main state machine behavior, which handles the state transitions. The system section defines the various threads that simulate the events, which emit the corresponding events when the appropriate state is reached. The main function handles these events to trigger state transitions.
+
+You can modify and expand upon this P code as per your specific requirements.

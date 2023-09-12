@@ -117,11 +117,7 @@ if __name__ == "__main__":
     else:
         print("No argument provided.")
 
-    # test class constructor
-    # test_timeout()
-    # test_api_key()
-
-    arch_cmd = 'Refine the AADL code below and and add actions sent from ground control, e.g., arm, takeoff, land.\n'
+    arch_cmd = 'Refine the AADL code and add two components that are the Ground Station, and the Drone.\n'
 
     code = load_query(aadl_code)
     print('Generating aadl ...')

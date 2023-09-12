@@ -1,0 +1,158 @@
+State Machine Description:
+The state machine is responsible for listening to a transponder using MAVSDK. It goes through the following states:
+
+1. Initializing: The initial state of the program.
+2. Discovering: Waiting for the system to be discovered.
+3. System Discovered: A system with an autopilot is discovered.
+4. Setting Rate: Setting the update rate for the transponder.
+5. Monitor Activity: Setting up a callback to monitor transponder activity.
+6. Finished: Program execution is complete.
+
+Events:
+- Start: The program is started.
+- System Discovered: A system with an autopilot is discovered.
+- Rate Set: The update rate for the transponder is successfully set.
+- Activity Monitored: The callback for monitoring transponder activity is set.
+- Timeout: Timer reaches the specified time and the program finishes.
+
+Transitions:
+1. Start -> Discovering: Start event triggers the program to start discovering the system.
+2. Discovering -> System Discovered: System Discovered event is triggered when a system with an autopilot is found.
+3. System Discovered -> Setting Rate: Transition occurs automatically after the system is discovered.
+4. Setting Rate -> Monitor Activity: Rate Set event is triggered when the update rate for the transponder is successfully set.
+5. Monitor Activity -> Finished: Activity Monitored event is triggered after the callback for monitoring transponder activity is set.
+6. Discovering, System Discovered, Setting Rate, Monitor Activity -> Timeout: Timeout event is triggered when the specified time is reached.
+
+C Code:
+```cpp
+#include <chrono>
+#include <cstdint>
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/transponder/transponder.h>
+#include <iostream>
+#include <future>
+#include <memory>
+#include <thread>
+
+using namespace mavsdk;
+using std::chrono::seconds;
+using std::this_thread::sleep_for;
+
+enum State {
+    Initializing,
+    Discovering,
+    SystemDiscovered,
+    SettingRate,
+    MonitorActivity,
+    Finished
+};
+
+enum Event {
+    Start,
+    SystemDiscovered,
+    RateSet,
+    ActivityMonitored,
+    Timeout
+};
+
+State state = Initializing;
+
+void handle_event(Event event)
+{
+    switch (state) {
+        case Initializing:
+            if (event == Start) {
+                std::cout << "Waiting to discover system...\n";
+                state = Discovering;
+            }
+            break;
+        case Discovering:
+            if (event == SystemDiscovered) {
+                std::cout << "Discovered autopilot\n";
+                state = SystemDiscovered;
+            } else if (event == Timeout) {
+                std::cerr << "No autopilot found.\n";
+                state = Finished;
+            }
+            break;
+        case SystemDiscovered:
+            state = SettingRate;
+            break;
+        case SettingRate:
+            if (event == RateSet) {
+                std::cout << "Setting transponder subscription\n";
+                state = MonitorActivity;
+            }
+            break;
+        case MonitorActivity:
+            if (event == ActivityMonitored) {
+                std::cout << "Finished...\n";
+                state = Finished;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+void usage(const std::string& bin_name)
+{
+    // Print usage
+}
+
+std::shared_ptr<System> get_system(Mavsdk& mavsdk)
+{
+    // Get system
+}
+
+int main(int argc, char** argv)
+{
+    if (argc != 2) {
+        usage(argv[0]);
+        return 1;
+    }
+
+    Mavsdk mavsdk;
+    ConnectionResult connection_result = mavsdk.add_any_connection(argv[1]);
+
+    if (connection_result != ConnectionResult::Success) {
+        std::cerr << "Connection failed: " << connection_result << '\n';
+        return 1;
+    }
+
+    auto system = get_system(mavsdk);
+    if (!system) {
+        return 1;
+    }
+
+    auto transponder = Transponder{system};
+
+    std::cout << "Setting transponder update rate\n";
+    const Transponder::Result set_rate_result = transponder.set_rate_transponder(1.0);
+    if (set_rate_result != Transponder::Result::Success) {
+        std::cerr << "Setting rate failed:" << set_rate_result << '\n';
+        return 1;
+    }
+
+    std::cout << "Setting transponder subscription\n";
+    transponder.subscribe_transponder([](Transponder::AdsbVehicle adsbVehicle) {
+        std::cout << "ICAO Address: " << adsbVehicle.icao_address << '\n'
+                  << "Latitude: " << adsbVehicle.latitude_deg << " deg\n"
+                  << "Longitude: " << adsbVehicle.longitude_deg << " deg\n"
+                  << "Absolute Altitude: " << adsbVehicle.absolute_altitude_m << " m\n"
+                  << "Heading: " << adsbVehicle.heading_deg << " deg\n"
+                  << "Horizontal Velocity: " << adsbVehicle.horizontal_velocity_m_s << " m/s\n"
+                  << "Vertical Velocity: " << adsbVehicle.vertical_velocity_m_s << " m/s\n"
+                  << "Call Sign: " << adsbVehicle.callsign << '\n'
+                  << "Emitter Type: " << adsbVehicle.emitter_type << '\n'
+                  << "Squawk: " << adsbVehicle.squawk << '\n';
+    });
+
+    sleep_for(seconds(60));
+
+    handle_event(Timeout);
+
+    return 0;
+}
+```
+```

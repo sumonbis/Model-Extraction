@@ -1,0 +1,148 @@
+State Machine Description:
+
+States:
+- Idle: The system is waiting to discover an autopilot system.
+- Connected: The system has successfully established a connection with an autopilot system.
+- SendingBatteryStatus: The system is sending battery status information to the autopilot system.
+
+Events:
+- DiscoverSystem: Triggered when a new system is discovered.
+- ConnectionFailed: Triggered when the connection with the autopilot system fails.
+- SystemFound: Triggered when an autopilot system is found.
+- SendBatteryStatus: Triggered when it is time to send battery status information.
+
+Transitions:
+- Idle -> DiscoverSystem: When the system is in the Idle state and a new system is discovered.
+- DiscoverSystem -> Connected: When the system is in the DiscoverSystem state and an autopilot system is found.
+- DiscoverSystem -> Idle: When the system is in the DiscoverSystem state and the connection with the autopilot system fails.
+- Connected -> SendingBatteryStatus: When the system is in the Connected state and it is time to send battery status information.
+- SendingBatteryStatus -> SendingBatteryStatus: When the system is in the SendingBatteryStatus state and it is time to send battery status information again.
+
+C Code:
+
+```cpp
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h>
+#include <mavsdk/plugins/telemetry/telemetry.h>
+#include <chrono>
+#include <cstdint>
+#include <iostream>
+#include <future>
+#include <memory>
+#include <thread>
+
+using namespace mavsdk;
+using std::chrono::seconds;
+
+enum class State {
+    Idle,
+    Connected,
+    SendingBatteryStatus
+};
+
+enum class Event {
+    DiscoverSystem,
+    ConnectionFailed,
+    SystemFound,
+    SendBatteryStatus
+};
+
+static void subscribe_armed(Telemetry& telemetry);
+static void send_battery_status(MavlinkPassthrough& mavlink_passthrough);
+
+void usage(const std::string& bin_name)
+{
+    std::cerr << "Usage : " << bin_name << " <connection_url>\n"
+              << "Connection URL format should be :\n"
+              << " For TCP : tcp://[server_host][:server_port]\n"
+              << " For UDP : udp://[bind_host][:bind_port]\n"
+              << " For Serial : serial:///path/to/serial/dev[:baudrate]\n"
+              << "For example, to connect to the simulator use URL: udp://:14540\n";
+}
+
+std::shared_ptr<System> get_system(Mavsdk& mavsdk)
+{
+    std::cout << "Waiting to discover system...\n";
+    auto prom = std::promise<std::shared_ptr<System>>{};
+    auto fut = prom.get_future();
+
+    State state = State::Idle;
+
+    // State machine loop
+    while (true) {
+        switch (state) {
+            case State::Idle:
+                mavsdk.subscribe_on_new_system([&mavsdk, &prom]() {
+                    auto system = mavsdk.systems().back();
+
+                    if (system->has_autopilot()) {
+                        std::cout << "Discovered autopilot\n";
+
+                        // Unsubscribe again as we only want to find one system.
+                        mavsdk.subscribe_on_new_system(nullptr);
+                        prom.set_value(system);
+                    } else {
+                        // Transition to Idle
+                        state = State::Idle;
+                    }
+                });
+
+                // We usually receive heartbeats at 1Hz, therefore we should find a
+                // system after around 3 seconds max, surely.
+                if (fut.wait_for(seconds(3)) == std::future_status::timeout) {
+                    std::cerr << "No autopilot found.\n";
+                    return {};
+                }
+
+                // Transition to Connected or Idle
+                if (fut.get()) {
+                    state = State::Connected;
+                } else {
+                    state = State::Idle;
+                }
+
+                break;
+
+            case State::Connected:
+                // Instantiate plugins.
+                auto telemetry = Telemetry{fut.get()};
+                auto mavlink_passthrough = MavlinkPassthrough{fut.get()};
+
+                subscribe_armed(telemetry);
+
+                // Transition to SendingBatteryStatus
+                state = State::SendingBatteryStatus;
+
+                break;
+
+            case State::SendingBatteryStatus:
+                send_battery_status(mavlink_passthrough);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+
+                // Transition to SendingBatteryStatus
+                state = State::SendingBatteryStatus;
+
+                break;
+        }
+    }
+
+    // Get discovered system now.
+    return fut.get();
+}
+
+int main(int argc, char** argv)
+{
+    ...
+}
+
+void subscribe_armed(Telemetry& telemetry)
+{
+    telemetry.subscribe_armed(
+        [](bool is_armed) { std::cout << (is_armed ? "armed" : "disarmed") << '\n'; });
+}
+
+void send_battery_status(MavlinkPassthrough& mavlink_passthrough)
+{
+    ...
+}
+```

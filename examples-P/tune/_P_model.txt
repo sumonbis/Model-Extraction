@@ -1,0 +1,90 @@
+State P
+    {
+        State 1
+        {
+            Entry
+            {
+                "Waiting to discover system"
+            }
+
+            OnEvent
+                {
+                    case EV_SYSTEM_DISCOVERED
+                    {
+                        AutopilotHas = false
+                        If (AutopilotHas)
+                        {
+                            Goto(State 2)
+                        }
+
+                        If (Timeout(3))
+                        {
+                            Goto(State 3)
+                        }
+                    }
+                }
+        }
+
+        State 2
+        {
+            Entry
+            {
+                "Discovered autopilot"
+            }
+        }
+
+        State 3
+        {
+            Entry
+            {
+                "No autopilot found"
+            }
+        }
+    }
+
+    "State state = STATE_WAITING"
+    "Event event"
+    "bool AutopilotHas = false"
+
+    Loop
+    {
+        "On event EV_SYSTEM_DISCOVERED"
+        {
+            "event = EV_SYSTEM_DISCOVERED"
+            "status = state"
+            Trigger(State P)
+        }
+
+        "On state State 1"
+        {
+            if (event == EV_SYSTEM_DISCOVERED)
+            {
+                "AutopilotHas = false"
+                if (AutopilotHas)
+                {
+                    "state = STATE_DISCOVERED"
+                }
+
+                if (Timeout(3))
+                {
+                    "state = STATE_NOT_FOUND"
+                }
+            }
+        }
+
+        "On state State 2"
+        {
+            if (event == EV_SYSTEM_DISCOVERED)
+            {
+                Goto(State 1)
+            }
+        }
+
+        "On state State 3"
+        {
+            if (event == EV_SYSTEM_DISCOVERED)
+            {
+                Goto(State 1)
+            }
+        }
+    }

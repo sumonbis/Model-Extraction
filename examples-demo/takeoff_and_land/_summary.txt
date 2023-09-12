@@ -1,0 +1,45 @@
+The UML architecture description for the given drone application code can be represented as follows:
+
+```
+       ----------               ----------               ----------------
+       |        |               |        |               |              |
+       | Mavsdk |<------------->| System |<--------------|   Telemetry  |
+       |        |               |        |               |              |
+       ----------               ----------               ----------------
+             ↑                         ↑                          ↑
+             |                         |                          |
+   ----------------          ----------------            ----------------
+   |              |          |              |            |              |
+   | Connection   |          |    Action    |            |  Telemetry   |
+   |    Plugin    |          |   Plugin     |            |   Plugin     |
+   |              |          |              |            |              |
+   ----------------          ----------------            ----------------
+```
+
+The code starts with a `main` function which accepts a connection URL as input. It initializes an instance of the MAVSDK class, which is responsible for managing connections to drones.
+
+The `get_system` function is defined to discover and return a connected drone system (autopilot) from the MAVSDK instance.
+
+In the `main` function, the `add_any_connection` method of the MAVSDK instance is called to establish a connection with the drone using the provided URL.
+
+After successfully connecting to the drone, the `telemetry` and `action` plugins are instantiated using the connected system.
+
+The `telemetry` plugin is used to subscribe to the altitude of the drone at 1 Hz. The altitude is then printed to the console whenever a new position update is received.
+
+The code then waits until the drone is ready to arm before proceeding. The `health_all_ok` method of the `telemetry` plugin is used for this purpose.
+
+Once the drone is ready, the `arm` method of the `action` plugin is called to arm the vehicle. If arming fails, an error message is displayed.
+
+Next, the `takeoff` method of the `action` plugin is called to initiate the drone's takeoff. If the takeoff fails, an error message is displayed.
+
+After a brief hover period, the `land` method of the `action` plugin is called to command the vehicle to land. If landing fails, an error message is displayed.
+
+The code then checks if the vehicle is still in the air using the `in_air` method of the `telemetry` plugin. If the vehicle is still in the air, it waits for 1 second and repeats the check. Once the vehicle is on the ground, it displays a "Landed!" message.
+
+The code continues to monitor the telemetry for a few more seconds before printing a "Finished..." message and exiting.
+
+The code also includes a `usage` function for displaying the correct usage of the program if an incorrect number of command-line arguments are provided.
+
+In terms of syntax, the code uses the MAVSDK library to interact with the drone. The `<>` syntax is used to specify template arguments for classes, such as `std::shared_ptr<System>`. The `->` operator is used to access methods or members of objects on the left side, such as `mavsdk.systems()`. The `.` operator is used for invoking methods or accessing members of objects on the left side, such as `telemetry.set_rate_position(1.0)`.
+
+Overall, the code demonstrates how to establish a connection with a drone, perform actions like arming, takeoff, and landing, and monitor the drone's telemetry data.

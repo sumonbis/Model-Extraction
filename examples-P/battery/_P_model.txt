@@ -1,0 +1,72 @@
+P Code:
+
+```p
+// State machine declaration
+type State = enum { Idle, Connected, SendingBatteryStatus };
+
+// Event declaration
+type Event = enum { DiscoverSystem, ConnectionFailed, SystemFound, SendBatteryStatus };
+
+// Initial state
+state Idle;
+
+// State transitions
+transition Idle -> DiscoverSystem {
+    condition:
+        event == Event.DiscoverSystem;
+    action:
+        print("Waiting to discover system...");
+}
+
+transition DiscoverSystem -> Connected {
+    condition:
+        event == Event.SystemFound;
+    action:
+        print("Discovered autopilot");
+        system.set(shared_system);
+}
+
+transition DiscoverSystem -> Idle {
+    condition:
+        event == Event.ConnectionFailed;
+    action:
+        // No action required
+        // Will automatically loop back to Idle state
+}
+
+transition Connected -> SendingBatteryStatus {
+    condition:
+        event == Event.SendBatteryStatus;
+    action:
+        subscribe_armed(telemetry);
+}
+
+transition SendingBatteryStatus -> SendingBatteryStatus {
+    condition:
+        event == Event.SendBatteryStatus;
+    action:
+        send_battery_status(mavlink_passthrough);
+        sleep(1);
+}
+
+// Entry point
+start state Idle;
+
+// Helper functions
+procedure subscribe_armed(telemetry: Telemetry) {
+    telemetry.subscribe_armed(
+        lambda is_armed: print(is_armed ? "armed" : "disarmed")
+    );
+}
+
+procedure send_battery_status(mavlink_passthrough: MavlinkPassthrough) {
+    // Add implementation here
+}
+
+// Main function
+procedure main(connection_url: string) {
+    // Add implementation here
+}
+```
+
+Note: The P code translation above assumes that the helper functions `subscribe_armed()` and `send_battery_status()` have been implemented properly in the P code. The implementation details of those functions were not provided in the C code, so they are left as placeholders in the P code.

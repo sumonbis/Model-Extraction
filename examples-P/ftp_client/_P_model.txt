@@ -1,0 +1,80 @@
+P code for the state machine:
+
+```
+type State = enum {
+    IDLE,
+    CONNECTING,
+    AUTHENTICATED,
+    UPLOADING,
+    DOWNLOADING,
+    RENAMING,
+    CREATING_DIRECTORY,
+    REMOVING_FILE,
+    REMOVING_DIRECTORY,
+    LISTING_DIRECTORY
+};
+
+type Event = enum {
+    CONNECTION_REQUEST,
+    AUTHENTICATION_SUCCESS,
+    AUTHENTICATION_FAILURE,
+    UPLOAD_REQUEST,
+    UPLOAD_SUCCESS,
+    UPLOAD_FAILURE,
+    DOWNLOAD_REQUEST,
+    DOWNLOAD_SUCCESS,
+    DOWNLOAD_FAILURE,
+    RENAME_REQUEST,
+    RENAME_SUCCESS,
+    RENAME_FAILURE,
+    CREATE_DIRECTORY_REQUEST,
+    CREATE_DIRECTORY_SUCCESS,
+    CREATE_DIRECTORY_FAILURE,
+    REMOVE_FILE_REQUEST,
+    REMOVE_FILE_SUCCESS,
+    REMOVE_FILE_FAILURE,
+    REMOVE_DIRECTORY_REQUEST,
+    REMOVE_DIRECTORY_SUCCESS,
+    REMOVE_DIRECTORY_FAILURE,
+    LIST_DIRECTORY_REQUEST,
+    LIST_DIRECTORY_SUCCESS,
+    LIST_DIRECTORY_FAILURE
+};
+
+type Transition = record {
+    current_state: State;
+    next_state: State;
+    event: Event;
+};
+
+var current_state: State = IDLE;
+
+var transitions: set of Transition = {
+    {current_state: IDLE, next_state: CONNECTING, event: CONNECTION_REQUEST},
+    {current_state: CONNECTING, next_state: AUTHENTICATED, event: AUTHENTICATION_SUCCESS},
+    {current_state: CONNECTING, next_state: IDLE, event: AUTHENTICATION_FAILURE},
+    {current_state: AUTHENTICATED, next_state: UPLOADING, event: UPLOAD_REQUEST},
+    {current_state: UPLOADING, next_state: AUTHENTICATED, event: UPLOAD_SUCCESS},
+    {current_state: UPLOADING, next_state: AUTHENTICATED, event: UPLOAD_FAILURE},
+    {current_state: AUTHENTICATED, next_state: DOWNLOADING, event: DOWNLOAD_REQUEST},
+    {current_state: DOWNLOADING, next_state: AUTHENTICATED, event: DOWNLOAD_SUCCESS},
+    {current_state: DOWNLOADING, next_state: AUTHENTICATED, event: DOWNLOAD_FAILURE},
+    {current_state: AUTHENTICATED, next_state: RENAMING, event: RENAME_REQUEST},
+    {current_state: RENAMING, next_state: AUTHENTICATED, event: RENAME_SUCCESS},
+    {current_state: RENAMING, next_state: AUTHENTICATED, event: RENAME_FAILURE},
+    {current_state: AUTHENTICATED, next_state: CREATING_DIRECTORY, event: CREATE_DIRECTORY_REQUEST},
+    {current_state: CREATING_DIRECTORY, next_state: AUTHENTICATED, event: CREATE_DIRECTORY_SUCCESS},
+    {current_state: CREATING_DIRECTORY, next_state: AUTHENTICATED, event: CREATE_DIRECTORY_FAILURE},
+    {current_state: AUTHENTICATED, next_state: REMOVING_FILE, event: REMOVE_FILE_REQUEST},
+    {current_state: REMOVING_FILE, next_state: AUTHENTICATED, event: REMOVE_FILE_SUCCESS},
+    {current_state: REMOVING_FILE, next_state: AUTHENTICATED, event: REMOVE_FILE_FAILURE},
+    {current_state: AUTHENTICATED, next_state: REMOVING_DIRECTORY, event: REMOVE_DIRECTORY_REQUEST},
+    {current_state: REMOVING_DIRECTORY, next_state: AUTHENTICATED, event: REMOVE_DIRECTORY_SUCCESS},
+    {current_state: REMOVING_DIRECTORY, next_state: AUTHENTICATED, event: REMOVE_DIRECTORY_FAILURE},
+    {current_state: AUTHENTICATED, next_state: LISTING_DIRECTORY, event: LIST_DIRECTORY_REQUEST},
+    {current_state: LISTING_DIRECTORY, next_state: AUTHENTICATED, event: LIST_DIRECTORY_SUCCESS},
+    {current_state: LISTING_DIRECTORY, next_state: AUTHENTICATED, event: LIST_DIRECTORY_FAILURE}
+};
+```
+
+This P code defines the states, events, and transitions for the FTP client state machine as described in the C code. The state machine starts in the IDLE state and transitions to different states based on the events received. Each transition is defined by the current state, the next state, and the event that triggers the transition.

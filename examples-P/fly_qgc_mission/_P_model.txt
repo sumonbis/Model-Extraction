@@ -1,0 +1,83 @@
+P code:
+```p
+var state: State = StateWaitingForSystemDiscovery
+
+startmachine SystemStateMachine
+states WaitingForSystemDiscovery, SystemDiscovered, SystemReady, ImportingMission, MissionImported, UploadingMission, MissionUploaded, Arming, Armed, StartingMission, MissionInProgress, MissionCompleted, CommandingRTL, RTLCommanded
+transitions
+    WaitingForSystemDiscovery -(NewSystemDiscovered)-> SystemDiscovered
+    SystemDiscovered -(TelemetryHealthCheckPassed)-> SystemReady
+    SystemReady -(MissionPlanImportedSuccessfully)-> ImportingMission
+    ImportingMission -(MissionPlanImportedSuccessfully)-> MissionImported
+    MissionImported -(MissionPlanUploadCompleted)-> UploadingMission
+    UploadingMission -(MissionPlanUploadCompleted)-> MissionUploaded
+    MissionUploaded -(ArmCommandSuccessful)-> Arming
+    Arming -(ArmCommandSuccessful)-> Armed
+    Armed -(MissionStartedSuccessfully)-> StartingMission
+    StartingMission -(MissionStartedSuccessfully)-> MissionInProgress
+    MissionInProgress -(MissionInProgress)-> MissionInProgress
+    MissionInProgress -(MissionCompleted)-> MissionCompleted
+    MissionCompleted -(CommandRTLSuccessful)-> CommandingRTL
+    CommandingRTL -(CommandRTLSuccessful)-> RTLCommanded
+end
+
+on SystemStateMachine {
+
+    case WaitingForSystemDiscovery {
+        WaitNewSystemDiscovered => SystemDiscovered
+    }
+    
+    case SystemDiscovered {
+        WaitTelemetryHealthCheckPassed => SystemReady
+    }
+    
+    case SystemReady {
+        WaitMissionPlanImportedSuccessfully => ImportingMission
+    }
+    
+    case ImportingMission {
+        WaitMissionPlanImportedSuccessfully => MissionImported
+    }
+    
+    case MissionImported {
+        WaitMissionPlanUploadCompleted => UploadingMission
+    }
+    
+    case UploadingMission {
+        WaitMissionPlanUploadCompleted => MissionUploaded
+    }
+    
+    case MissionUploaded {
+        WaitArmCommandSuccessful => Arming
+    }
+    
+    case Arming {
+        WaitArmCommandSuccessful => Armed
+    }
+    
+    case Armed {
+        WaitMissionStartedSuccessfully => StartingMission
+    }
+    
+    case StartingMission {
+        WaitMissionStartedSuccessfully => MissionInProgress
+    }
+    
+    case MissionInProgress {
+        WaitMissionInProgress => MissionInProgress
+        WaitMissionCompleted => MissionCompleted
+    }
+    
+    case MissionCompleted {
+        WaitCommandRTLSuccessful => CommandingRTL
+    }
+    
+    case CommandingRTL {
+        WaitCommandRTLSuccessful => RTLCommanded
+    }
+    
+    case RTLCommanded {
+        // ...
+    }
+}
+```

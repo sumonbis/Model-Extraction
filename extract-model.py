@@ -125,6 +125,20 @@ def truncate_to_token_limit(text, token_limit):
     print("@@@ Truncated to token limit.")
     return truncated_text
 
+def summarize_to_state_machine(file_name):
+    arch_cmd = 'Write a state machine description and that in the C code for the following source code. Identify the states, events, and transitions using sender and receiver:\n'
+    code = load_query(file_name)
+    code = truncate_to_token_limit(code, 3000)
+    print('Generating summary ...')
+    arch_desc = get_answer(arch_cmd + code)
+    return arch_desc
+
+def get_P_model(summary):
+    arch_cmd = 'Translate the following C code to P language. Ensure that the generated P code follows the state machine description:\n'
+    print('Generating P model ...')
+    aadl_model = get_answer(arch_cmd + summary)
+    # aadl_model = get_answer(arch_cmd + "implementation code: \n " + code + "\n Summary:\n" + summary)
+    return aadl_model
 
 def summarize(file_name):
     arch_cmd = 'Write an UML architecture description for the following drone application code. Include the components with interfaces and their connections, and explain the code syntax in detail.\n'
@@ -206,12 +220,21 @@ if __name__ == "__main__":
                 # summary = summarize_relations(os.path.join(subdirectory_path, file_name))
                 # write_to_file(subdirectory_path + "/_summary.txt", summary)
 
-                ## via UML summary
-                summary = summarize(os.path.join(subdirectory_path, file_name))
+                # ## via UML summary
+                # summary = summarize(os.path.join(subdirectory_path, file_name))
+                # write_to_file(subdirectory_path + "/_summary.txt", summary)
+
+                # # Step 2    
+                # aadl = get_alloy(summary)
+                # write_to_file(subdirectory_path + "/_alloy_model.txt", aadl)
+
+                # Generate P model via summary
+                # Step 1
+                summary = summarize_to_state_machine(os.path.join(subdirectory_path, file_name))
                 write_to_file(subdirectory_path + "/_summary.txt", summary)
 
                 # Step 2    
-                aadl = get_alloy(summary)
-                write_to_file(subdirectory_path + "/_alloy_model.txt", aadl)
+                P_model = get_P_model(summary)
+                write_to_file(subdirectory_path + "/_P_model.txt", P_model)
 
                 print("====================================")

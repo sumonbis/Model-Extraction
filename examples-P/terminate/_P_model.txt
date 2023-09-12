@@ -1,0 +1,98 @@
+P code:
+
+// Define states
+states:
+    Idle,
+    Discovered,
+    ConfirmTermination,
+    Terminating
+
+// Define events
+events:
+    SystemDiscovered,
+    TerminateConfirmation,
+    TerminateCommand
+
+// Initial state
+initial state Idle
+
+// Transitions
+transition Idle -> Discovered {
+    on SystemDiscovered
+}
+
+transition Discovered -> ConfirmTermination {
+    on TerminateConfirmation
+}
+
+transition ConfirmTermination -> Terminating {
+    on TerminateCommand
+}
+
+transition ConfirmTermination -> Discovered {
+    on SystemDiscovered,
+    on TerminateCommand
+}
+
+transition Terminating -> Discovered {
+    on SystemDiscovered
+}
+
+// Main function
+module Main {
+    receive(SystemDiscovered) {
+        print("Found ", systems_size, " systems")
+        if (system_has_autopilot) {
+            print("Discovered autopilot")
+            transition(state, SystemDiscovered)
+        }
+    }
+
+    state = Idle
+    print("Waiting to discover system...")
+
+    prom, fut = promise(shared_ptr<System>)
+    
+    connection_result = add_any_connection(connection_url)
+    if (connection_result != Success) {
+        print("Connection failed: ", connection_result)
+        exit(1)
+    }
+
+    while (state != Discovered) {
+        sleep(100)
+        if (fut.wait_for(3 seconds) == timeout) {
+            print("No autopilot found, exiting.")
+            exit(1)
+        }
+    }
+
+    system = fut.get()
+
+    action = instantiate Action(system)
+
+    sleep(1)
+
+    print("WARNING: termination will:")
+    print("- stop all motors in air,")
+    print("- set servos to failsafe position,")
+    print("- and deploy the parachute if available")
+    print("")
+
+    print("Are you sure to terminate? [y/N]")
+    type = input()
+
+    if (type != 'y' && type != 'Y') {
+        print("Not terminating, exiting.")
+        exit(0)
+    }
+
+    transition(state, TerminateConfirmation)
+
+    if (state == Terminating) {
+        print("Sending termination")
+        action.terminate()
+    }
+
+    exit(0)
+}

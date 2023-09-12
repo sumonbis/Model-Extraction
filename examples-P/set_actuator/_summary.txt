@@ -1,0 +1,183 @@
+State Machine:
+
+States:
+1. Init: Initial state of the system.
+2. Connection Failed: State when the connection to the MAVSDK fails.
+3. Waiting: State when waiting to discover a system.
+4. Waiting for Autopilot: State when waiting for an autopilot system to be discovered.
+5. Setting Actuator: State when setting the actuator value.
+6. Actuator Set: State when the actuator value is successfully set.
+
+Events:
+1. Start: Event to start the state machine.
+2. Connection Success: Event when the MAVSDK connection is successful.
+3. Connection Failed: Event when the MAVSDK connection fails.
+4. System Discovered: Event when a system is discovered.
+5. Autopilot Discovered: Event when an autopilot system is discovered.
+6. Timeout: Event when the timeout for discovering a system is reached.
+7. Actuator Set Success: Event when the actuator value is successfully set.
+8. Actuator Set Failed: Event when setting the actuator value fails.
+
+Transitions:
+1. Init -> Connection Failed: On event Connection Failed.
+2. Init -> Waiting: On event Start.
+3. Connection Failed -> Waiting: On event Start.
+4. Connection Failed -> Connection Failed: On event Connection Failed.
+5. Waiting -> Waiting for Autopilot: On event System Discovered.
+6. Waiting for Autopilot -> Waiting for Autopilot: On event System Discovered.
+7. Waiting for Autopilot -> Setting Actuator: On event Autopilot Discovered.
+8. Waiting for Autopilot -> Connection Failed: On event Timeout.
+9. Setting Actuator -> Actuator Set: On event Actuator Set Success.
+10. Setting Actuator -> Connection Failed: On event Actuator Set Failed.
+11. Actuator Set -> Init: On event Start.
+
+C code:
+
+```c
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/action/action.h>
+#include <chrono>
+#include <cstdint>
+#include <iostream>
+#include <future>
+
+using namespace mavsdk;
+
+enum State {
+    Init,
+    ConnectionFailed,
+    Waiting,
+    WaitingForAutopilot,
+    SettingActuator,
+    ActuatorSet
+};
+
+enum Event {
+    Start,
+    ConnectionSuccess,
+    ConnectionFailed,
+    SystemDiscovered,
+    AutopilotDiscovered,
+    Timeout,
+    ActuatorSetSuccess,
+    ActuatorSetFailed
+};
+
+State current_state = Init;
+
+void handle_event(Event event)
+{
+    switch (current_state) {
+        case Init:
+            if (event == Start) {
+                current_state = Waiting;
+            } else if (event == ConnectionFailed) {
+                current_state = ConnectionFailed;
+            }
+            break;
+        case ConnectionFailed:
+            if (event == Start) {
+                current_state = Waiting;
+            } else if (event == ConnectionFailed) {
+                current_state = ConnectionFailed;
+            }
+            break;
+        case Waiting:
+            if (event == SystemDiscovered) {
+                current_state = WaitingForAutopilot;
+            }
+            break;
+        case WaitingForAutopilot:
+            if (event == SystemDiscovered) {
+                current_state = WaitingForAutopilot;
+            } else if (event == AutopilotDiscovered) {
+                current_state = SettingActuator;
+            } else if (event == Timeout) {
+                current_state = ConnectionFailed;
+            }
+            break;
+        case SettingActuator:
+            if (event == ActuatorSetSuccess) {
+                current_state = ActuatorSet;
+            } else if (event == ActuatorSetFailed) {
+                current_state = ConnectionFailed;
+            }
+            break;
+        case ActuatorSet:
+            if (event == Start) {
+                current_state = Init;
+            }
+            break;
+    }
+}
+
+void usage(const std::string& bin_name)
+{
+    std::cerr << "Usage :" << bin_name << " <connection_url> <actuator_index> <actuator_value>\n"
+              << "Connection URL format should be :\n"
+              << " For TCP : tcp://[server_host][:server_port]\n"
+              << " For UDP : udp://[bind_host][:bind_port]\n"
+              << " For Serial : serial:///path/to/serial/dev[:baudrate]\n"
+              << "For example, to connect to the simulator use URL: udp://:14540\n";
+}
+
+int main(int argc, char** argv)
+{
+    if (argc != 4) {
+        usage(argv[0]);
+        return 1;
+    }
+    
+    // Initialize variables
+    const std::string connection_url = argv[1];
+    const int index = std::stod(argv[2]);
+    const float value = std::stof(argv[3]);
+    Mavsdk mavsdk;
+    const ConnectionResult connection_result = mavsdk.add_any_connection(connection_url);
+    std::cout << "Waiting to discover system...\n";
+    auto prom = std::promise<std::shared_ptr<System>>{};
+    auto fut = prom.get_future();
+    auto system = std::make_shared<System>(mavsdk);
+    auto action = Action{system};
+
+    while (true) {
+        switch (current_state) {
+            case Init:
+                handle_event(Start);
+                break;
+            case ConnectionFailed:
+                handle_event(ConnectionFailed);
+                break;
+            case Waiting:
+                mavsdk.subscribe_on_new_system([&mavsdk, &prom]() {
+                    auto system = mavsdk.systems().back();
+                    if (system->has_autopilot()) {
+                        handle_event(SystemDiscovered);
+                        mavsdk.subscribe_on_new_system(nullptr);
+                        prom.set_value(system);
+                    }
+                });
+                if (fut.wait_for(std::chrono::seconds(3)) == std::future_status::timeout) {
+                    handle_event(Timeout);
+                }
+                break;
+            case WaitingForAutopilot:
+                handle_event(AutopilotDiscovered);
+                break;
+            case SettingActuator:
+                const Action::Result set_actuator_result = action.set_actuator(index, value);
+                if (set_actuator_result == Action::Result::Success) {
+                    handle_event(ActuatorSetSuccess);
+                } else {
+                    handle_event(ActuatorSetFailed);
+                }
+                break;
+            case ActuatorSet:
+                handle_event(Start);
+                break;
+        }
+    }
+
+    return 0;
+}
+```

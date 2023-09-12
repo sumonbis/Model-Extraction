@@ -1,0 +1,114 @@
+```p
+behavior ConnectAndControlVehicles(connection_urls: List<string>)
+{
+    state WaitingToDiscoverSystem;
+    state VehicleGettingReadyToArm;
+    state Arming;
+    state TakingOff;
+    state Hovering;
+    state Landing;
+    state VehicleIsLanding;
+    state Landed;
+
+    event NewSystemDiscovered;
+    event AltitudeUpdateReceived;
+    event VehicleReadyToArm;
+    event VehicleArmed;
+    event VehicleTakeoffSuccessful;
+    event VehicleLanded;
+
+    on entering WaitingToDiscoverSystem {
+        log("Waiting to discover system...");
+    }
+
+    on NewSystemDiscovered in WaitingToDiscoverSystem if count(mavsdk.systems()) > num_systems_discovered {
+        num_systems_discovered = count(mavsdk.systems());
+        log("Discovered system");
+        goto VehicleGettingReadyToArm;
+    }
+
+    on entering VehicleGettingReadyToArm {
+        log("Vehicle is getting ready to arm");
+    }
+
+    on VehicleReadyToArm in VehicleGettingReadyToArm {
+        goto Arming;
+    }
+
+    on entering Arming {
+        log("Arming...");
+        if action.arm() != Action.Result.Success {
+            log("Arming failed");
+        }
+    }
+
+    on VehicleArmed in Arming {
+        goto TakingOff;
+    }
+
+    on entering TakingOff {
+        log("Taking off...");
+        if action.takeoff() != Action.Result.Success {
+            log("Takeoff failed");
+        }
+    }
+
+    on VehicleTakeoffSuccessful in TakingOff {
+        goto Hovering;
+    }
+
+    on entering Hovering {
+        log("Hovering...");
+        sleep(20);  // Wait for specified time
+        goto Landing;
+    }
+
+    on Timeout in Hovering {
+        goto Landing;
+    }
+
+    on entering Landing {
+        log("Landing...");
+        if action.land() != Action.Result.Success {
+            log("Land failed");
+        }
+    }
+
+    on VehicleLanded in Landing {
+        goto VehicleIsLanding;
+    }
+
+    on entering VehicleIsLanding {
+        while telemetry.in_air() {
+            log("Vehicle is landing...");
+            sleep(1);
+        }
+        log("Landed");
+        goto Landed;
+    }
+
+    statechart system1 {
+        initial state WaitingToDiscoverSystem;
+        on NewSystemDiscovered goto VehicleGettingReadyToArm;
+    }
+
+    statechart system2 {
+        initial state WaitingToDiscoverSystem;
+        on NewSystemDiscovered goto VehicleGettingReadyToArm;
+    }
+
+    statechart system3 {
+        // Add statechart for more systems as needed
+    }
+
+    onStart {
+        for (url in connection_urls) {
+            mavsdk.add_any_connection(url);
+        }
+
+        num_systems_discovered = 0;
+        spawn system1;  // Example for one system
+        spawn system2;  // Example for another system
+    }
+}
+```

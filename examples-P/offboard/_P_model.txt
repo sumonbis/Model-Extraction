@@ -1,0 +1,57 @@
+P code:
+
+```p
+package StateMachine {
+  const int DISCONNECTED = 1;
+  const int CONNECTING = 2;
+  const int CONNECTED = 3;
+  const int READY = 4;
+  const int OFFBOARD_COMPLETED = 5;
+  const int OFFBOARD_FAILED = 6;
+  
+  const int DISCONNECTED_EVENT = 1;
+  const int CONNECTED_EVENT = 2;
+  const int SYSTEM_READY_EVENT = 3;
+  const int OFFBOARD_COMPLETED_EVENT = 4;
+  const int OFFBOARD_FAILED_EVENT = 5;
+  
+  var current_state: int = DISCONNECTED;
+  
+  event transition(e: int);
+  
+  startstate start {
+    on entry {
+      transition(DISCONNECTED_EVENT);
+    }
+    on transition(DISCONNECTING) goto connecting;
+  }
+  
+  state connecting {
+    on transition(CONNECTED_EVENT) goto connected;
+  }
+  
+  state connected {
+    on transition(SYSTEM_READY_EVENT) goto ready;
+  }
+  
+  state ready {
+    on transition(CONNECTED_EVENT) goto connected;
+    on transition(OFFBOARD_COMPLETED_EVENT) goto offboard_completed;
+    on transition(OFFBOARD_FAILED_EVENT) goto offboard_failed;
+  }
+  
+  state offboard_completed {}
+  
+  state offboard_failed {}
+  
+  transitions {
+    connecting -> connected;
+    connected -> ready;
+    ready -> connected;
+    ready -> offboard_completed;
+    ready -> offboard_failed;
+  }
+}
+```
+
+Note: The P code above defines a state machine called "StateMachine" with the specified states, events, and transitions. It also includes a start state "start" where the initial transition occurs. The state machine then transitions between states based on the given events. Additional code can be added to handle events and actions specific to each state as needed.

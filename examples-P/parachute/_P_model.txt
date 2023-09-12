@@ -1,0 +1,100 @@
+State machine description:
+
+States:
+1. Idle
+2. Waiting for Discovery
+3. Parachute Commands
+
+Events:
+1. Connection success
+2. Discovery of autopilot system
+3. Timeout waiting for autopilot system
+4. Parachute command received
+
+Transitions:
+1. Idle -> Waiting for Discovery: Connection success event
+2. Waiting for Discovery -> Parachute Commands: Discovery of autopilot system event
+3. Waiting for Discovery -> Idle: Timeout waiting for autopilot system event
+4. Parachute Commands -> Parachute Commands: Parachute command received event
+
+P code:
+
+```p
+state Idle {
+    on ConnectionSuccess => WaitingForDiscovery
+}
+
+state WaitingForDiscovery {
+    on AutopilotDiscovery => ParachuteCommands
+    on Timeout => Idle
+}
+
+state ParachuteCommands {
+    on ParachuteCommand => ParachuteCommands
+}
+
+component MainSystem {
+    state_t current_state = Idle;
+    uint8_t our_sysid = 1;
+    future<MavsdkSystem> fut;
+
+    function ProcessCommandLong(message: MavlinkMessage, our_sysid: uint8) {
+        -- Code for processing the command_long message --
+    }
+
+    state_machine {
+        on ConnectionSuccess => {
+            mavsdk.set_configuration(MavsdkConfiguration{our_sysid, MAV_COMP_ID_PARACHUTE, false});
+        }
+
+        on NewSystem(system: MavsdkSystem) => {
+            system_id = system.get_system_id();
+            if (system_id != our_sysid) {
+                our_sysid = system_id;
+                mavsdk.set_configuration(MavsdkConfiguration{our_sysid, MAV_COMP_ID_PARACHUTE, false});
+            }
+
+            if (system.has_autopilot()) {
+                emit AutopilotDiscovery;
+            }
+        }
+
+        on Timeout => {
+            -- Code for timeout handling --
+        }
+
+        on ParachuteCommand(message: MavlinkMessage) => {
+            ProcessCommandLong(message, our_sysid);
+        }
+    }
+
+    function Main(argc: int, argv: []string) {
+        -- Code for validating command line arguments --
+
+        Mavsdk mavsdk;
+
+        mavsdk.add_any_connection(connection_url) -> connection_result;
+
+        if (connection_result != ConnectionResultSuccess) {
+            -- Code for connection failure handling --
+        }
+
+        mavsdk.subscribe_on_new_system(on NewSystem);
+
+        future<MavsdkSystem> system = mavsdk.systems().back();
+        fut.resolve(system);
+
+        -- Code for timeout handling --
+        
+        auto mavlink_passthrough = MavlinkPassthrough{system};
+        mavlink_passthrough.subscribe_message_async(
+            MAVLINK_MSG_ID_COMMAND_LONG,
+            on ParachuteCommand(message)
+        );
+
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }
+}
+```

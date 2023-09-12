@@ -1,0 +1,162 @@
+P Code:
+```
+state enum State {
+    Idle,
+    SystemDiscovery,
+    CalibrationAccelerometer,
+    CalibrationGyro,
+    CalibrationMagnetometer,
+    CalibrationComplete
+}
+
+event enum Event {
+    Start,
+    SystemDiscovered,
+    CalibrationComplete
+}
+
+State state = State::Idle
+
+transition Idle -> SystemDiscovery (Start) {
+    state = SystemDiscovery
+}
+transition SystemDiscovery -> CalibrationAccelerometer (SystemDiscovered) {
+    state = CalibrationAccelerometer
+}
+transition CalibrationAccelerometer -> CalibrationGyro (CalibrationComplete) {
+    state = CalibrationGyro
+}
+transition CalibrationGyro -> CalibrationMagnetometer (CalibrationComplete) {
+    state = CalibrationMagnetometer
+}
+transition CalibrationMagnetometer -> CalibrationComplete (CalibrationComplete) {
+    state = CalibrationComplete
+}
+
+void main {
+    connectToMavsdk(argv[1])
+}
+
+void connectToMavsdk(string connectionUrl) {
+    mavsdk = Mavsdk()
+    connectionResult = mavsdk.addAnyConnection(connectionUrl)
+
+    if connectionResult != ConnectionResult.Success {
+        print("Connection failed: ", connectionResult)
+        return
+    }
+
+    system = getSystem(mavsdk)
+    if system == NULL {
+        return
+    }
+
+    // Instantiate plugin.
+    calibration = Calibration(system)
+
+    // Run calibrations
+    calibrateAccelerometer(calibration)
+    calibrateGyro(calibration)
+    calibrateMagnetometer(calibration)
+}
+
+System getSystem(Mavsdk mavsdk) {
+    print("Waiting to discover system...")
+    prom = std::promise<System>{}
+    fut = prom.get_future()
+
+    while state != CalibrationComplete {
+        switch state {
+            case SystemDiscovery:
+                mavsdk.subscribeOnNewSystem{
+                    system = mavsdk.systems().back()
+
+                    if system.hasAutopilot {
+                        print("Discovered autopilot")
+
+                        // Unsubscribe again as we only want to find one system.
+                        mavsdk.subscribeOnNewSystem = NULL
+                        prom.set_value(system)
+                        state = CalibrationAccelerometer
+                    }
+                }
+
+                if fut.wait_for(seconds(3)) == std::future_status::timeout {
+                    print("No autopilot found.")
+                    return NULL
+                }
+                break
+            case CalibrationAccelerometer:
+                calibrateAccelerometer(calibration)
+                state = CalibrationGyro
+                break
+            case CalibrationGyro:
+                calibrateGyro(calibration)
+                state = CalibrationMagnetometer
+                break
+            case CalibrationMagnetometer:
+                calibrateMagnetometer(calibration)
+                state = CalibrationComplete
+                break
+        }
+    }
+
+    return fut.get()
+}
+
+void calibrateAccelerometer(Calibration calibration) {
+    print("Calibrating accelerometer...")
+
+    std::promise calibrationPromise
+    calibrationFuture = calibrationPromise.get_future()
+
+    calibration.calibrateAccelerometerAsync(createCalibrationCallback(calibrationPromise))
+
+    calibrationFuture.wait()
+}
+
+function createCalibrationCallback(std::promise calibrationPromise) -> void (Calibration.Result result, Calibration.ProgressData progressData) {
+    return (result, progressData) {
+        switch result {
+            case Calibration.Result.Success:
+                print("--- Calibration succeeded!")
+                calibrationPromise.set_value()
+                break
+            case Calibration.Result.Next:
+                if progressData.hasProgress {
+                    print("    Progress: ", progressData.progress)
+                }
+                if progressData.hasStatusText {
+                    print("    Instruction: ", progressData.statusText)
+                }
+                break
+            default:
+                print("--- Calibration failed with message: ", result)
+                calibrationPromise.set_value()
+                break
+        }
+    }
+}
+
+void calibrateGyro(Calibration calibration) {
+    print("Calibrating gyro...")
+
+    std::promise calibrationPromise
+    calibrationFuture = calibrationPromise.get_future()
+
+    calibration.calibrateGyroAsync(createCalibrationCallback(calibrationPromise))
+
+    calibrationFuture.wait()
+}
+
+void calibrateMagnetometer(Calibration calibration) {
+    print("Calibrating magnetometer...")
+
+    std::promise calibrationPromise
+    calibrationFuture = calibrationPromise.get_future()
+
+    calibration.calibrateMagnetometerAsync(createCalibrationCallback(calibrationPromise))
+
+    calibrationFuture.wait()
+}
+```

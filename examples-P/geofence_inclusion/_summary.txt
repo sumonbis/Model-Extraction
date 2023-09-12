@@ -1,0 +1,150 @@
+State Machine Description:
+States:
+1. Waiting to discover system
+2. Discovered autopilot
+3. System ready
+4. Creating and uploading geofence
+
+Events:
+1. New system discovered
+2. System health all ok
+
+Transitions:
+1. Start: Initial state
+   Event: New system discovered
+   Actions: Check if the discovered system has an autopilot
+   Next state: Discovered autopilot
+
+2. Start: Discovered autopilot
+   Event: None
+   Actions: Unsubscribe from new system discovery, set the discovered system as the target system
+   Next state: System ready
+   
+3. Start: System ready
+   Event: None
+   Actions: None
+   Next state: Creating and uploading geofence
+   
+4. Start: Creating and uploading geofence
+   Event: None
+   Actions: Create a geofence with predefined points and upload it to the system
+   Next state: End
+
+C Code:
+```cpp
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/telemetry/telemetry.h>
+#include <mavsdk/plugins/geofence/geofence.h>
+
+#include <chrono>
+#include <functional>
+#include <future>
+#include <iostream>
+#include <thread>
+
+using namespace mavsdk;
+using std::chrono::seconds;
+using std::this_thread::sleep_for;
+
+// Define states
+enum class State {
+    Waiting,
+    DiscoveredAutopilot,
+    SystemReady,
+    CreatingAndUploadingGeofence
+};
+
+// Define events
+enum class Event {
+    NewSystemDiscovered,
+    SystemHealthOk
+};
+
+// State machine function
+State stateMachine(State state, Event event)
+{
+    switch (state) {
+        case State::Waiting:
+            if (event == Event::NewSystemDiscovered) {
+                std::cout << "Discovered autopilot\n";
+                return State::DiscoveredAutopilot;
+            }
+            break;
+
+        case State::DiscoveredAutopilot:
+            // No actions required in this state
+            break;
+
+        case State::SystemReady:
+            // No actions required in this state
+            break;
+
+        case State::CreatingAndUploadingGeofence:
+            // No actions required in this state
+            break;
+    }
+
+    // Default to current state if no state transition occurred
+    return state;
+}
+
+int main(int argc, char** argv)
+{
+    if (argc != 2) {
+        usage(argv[0]);
+        return 1;
+    }
+
+    Mavsdk mavsdk;
+    ConnectionResult connection_result = mavsdk.add_any_connection(argv[1]);
+
+    if (connection_result != ConnectionResult::Success) {
+        std::cerr << "Connection failed: " << connection_result << '\n';
+        return 1;
+    }
+
+    auto system = get_system(mavsdk);
+    if (!system) {
+        return 1;
+    }
+
+    // Instantiate plugins.
+    auto telemetry = Telemetry{system};
+    auto geofence = Geofence{system};
+
+    State state = State::Waiting;
+
+    while (state != State::CreatingAndUploadingGeofence) {
+        switch (state) {
+            case State::Waiting:
+                std::cout << "Waiting to discover system...\n";
+                sleep_for(seconds(1));
+                break;
+
+            case State::DiscoveredAutopilot:
+                state = State::SystemReady;
+                break;
+
+            case State::SystemReady:
+                if (telemetry.health_all_ok()) {
+                    state = State::CreatingAndUploadingGeofence;
+                } else {
+                    std::cout << "Waiting for system to be ready\n";
+                    sleep_for(seconds(1));
+                }
+                break;
+
+            case State::CreatingAndUploadingGeofence:
+                std::cout << "System ready\n";
+                std::cout << "Creating and uploading geofence\n";
+                // Perform geofence creation and upload here
+                break;
+        }
+    }
+
+    return 0;
+}
+
+// Rest of the code remains the same...
+```
+Note: The code only includes the state machine implementation and the main() function. The missing function definitions have been omitted to keep the code concise. Make sure to implement those functions accordingly.

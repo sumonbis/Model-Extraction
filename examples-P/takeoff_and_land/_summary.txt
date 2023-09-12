@@ -1,0 +1,172 @@
+State machine description:
+
+States:
+1. Discovered
+2. Ready to Arm
+3. Armed
+4. Takeoff
+5. Hover
+6. Landing
+7. Landed
+8. Finished
+
+Events:
+1. New System Discovered
+2. Altitude Ready
+3. Arm Vehicle
+4. Takeoff Vehicle
+5. Hovering Time Elapsed
+6. Land Vehicle
+7. Vehicle in Air
+8. Auto-disarm Timer Elapsed
+
+Transitions:
+1. New System Discovered:
+   - From: Discovered
+   - To: Ready to Arm
+
+2. Altitude Ready:
+   - From: Ready to Arm
+   - To: Armed
+
+3. Arm Vehicle:
+   - From: Armed
+   - To: Takeoff
+
+4. Takeoff Vehicle:
+   - From: Takeoff
+   - To: Hover
+
+5. Hovering Time Elapsed:
+   - From: Hover
+   - To: Landing
+
+6. Land Vehicle:
+   - From: Landing
+   - To: Landed
+
+7. Vehicle in Air:
+   - From: Landed
+   - To: Landed (Loop)
+
+8. Auto-disarm Timer Elapsed:
+   - From: Landed
+   - To: Finished
+
+C code:
+
+// Define states
+enum State {
+    DISCOVERED,
+    READY_TO_ARM,
+    ARMED,
+    TAKEOFF,
+    HOVER,
+    LANDING,
+    LANDED,
+    FINISHED
+};
+
+// Define events
+enum Event {
+    NEW_SYSTEM_DISCOVERED,
+    ALTITUDE_READY,
+    ARM_VEHICLE,
+    TAKEOFF_VEHICLE,
+    HOVERING_TIME_ELAPSED,
+    LAND_VEHICLE,
+    VEHICLE_IN_AIR,
+    AUTO_DISARM_TIMER_ELAPSED
+};
+
+// State variable
+State current_state = DISCOVERED;
+
+// Event handling function
+void handle_event(Event event) {
+    switch (current_state) {
+        case DISCOVERED:
+            if (event == NEW_SYSTEM_DISCOVERED) {
+                current_state = READY_TO_ARM;
+            }
+            break;
+
+        case READY_TO_ARM:
+            if (event == ALTITUDE_READY) {
+                current_state = ARMED;
+            }
+            break;
+
+        case ARMED:
+            if (event == ARM_VEHICLE) {
+                current_state = TAKEOFF;
+            }
+            break;
+
+        case TAKEOFF:
+            if (event == TAKEOFF_VEHICLE) {
+                current_state = HOVER;
+            }
+            break;
+
+        case HOVER:
+            if (event == HOVERING_TIME_ELAPSED) {
+                current_state = LANDING;
+            }
+            break;
+
+        case LANDING:
+            if (event == LAND_VEHICLE) {
+                current_state = LANDED;
+            }
+            break;
+
+        case LANDED:
+            if (event == VEHICLE_IN_AIR) {
+                current_state = LANDED;
+            } else if (event == AUTO_DISARM_TIMER_ELAPSED) {
+                current_state = FINISHED;
+            }
+            break;
+
+        case FINISHED:
+            // No state transitions from FINISHED
+            break;
+    }
+}
+
+int main(int argc, char** argv) {
+    // ... code omitted for brevity ...
+
+    // Handle events based on system discovery and altitude readiness
+    mavsdk.subscribe_on_new_system([]() {
+        handle_event(NEW_SYSTEM_DISCOVERED);
+    });
+
+    telemetry.subscribe_position([](Telemetry::Position position) {
+        if (position.relative_altitude_m > 0) {
+            handle_event(ALTITUDE_READY);
+        }
+    });
+
+    // Arm vehicle
+    handle_event(ARM_VEHICLE);
+
+    // Takeoff vehicle
+    handle_event(TAKEOFF_VEHICLE);
+
+    // ... code omitted for brevity ...
+
+    // Land vehicle
+    handle_event(LAND_VEHICLE);
+
+    // Check if vehicle is still in air
+    while (telemetry.in_air()) {
+        handle_event(VEHICLE_IN_AIR);
+    }
+
+    // Auto-disarm timer elapsed
+    handle_event(AUTO_DISARM_TIMER_ELAPSED);
+
+    return 0;
+}

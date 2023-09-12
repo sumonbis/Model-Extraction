@@ -1,0 +1,265 @@
+State machine description:
+1. Idle: Initial state where the system is waiting for user input.
+2. Discovering System: State where the system is searching for an autopilot system to connect to.
+3. Arm Vehicle: State where the system is waiting for the vehicle to be ready to arm.
+4. Takeoff: State where the vehicle is taking off.
+5. Fixed Wing Flight: State where the vehicle is flying in fixed-wing mode.
+6. Loiter: State where the vehicle is hovering in place.
+7. Goto Location: State where the vehicle is flying towards a specified location.
+8. Transition to Multicopter: State where the vehicle transitions from fixed-wing mode to multicopter mode.
+9. Landing: State where the vehicle is landing.
+10. Disarmed: Final state where the vehicle has landed and is disarmed.
+
+Events:
+1. New System Discovered: Event triggered when a new system with an autopilot is discovered.
+2. Vehicle Ready to Arm: Event triggered when the vehicle is ready to be armed.
+3. Vehicle Arming Successful: Event triggered when the vehicle is successfully armed.
+4. Takeoff Successful: Event triggered when the vehicle successfully takes off.
+5. Fixed Wing Transition Successful: Event triggered when the vehicle successfully transitions to fixed-wing mode.
+6. Loiter Complete: Event triggered when the vehicle completes the loitering phase.
+7. Goto Command Successful: Event triggered when the vehicle successfully executes a Goto command.
+8. Transition to Multicopter Successful: Event triggered when the vehicle successfully transitions from fixed-wing mode to multicopter mode.
+9. Landing Successful: Event triggered when the vehicle successfully lands.
+10. Vehicle Disarmed: Event triggered when the vehicle is disarmed.
+
+Transitions:
+1. Idle -> Discovering System: Triggered by the start of the program.
+2. Discovering System -> Arm Vehicle: Triggered by the discovery of a system with an autopilot.
+3. Arm Vehicle -> Takeoff: Triggered by the vehicle being ready to arm.
+4. Takeoff -> Fixed Wing Flight: Triggered by a successful takeoff.
+5. Fixed Wing Flight -> Loiter: Triggered by completing the fixed-wing flight phase.
+6. Loiter -> Goto Location: Triggered by completing the loitering phase.
+7. Goto Location -> Transition to Multicopter: Triggered by a successful Goto command execution.
+8. Transition to Multicopter -> Landing: Triggered by a successful transition to multicopter mode.
+9. Landing -> Disarmed: Triggered by a successful landing.
+
+C code:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <math.h>
+#include <unistd.h>
+#include <pthread.h>
+
+enum State {
+    STATE_IDLE,
+    STATE_DISCOVERING_SYSTEM,
+    STATE_ARM_VEHICLE,
+    STATE_TAKEOFF,
+    STATE_FIXED_WING_FLIGHT,
+    STATE_LOITER,
+    STATE_GOTO_LOCATION,
+    STATE_TRANSITION_MULTICOPTER,
+    STATE_LANDING,
+    STATE_DISARMED
+};
+
+enum Event {
+    EVENT_NEW_SYSTEM_DISCOVERED,
+    EVENT_VEHICLE_READY_TO_ARM,
+    EVENT_VEHICLE_ARMING_SUCCESSFUL,
+    EVENT_TAKEOFF_SUCCESSFUL,
+    EVENT_FIXED_WING_TRANSITION_SUCCESSFUL,
+    EVENT_LOITER_COMPLETE,
+    EVENT_GOTO_COMMAND_SUCCESSFUL,
+    EVENT_TRANSITION_MULTICOPTER_SUCCESSFUL,
+    EVENT_LANDING_SUCCESSFUL,
+    EVENT_VEHICLE_DISARMED
+};
+
+enum State state = STATE_IDLE;
+
+void handle_event(enum Event event)
+{
+    switch (state) {
+        case STATE_IDLE:
+            if (event == EVENT_NEW_SYSTEM_DISCOVERED) {
+                state = STATE_DISCOVERING_SYSTEM;
+            }
+            break;
+        case STATE_DISCOVERING_SYSTEM:
+            if (event == EVENT_VEHICLE_READY_TO_ARM) {
+                state = STATE_ARM_VEHICLE;
+            }
+            break;
+        case STATE_ARM_VEHICLE:
+            if (event == EVENT_VEHICLE_ARMING_SUCCESSFUL) {
+                state = STATE_TAKEOFF;
+            }
+            break;
+        case STATE_TAKEOFF:
+            if (event == EVENT_TAKEOFF_SUCCESSFUL) {
+                state = STATE_FIXED_WING_FLIGHT;
+            }
+            break;
+        case STATE_FIXED_WING_FLIGHT:
+            if (event == EVENT_LOITER_COMPLETE) {
+                state = STATE_LOITER;
+            }
+            break;
+        case STATE_LOITER:
+            if (event == EVENT_GOTO_COMMAND_SUCCESSFUL) {
+                state = STATE_GOTO_LOCATION;
+            }
+            break;
+        case STATE_GOTO_LOCATION:
+            if (event == EVENT_TRANSITION_MULTICOPTER_SUCCESSFUL) {
+                state = STATE_TRANSITION_MULTICOPTER;
+            }
+            break;
+        case STATE_TRANSITION_MULTICOPTER:
+            if (event == EVENT_LANDING_SUCCESSFUL) {
+                state = STATE_LANDING;
+            }
+            break;
+        case STATE_LANDING:
+            if (event == EVENT_VEHICLE_DISARMED) {
+                state = STATE_DISARMED;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+void *discovery_thread(void *arg)
+{
+    while (state != STATE_DISCOVERING_SYSTEM) {
+        sleep(1);
+    }
+
+    // Simulating discovery of new system
+    handle_event(EVENT_NEW_SYSTEM_DISCOVERED);
+
+    return NULL;
+}
+
+void *arming_thread(void *arg)
+{
+    while (state != STATE_ARM_VEHICLE) {
+        sleep(1);
+    }
+
+    // Simulating vehicle ready to arm
+    handle_event(EVENT_VEHICLE_READY_TO_ARM);
+
+    // Simulating vehicle arming successful
+    handle_event(EVENT_VEHICLE_ARMING_SUCCESSFUL);
+
+    return NULL;
+}
+
+void *takeoff_thread(void *arg)
+{
+    while (state != STATE_TAKEOFF) {
+        sleep(1);
+    }
+
+    // Simulating takeoff successful
+    handle_event(EVENT_TAKEOFF_SUCCESSFUL);
+
+    return NULL;
+}
+
+void *fixed_wing_flight_thread(void *arg)
+{
+    while (state != STATE_FIXED_WING_FLIGHT) {
+        sleep(1);
+    }
+
+    // Simulating fixed-wing transition successful
+    handle_event(EVENT_FIXED_WING_TRANSITION_SUCCESSFUL);
+
+    // Simulating loiter complete
+    handle_event(EVENT_LOITER_COMPLETE);
+
+    return NULL;
+}
+
+void *loiter_thread(void *arg)
+{
+    while (state != STATE_LOITER) {
+        sleep(1);
+    }
+
+    // Simulating goto command successful
+    handle_event(EVENT_GOTO_COMMAND_SUCCESSFUL);
+
+    return NULL;
+}
+
+void *transition_multicopter_thread(void *arg)
+{
+    while (state != STATE_TRANSITION_MULTICOPTER) {
+        sleep(1);
+    }
+
+    // Simulating transition to multicopter successful
+    handle_event(EVENT_TRANSITION_MULTICOPTER_SUCCESSFUL);
+
+    return NULL;
+}
+
+void *landing_thread(void *arg)
+{
+    while (state != STATE_LANDING) {
+        sleep(1);
+    }
+
+    // Simulating landing successful
+    handle_event(EVENT_LANDING_SUCCESSFUL);
+
+    // Simulating vehicle disarmed
+    handle_event(EVENT_VEHICLE_DISARMED);
+
+    return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+    // Start discovery thread
+    pthread_t discovery_tid;
+    pthread_create(&discovery_tid, NULL, discovery_thread, NULL);
+
+    // Start arming thread
+    pthread_t arming_tid;
+    pthread_create(&arming_tid, NULL, arming_thread, NULL);
+
+    // Start takeoff thread
+    pthread_t takeoff_tid;
+    pthread_create(&takeoff_tid, NULL, takeoff_thread, NULL);
+
+    // Start fixed-wing flight thread
+    pthread_t fixed_wing_flight_tid;
+    pthread_create(&fixed_wing_flight_tid, NULL, fixed_wing_flight_thread, NULL);
+
+    // Start loiter thread
+    pthread_t loiter_tid;
+    pthread_create(&loiter_tid, NULL, loiter_thread, NULL);
+
+    // Start transition to multicopter thread
+    pthread_t transition_multicopter_tid;
+    pthread_create(&transition_multicopter_tid, NULL, transition_multicopter_thread, NULL);
+
+    // Start landing thread
+    pthread_t landing_tid;
+    pthread_create(&landing_tid, NULL, landing_thread, NULL);
+
+    // Wait for all threads to complete
+    pthread_join(discovery_tid, NULL);
+    pthread_join(arming_tid, NULL);
+    pthread_join(takeoff_tid, NULL);
+    pthread_join(fixed_wing_flight_tid, NULL);
+    pthread_join(loiter_tid, NULL);
+    pthread_join(transition_multicopter_tid, NULL);
+    pthread_join(landing_tid, NULL);
+
+    return 0;
+}
+```
+
+Note: The above C code is a simplified implementation of the state machine that focuses on the state transitions. It does not include the actual functionality of the code and the mavsdk library.

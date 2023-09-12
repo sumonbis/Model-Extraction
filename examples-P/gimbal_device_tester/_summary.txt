@@ -1,0 +1,48 @@
+The state machine for this code can be defined as follows:
+
+States:
+- Idle: The system is waiting for a command to be executed.
+- Testing: The system is performing tests on the gimbal device.
+
+Events:
+- StartTest: Indicates that the gimbal device testing should be started.
+- StopTest: Indicates that the gimbal device testing should be stopped.
+
+Transitions:
+- Idle -> Testing: Triggered by the StartTest event.
+- Testing -> Idle: Triggered by the StopTest event.
+
+C code representation of the state machine:
+
+```c
+typedef enum {
+    STATE_IDLE,
+    STATE_TESTING
+} State;
+
+typedef enum {
+    EVENT_START_TEST,
+    EVENT_STOP_TEST
+} Event;
+
+State current_state = STATE_IDLE;
+
+void handle_event(Event event)
+{
+    switch (current_state) {
+        case STATE_IDLE:
+            if (event == EVENT_START_TEST) {
+                current_state = STATE_TESTING;
+                start_gimbal_testing();
+            }
+            break;
+        case STATE_TESTING:
+            if (event == EVENT_STOP_TEST) {
+                current_state = STATE_IDLE;
+                stop_gimbal_testing();
+            }
+            break;
+    }
+}
+```
+Note: You'll need to implement the `start_gimbal_testing` and `stop_gimbal_testing` functions according to your requirements.

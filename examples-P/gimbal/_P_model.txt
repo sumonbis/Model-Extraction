@@ -1,0 +1,145 @@
+The P language code:
+
+```p
+type State: enum {
+  Idle,
+  Discovering,
+  TakingControl,
+  SetModeLock,
+  LookNorth,
+  LookEast,
+  LookSouth,
+  LookWest,
+  SetModeFollow,
+  Center,
+  TiltDown,
+  TiltUp,
+  SlowlyTiltUp,
+  BackToHorizontal,
+  PanRight,
+  BackToCenter,
+  PanLeft,
+  SetROI,
+  BackToCenter2,
+  ReleasingControl,
+  Finished
+};
+
+type Event: enum {
+  DiscoveredAutopilot,
+  GimbalControlTaken,
+  LockModeSet,
+  LookedNorth,
+  LookedEast,
+  LookedSouth,
+  LookedWest,
+  FollowModeSet,
+  Centered,
+  TiltedDown,
+  TiltedUp,
+  SlowlyTiltedUp,
+  BackToHorizontalSet,
+  PanRightSet,
+  BackToCenterSet,
+  PanLeftSet,
+  ROILocationSet,
+  BackToCenter2Set,
+  GimbalControlReleased
+};
+
+var current_state: State = Idle;
+
+procedure handle_event(event: Event) {
+  match current_state {
+    case Idle:
+      if (event == DiscoveredAutopilot) {
+        current_state = Discovering;
+      }
+    case Discovering:
+      if (event == GimbalControlTaken) {
+        current_state = TakingControl;
+      }
+    case TakingControl:
+      if (event == LockModeSet) {
+        current_state = SetModeLock;
+      }
+    case SetModeLock:
+      if (event == LookedNorth) {
+        current_state = LookNorth;
+      }
+    case LookNorth:
+      if (event == LookedEast) {
+        current_state = LookEast;
+      }
+    case LookEast:
+      if (event == LookedSouth) {
+        current_state = LookSouth;
+      }
+    case LookSouth:
+      if (event == LookedWest) {
+        current_state = LookWest;
+      }
+    case LookWest:
+      if (event == FollowModeSet) {
+        current_state = SetModeFollow;
+      }
+    case SetModeFollow:
+      if (event == Centered) {
+        current_state = Center;
+      }
+    case Center:
+      if (event == TiltedDown) {
+        current_state = TiltDown;
+      }
+    case TiltDown:
+      if (event == TiltedUp) {
+        current_state = TiltUp;
+      }
+    case TiltUp:
+      if (event == SlowlyTiltedUp) {
+        current_state = SlowlyTiltUp;
+      }
+    case SlowlyTiltUp:
+      if (event == BackToHorizontalSet) {
+        current_state = BackToHorizontal;
+      }
+    case BackToHorizontal:
+      if (event == PanRightSet) {
+        current_state = PanRight;
+      }
+    case PanRight:
+      if (event == BackToCenterSet) {
+        current_state = BackToCenter;
+      }
+    case BackToCenter:
+      if (event == PanLeftSet) {
+        current_state = PanLeft;
+      }
+    case PanLeft:
+      if (event == ROILocationSet) {
+        current_state = SetROI;
+      }
+    case SetROI:
+      if (event == BackToCenter2Set) {
+        current_state = BackToCenter2;
+      }
+    case BackToCenter2:
+      if (event == GimbalControlReleased) {
+        current_state = ReleasingControl;
+      }
+    case ReleasingControl:
+      current_state = Finished;
+  }
+}
+
+init {
+  // TODO: Replace with actual event handling
+
+  while (current_state != Finished) {
+    // TODO: Get event
+
+    // TODO: Handle event
+    handle_event(/* event */);
+  }
+}
+```

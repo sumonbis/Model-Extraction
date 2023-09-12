@@ -1,0 +1,117 @@
+In AADL, an architecture model represents the components and their interactions in a system. Here is an AADL model for the given architecture description:
+
+```
+package Drone_Application is
+
+   public with MAVSDK;
+
+   system Drone_Software_System is
+      subcomponents
+         Mavsdk_Component : process MAVSDK.Mavsdk_Component;
+         System_Component : process System_Component;
+         Telemetry_Component : process Telemetry_Component;
+         Connection_Plugin_Component : process Connection_Plugin_Component;
+         Action_Plugin_Component : process Action_Plugin_Component;
+
+      connections
+         mavsdk_system : port MAVSDK.Mavsdk_Port ->
+            port System_Component.My_Mavsdk_Port;
+         system_telemetry : port System_Component.Telemetry_Port ->
+            port Telemetry_Component.System_Port;
+         connection_plugin_system : port Connection_Plugin_Component.System_Port ->
+            port System_Component.Connection_Plugin_Port;
+         action_plugin_system : port Action_Plugin_Component.System_Port ->
+            port System_Component.Action_Plugin_Port;
+         telemetry_plugin_telemetry : port Telemetry_Component.Telemetry_Plugin_Port ->
+            port Telemetry_Component.Telemetry_Port;
+         action_plugin_action : port Action_Plugin_Component.Action_Port ->
+            port Action_Plugin_Component.System_Port;
+
+   end Drone_Software_System;
+
+   process MAVSDK.Mavsdk_Component is
+      subcomponents
+         main_function : subprogram MAVSDK.Mavsdk_Component.Main_Function;
+
+      features
+         my_mavsdk_port : provides port MAVSDK.Mavsdk_Port;
+
+      connections
+         mavsdk_system : provides port MAVSDK.Mavsdk_Port ->
+            requires port Drone_Software_System.mavsdk_system;
+
+   end MAVSDK.Mavsdk_Component;
+
+   process System_Component is
+      subcomponents
+         get_system_function : subprogram System_Component.Get_System_Function;
+
+      features
+         my_mavsdk_port : requires port MAVSDK.Mavsdk_Port;
+         connection_plugin_port : provides port System_Component.Connection_Plugin_Port;
+         action_plugin_port : provides port System_Component.Action_Plugin_Port;
+         my_system_subsystem_port : requires port Connection_Plugin_Component.System_Port &
+            action_plugin_action;
+
+      connections
+         mavsdk_system : requires port Drone_Software_System.mavsdk_system ->
+            provides port MAVSDK.Mavsdk_Port;
+         connection_plugin_system : provides port System_Component.Connection_Plugin_Port ->
+            requires port Drone_Software_System.connection_plugin_system;
+         action_plugin_system : provides port System_Component.Action_Plugin_Port ->
+            requires port Drone_Software_System.action_plugin_system;
+         my_mavsdk_port : requires port MAVSDK.Mavsdk_Port ->
+            provides port Mavsdk_Component.my_mavsdk_port;
+         my_system_subsystem_port : requires port Connection_Plugin_Component.System_Port &
+            action_plugin_action ->
+            provides port Drone_Software_System.system_telemetry &
+            provides port Drone_Software_System.connection_plugin_system &
+            provides port Drone_Software_System.action_plugin_system;
+
+   end System_Component;
+
+   process Telemetry_Component is
+      features
+         system_port : requires port System_Component.Telemetry_Port;
+         telemetry_plugin_port : provides port Telemetry_Component.Telemetry_Plugin_Port;
+
+      connections
+         system_telemetry : requires port Drone_Software_System.system_telemetry ->
+            provides port System_Component.Telemetry_Port;
+         telemetry_plugin_telemetry : provides port Telemetry_Component.Telemetry_Plugin_Port ->
+            requires port Drone_Software_System.telemetry_plugin_telemetry;
+
+   end Telemetry_Component;
+
+   process Connection_Plugin_Component is
+      features
+         system_port : requires port Connection_Plugin_Component.System_Port;
+
+      connections
+         connection_plugin_system : requires port Drone_Software_System.connection_plugin_system ->
+            provides port System_Component.Connection_Plugin_Port;
+
+   end Connection_Plugin_Component;
+
+   process Action_Plugin_Component is
+      features
+         system_port : requires port Action_Plugin_Component.System_Port;
+
+      connections
+         action_plugin_system : requires port Drone_Software_System.action_plugin_system ->
+            provides port System_Component.Action_Plugin_Port;
+
+   end Action_Plugin_Component;
+
+   subprogram MAVSDK.Mavsdk_Component.Main_Function is
+   end MAVSDK.Mavsdk_Component.Main_Function;
+
+   subprogram System_Component.Get_System_Function is
+   end System_Component.Get_System_Function;
+
+end Drone_Application;
+```
+
+This AADL model includes multiple processes representing the different components mentioned in the architecture description. The connections between the processes reflect the interactions between the components.
+
+Note that this AADL model assumes that the provided libraries and interfaces are readily available in the MAVSDK package. If any additional interfaces or properties are required, they can be defined accordingly.

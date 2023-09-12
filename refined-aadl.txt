@@ -1,85 +1,155 @@
-To add actions like arm, takeoff, and land, we need to modify the `Action_Module` subprogram. We can add a new input port called `Command_Port` to receive the commands from ground control. We can also create a new output port called `Status_Port` that provides the status of the executed command back to ground control. 
+The AADL model has been refined to include the Ground Station and Drone components. 
 
-Here's the updated `Action_Module` subprogram with added ports and components:
-
-```
-subprogram Action_Module
-
-  features
-
-    Shared_Ptr_Port: in data access shared_ptr;
-
-    Action_Port: out data access action;
-
-    Telemetry_Port: in data access telemetry;
-
-    Send_Mavlink_Port: in data access send_mavlink;
-
-    Command_Port: in event data port command;
-
-    Status_Port: out event data port status;
-
-  subcomponents
-
-    Action: data MAVSDK.Action;
-
-    Telemetry: data MAVSDK.Telemetry;
-
-  connections
-
-    shared_ptr_conn: feature group {
-      required Shared_Ptr_Port: data access Shared_Ptr_Port;
-      provided Shared_Ptr_Port: data access Action.Shared_Ptr_Port,
-                                  data access Telemetry.Shared_Ptr_Port;
-    }
-
-    action_conn: feature group {
-      provided Action_Port: data access Action.Perform_Action_Port;
-      required Action_Port: data access Action_Port;
-    }
-
-    telemetry_conn: feature group {
-      provided Telemetry_Port: data access Telemetry.Get_Telemetry_Port;
-      required Telemetry_Port: data access Telemetry_Port;
-    }
-
-    mavlink_conn: feature group {
-      required Send_Mavlink_Port: data access Send_Mavlink_Port;
-      provided Send_Mavlink_Port: data access Action.Send_Mavlink_Port,
-                                    data access Telemetry.Send_Mavlink_Port;
-    }
-
-    command_conn: feature group {
-      required Command_Port: event data port command;
-      provided Command_Port: event data port command;
-      required Action_Port: data access Action_Port;
-      provided Status_Port: event data port status;
-    }
-
-    status_conn: feature group {
-      required Status_Port: event data port status;
-      provided Status_Port: event data port status;
-    }
-
-end Action_Module
-```
-
-Now, whenever a command is sent from the ground control, it will trigger an event on the `Command_Port` of the `Action_Module`. This event will execute the necessary command through the `Action` subcomponent and provide the status of the executed command back to the ground control via the `Status_Port`.
-
-We can define the commands that the `Action_Module` accepts and perform the corresponding action in the `Action` subcomponent. For example:
+Here is the updated AADL code:
 
 ```
-command accept(e: arm);
-Action.arm();
-Status_Port.event(armed);
+package Drone_Application is
 
-command accept(e: takeoff);
-Action.takeoff();
-Status_Port.event(took_off);
+   public with MAVSDK;
 
-command accept(e: land);
-Action.land();
-Status_Port.event(landed);
+   system Drone_Software_System is
+      subcomponents
+         Ground_Station_Component : process Ground_Station_Component;
+         Drone_Component : process Drone_Component;
+         Mavsdk_Component : process MAVSDK.Mavsdk_Component;
+         System_Component : process System_Component;
+         Telemetry_Component : process Telemetry_Component;
+         Connection_Plugin_Component : process Connection_Plugin_Component;
+         Action_Plugin_Component : process Action_Plugin_Component;
+
+      connections
+         ground_station_system : port Ground_Station_Component.System_Port ->
+            port System_Component.Ground_Station_Port;
+         drone_system : port Drone_Component.System_Port ->
+            port System_Component.Drone_Port;
+         mavsdk_system : port MAVSDK.Mavsdk_Port ->
+            port System_Component.Mavsdk_Port;
+         system_telemetry : port System_Component.Telemetry_Port ->
+            port Telemetry_Component.System_Port;
+         connection_plugin_system : port Connection_Plugin_Component.System_Port ->
+            port System_Component.Connection_Plugin_Port;
+         action_plugin_system : port Action_Plugin_Component.System_Port ->
+            port System_Component.Action_Plugin_Port;
+         telemetry_plugin_telemetry : port Telemetry_Component.Telemetry_Plugin_Port ->
+            port Telemetry_Component.Telemetry_Port;
+         action_plugin_action : port Action_Plugin_Component.Action_Port ->
+            port Action_Plugin_Component.System_Port;
+
+   end Drone_Software_System;
+
+   process Ground_Station_Component is
+      features
+         ground_station_port : provides port System_Component.Ground_Station_Port;
+
+      connections
+         ground_station_system : provides port System_Component.Ground_Station_Port ->
+            requires port Drone_Software_System.ground_station_system;
+   end Ground_Station_Component;
+
+   process Drone_Component is
+      features
+         drone_port : provides port System_Component.Drone_Port;
+
+      connections
+         drone_system : provides port System_Component.Drone_Port ->
+            requires port Drone_Software_System.drone_system;
+
+   end Drone_Component;
+
+   process MAVSDK.Mavsdk_Component is
+      subcomponents
+         main_function : subprogram MAVSDK.Mavsdk_Component.Main_Function;
+
+      features
+         my_mavsdk_port : provides port MAVSDK.Mavsdk_Port;
+
+      connections
+         mavsdk_system : provides port MAVSDK.Mavsdk_Port ->
+            requires port Drone_Software_System.mavsdk_system;
+
+   end MAVSDK.Mavsdk_Component;
+
+   process System_Component is
+      subcomponents
+         get_system_function : subprogram System_Component.Get_System_Function;
+
+      features
+         my_mavsdk_port : requires port MAVSDK.Mavsdk_Port;
+         ground_station_port : requires port System_Component.Ground_Station_Port;
+         drone_port : requires port System_Component.Drone_Port;
+         connection_plugin_port : provides port System_Component.Connection_Plugin_Port;
+         action_plugin_port : provides port System_Component.Action_Plugin_Port;
+         my_system_subsystem_port : requires port Connection_Plugin_Component.System_Port &
+            action_plugin_action;
+
+      connections
+         ground_station_system : requires port Drone_Software_System.ground_station_system ->
+            provides port System_Component.Ground_Station_Port;
+         drone_system : requires port Drone_Software_System.drone_system ->
+            provides port System_Component.Drone_Port;
+         mavsdk_system : requires port Drone_Software_System.mavsdk_system ->
+            provides port MAVSDK.Mavsdk_Port;
+         connection_plugin_system : provides port System_Component.Connection_Plugin_Port ->
+            requires port Drone_Software_System.connection_plugin_system;
+         action_plugin_system : provides port System_Component.Action_Plugin_Port ->
+            requires port Drone_Software_System.action_plugin_system;
+         my_mavsdk_port : requires port MAVSDK.Mavsdk_Port ->
+            provides port Mavsdk_Component.my_mavsdk_port;
+         my_system_subsystem_port : requires port Connection_Plugin_Component.System_Port &
+            action_plugin_action ->
+            provides port Drone_Software_System.system_telemetry &
+            provides port Drone_Software_System.connection_plugin_system &
+            provides port Drone_Software_System.action_plugin_system;
+
+   end System_Component;
+
+   process Telemetry_Component is
+      features
+         system_port : requires port System_Component.Telemetry_Port;
+         telemetry_plugin_port : provides port Telemetry_Component.Telemetry_Plugin_Port;
+
+      connections
+         system_telemetry : requires port Drone_Software_System.system_telemetry ->
+            provides port System_Component.Telemetry_Port;
+         telemetry_plugin_telemetry : provides port Telemetry_Component.Telemetry_Plugin_Port ->
+            requires port Drone_Software_System.telemetry_plugin_telemetry;
+
+   end Telemetry_Component;
+
+   process Connection_Plugin_Component is
+      features
+         system_port : requires port Connection_Plugin_Component.System_Port;
+
+      connections
+         connection_plugin_system : requires port Drone_Software_System.connection_plugin_system ->
+            provides port System_Component.Connection_Plugin_Port;
+
+   end Connection_Plugin_Component;
+
+   process Action_Plugin_Component is
+      features
+         system_port : requires port Action_Plugin_Component.System_Port;
+
+      connections
+         action_plugin_system : requires port Drone_Software_System.action_plugin_system ->
+            provides port System_Component.Action_Plugin_Port;
+
+   end Action_Plugin_Component;
+
+   subprogram MAVSDK.Mavsdk_Component.Main_Function is
+   end MAVSDK.Mavsdk_Component.Main_Function;
+
+   subprogram System_Component.Get_System_Function is
+   end System_Component.Get_System_Function;
+
+end Drone_Application;
 ```
 
-These commands `arm`, `takeoff`, and `land` will be executed by the `Action` subcomponent through the connection between `Command_Port` and `Action_Port`. Once the action is performed, the corresponding status event will be set on the `Status_Port` and sent back to the ground control.
+In this updated model, two processes are added:
+
+1. Ground_Station_Component: Represents the Ground Station component and provides a port for the System_Component to communicate with it.
+2. Drone_Component: Represents the Drone component and provides a port for the System_Component to communicate with it.
+
+The connections are updated accordingly to include the new component connections. The ground_station_system connection connects the Ground_Station_Component to the System_Component, and the drone_system connection connects the Drone_Component to the System_Component.
+
+This model can serve as a starting point for a more detailed AADL model based on the specific requirements and interfaces of the Ground Station and Drone components.

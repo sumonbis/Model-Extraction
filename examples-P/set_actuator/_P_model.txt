@@ -1,0 +1,128 @@
+P code:
+```
+SM (Current_State, Event):
+  S0 (Init, Start) -> S1;
+  S0 (Init, ConnectionFailed) -> S2;
+  S1 (ConnectionFailed, Start) -> S2;
+  S1 (ConnectionFailed, ConnectionFailed) -> S2;
+  S1 (Waiting, SystemDiscovered) -> S3;
+  S3 (WaitingForAutopilot, SystemDiscovered) -> S3;
+  S3 (WaitingForAutopilot, AutopilotDiscovered) -> S4;
+  S3 (WaitingForAutopilot, Timeout) -> S2;
+  S4 (SettingActuator, ActuatorSetSuccess) -> S5;
+  S4 (SettingActuator, ActuatorSetFailed) -> S2;
+  S5 (ActuatorSet, Start) -> S0;
+  
+Var
+  connection_url : String;
+  index : Integer;
+  value : Real;
+  connection_result : ConnectionResult;
+  mavsdk : Mavsdk;
+  prom : Promise<SharedPtr<System>>;
+  fut : Future<SharedPtr<System>>;
+  system : SharedPtr<System>;
+  action : Action;
+  
+Procedure handle_event(event : Event)
+Begin
+  Case current_state of
+    Init:
+      If event = Start Then
+        current_state := Waiting;
+      ElseIf event = ConnectionFailed Then
+        current_state := ConnectionFailed;
+      EndIf;
+    ConnectionFailed:
+      If event = Start Then
+        current_state := Waiting;
+      ElseIf event = ConnectionFailed Then
+        current_state := ConnectionFailed;
+      EndIf;
+    Waiting:
+      If event = SystemDiscovered Then
+        current_state := WaitingForAutopilot;
+      EndIf;
+    WaitingForAutopilot:
+      If event = SystemDiscovered Then
+        current_state := WaitingForAutopilot;
+      ElseIf event = AutopilotDiscovered Then
+        current_state := SettingActuator;
+      ElseIf event = Timeout Then
+        current_state := ConnectionFailed;
+      EndIf;
+    SettingActuator:
+      If event = ActuatorSetSuccess Then
+        current_state := ActuatorSet;
+      ElseIf event = ActuatorSetFailed Then
+        current_state := ConnectionFailed;
+      EndIf;
+    ActuatorSet:
+      If event = Start Then
+        current_state := Init;
+      EndIf;
+  EndCase;
+End;
+
+Procedure usage(bin_name : String)
+Begin
+  WriteLine("Usage :", bin_name, " <connection_url> <actuator_index> <actuator_value>");
+  WriteLine("Connection URL format should be :");
+  WriteLine(" For TCP : tcp://[server_host][:server_port]");
+  WriteLine(" For UDP : udp://[bind_host][:bind_port]");
+  WriteLine(" For Serial : serial:///path/to/serial/dev[:baudrate]");
+  WriteLine("For example, to connect to the simulator use URL: udp://:14540");
+End;
+
+Begin
+  If ParamCount <>4 Then
+    usage(ParamStr(0));
+    Exit(1);
+  EndIf;
+  
+  connection_url := ParamStr(1);
+  index := StrToInt(ParamStr(2));
+  value := StrToFloat(ParamStr(3));
+  mavsdk := Mavsdk();
+  connection_result := mavsdk.add_any_connection(connection_url);
+  WriteLine("Waiting to discover system...");
+  prom := Promise.Create<SharedPtr<System>>();
+  fut := prom.GetFuture();
+  system := make_shared<System>(mavsdk);
+  action := Action(system);
+
+  While True Do
+    Case current_state of
+      Init:
+        handle_event(Start);
+      ConnectionFailed:
+        handle_event(ConnectionFailed);
+      Waiting:
+        mavsdk.subscribe_on_new_system(
+          Procedure() 
+          Begin
+            system := mavsdk.systems().Back();
+            If system.has_autopilot() Then
+              handle_event(SystemDiscovered);
+              mavsdk.subscribe_on_new_system(nil);
+              prom.SetValue(system);
+            EndIf;
+          End
+        );
+        If fut.WaitFor(3) = FutureStatus.Timeout Then
+          handle_event(Timeout);
+        EndIf;
+      WaitingForAutopilot:
+        handle_event(AutopilotDiscovered);
+      SettingActuator:
+        If action.set_actuator(index, value) = Action.Result.Success Then
+          handle_event(ActuatorSetSuccess);
+        Else
+          handle_event(ActuatorSetFailed);
+        EndIf;
+      ActuatorSet:
+        handle_event(Start);
+    EndCase;
+  EndDo;
+End.
+```

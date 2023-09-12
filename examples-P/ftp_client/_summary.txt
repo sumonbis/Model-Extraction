@@ -1,0 +1,138 @@
+Based on the provided source code, a possible state machine for the FTP client can be described as follows:
+
+States:
+1. Idle
+2. Connecting
+3. Authenticated
+4. Uploading
+5. Downloading
+6. Renaming
+7. CreatingDirectory
+8. RemovingFile
+9. RemovingDirectory
+10. ListingDirectory
+
+Events:
+1. ConnectionRequest
+2. AuthenticationSuccess
+3. AuthenticationFailure
+4. UploadRequest
+5. UploadSuccess
+6. UploadFailure
+7. DownloadRequest
+8. DownloadSuccess
+9. DownloadFailure
+10. RenameRequest
+11. RenameSuccess
+12. RenameFailure
+13. CreateDirectoryRequest
+14. CreateDirectorySuccess
+15. CreateDirectoryFailure
+16. RemoveFileRequest
+17. RemoveFileSuccess
+18. RemoveFileFailure
+19. RemoveDirectoryRequest
+20. RemoveDirectorySuccess
+21. RemoveDirectoryFailure
+22. ListDirectoryRequest
+23. ListDirectorySuccess
+24. ListDirectoryFailure
+
+Transitions:
+1. Idle -> Connecting (ConnectionRequest)
+2. Connecting -> Authenticated (AuthenticationSuccess)
+3. Connecting -> Idle (AuthenticationFailure)
+4. Authenticated -> Uploading (UploadRequest)
+5. Uploading -> Authenticated (UploadSuccess)
+6. Uploading -> Authenticated (UploadFailure)
+7. Authenticated -> Downloading (DownloadRequest)
+8. Downloading -> Authenticated (DownloadSuccess)
+9. Downloading -> Authenticated (DownloadFailure)
+10. Authenticated -> Renaming (RenameRequest)
+11. Renaming -> Authenticated (RenameSuccess)
+12. Renaming -> Authenticated (RenameFailure)
+13. Authenticated -> CreatingDirectory (CreateDirectoryRequest)
+14. CreatingDirectory -> Authenticated (CreateDirectorySuccess)
+15. CreatingDirectory -> Authenticated (CreateDirectoryFailure)
+16. Authenticated -> RemovingFile (RemoveFileRequest)
+17. RemovingFile -> Authenticated (RemoveFileSuccess)
+18. RemovingFile -> Authenticated (RemoveFileFailure)
+19. Authenticated -> RemovingDirectory (RemoveDirectoryRequest)
+20. RemovingDirectory -> Authenticated (RemoveDirectorySuccess)
+21. RemovingDirectory -> Authenticated (RemoveDirectoryFailure)
+22. Authenticated -> ListingDirectory (ListDirectoryRequest)
+23. ListingDirectory -> Authenticated (ListDirectorySuccess)
+24. ListingDirectory -> Authenticated (ListDirectoryFailure)
+
+C code for the state machine:
+
+```c
+typedef enum {
+    IDLE_STATE,
+    CONNECTING_STATE,
+    AUTHENTICATED_STATE,
+    UPLOADING_STATE,
+    DOWNLOADING_STATE,
+    RENAMING_STATE,
+    CREATING_DIRECTORY_STATE,
+    REMOVING_FILE_STATE,
+    REMOVING_DIRECTORY_STATE,
+    LISTING_DIRECTORY_STATE
+} State;
+
+typedef enum {
+    CONNECTION_REQUEST_EVENT,
+    AUTHENTICATION_SUCCESS_EVENT,
+    AUTHENTICATION_FAILURE_EVENT,
+    UPLOAD_REQUEST_EVENT,
+    UPLOAD_SUCCESS_EVENT,
+    UPLOAD_FAILURE_EVENT,
+    DOWNLOAD_REQUEST_EVENT,
+    DOWNLOAD_SUCCESS_EVENT,
+    DOWNLOAD_FAILURE_EVENT,
+    RENAME_REQUEST_EVENT,
+    RENAME_SUCCESS_EVENT,
+    RENAME_FAILURE_EVENT,
+    CREATE_DIRECTORY_REQUEST_EVENT,
+    CREATE_DIRECTORY_SUCCESS_EVENT,
+    CREATE_DIRECTORY_FAILURE_EVENT,
+    REMOVE_FILE_REQUEST_EVENT,
+    REMOVE_FILE_SUCCESS_EVENT,
+    REMOVE_FILE_FAILURE_EVENT,
+    REMOVE_DIRECTORY_REQUEST_EVENT,
+    REMOVE_DIRECTORY_SUCCESS_EVENT,
+    REMOVE_DIRECTORY_FAILURE_EVENT,
+    LIST_DIRECTORY_REQUEST_EVENT,
+    LIST_DIRECTORY_SUCCESS_EVENT,
+    LIST_DIRECTORY_FAILURE_EVENT
+} Event;
+
+typedef struct {
+    State current_state;
+    State next_state;
+    Event event;
+} Transition;
+
+State current_state = IDLE_STATE;
+Event last_event = NO_EVENT;
+
+Transition transitions[] = {
+    {IDLE_STATE, CONNECTING_STATE, CONNECTION_REQUEST_EVENT},
+    {CONNECTING_STATE, AUTHENTICATED_STATE, AUTHENTICATION_SUCCESS_EVENT},
+    {CONNECTING_STATE, IDLE_STATE, AUTHENTICATION_FAILURE_EVENT},
+    {AUTHENTICATED_STATE, UPLOADING_STATE, UPLOAD_REQUEST_EVENT},
+    {UPLOADING_STATE, AUTHENTICATED_STATE, UPLOAD_SUCCESS_EVENT},
+    {UPLOADING_STATE, AUTHENTICATED_STATE, UPLOAD_FAILURE_EVENT},
+    {AUTHENTICATED_STATE, DOWNLOADING_STATE, DOWNLOAD_REQUEST_EVENT},
+    {DOWNLOADING_STATE, AUTHENTICATED_STATE, DOWNLOAD_SUCCESS_EVENT},
+    {DOWNLOADING_STATE, AUTHENTICATED_STATE, DOWNLOAD_FAILURE_EVENT},
+    {AUTHENTICATED_STATE, RENAMING_STATE, RENAME_REQUEST_EVENT},
+    {RENAMING_STATE, AUTHENTICATED_STATE, RENAME_SUCCESS_EVENT},
+    {RENAMING_STATE, AUTHENTICATED_STATE, RENAME_FAILURE_EVENT},
+    {AUTHENTICATED_STATE, CREATING_DIRECTORY_STATE, CREATE_DIRECTORY_REQUEST_EVENT},
+    {CREATING_DIRECTORY_STATE, AUTHENTICATED_STATE, CREATE_DIRECTORY_SUCCESS_EVENT},
+    {CREATING_DIRECTORY_STATE, AUTHENTICATED_STATE, CREATE_DIRECTORY_FAILURE_EVENT},
+    {AUTHENTICATED_STATE, REMOVING_FILE_STATE, REMOVE_FILE_REQUEST_EVENT},
+    {REMOVING_FILE_STATE, AUTHENTICATED_STATE, REMOVE_FILE_SUCCESS_EVENT},
+    {REMOVING_FILE_STATE, AUTHENTICATED_STATE, REMOVE_FILE_FAILURE_EVENT},
+    {AUTHENTICATED_STATE, REMOVING_DIRECTORY_STATE

@@ -1,0 +1,230 @@
+State machine description:
+
+- State 1: Idle
+
+- State 2: System Ready
+
+- State 3: Armed
+
+- State 4: In Air
+
+- State 5: Following
+
+- State 6: Landed
+
+- State 7: Disarmed
+
+Events:
+- Event 1: New system discovered
+- Event 2: Telemetry health all OK
+- Event 3: Arming success
+- Event 4: Set rate position success
+- Event 5: Takeoff success
+- Event 6: Set follow me config success
+- Event 7: Start follow me success
+- Event 8: Location updates requested by location provider
+- Event 9: Location provider not running
+- Event 10: Stop follow me success
+- Event 11: Land success
+- Event 12: In air status changed to false
+- Event 13: Armed status changed to false
+
+Transitions:
+- Transition 1: [Idle -> System Ready] upon receiving Event 1
+- Transition 2: [System Ready -> Armed] upon receiving Event 2
+- Transition 3: [Armed -> System Ready] upon receiving Event 3
+- Transition 4: [System Ready -> In Air] upon receiving Event 4
+- Transition 5: [In Air -> Following] upon receiving Event 5
+- Transition 6: [Following -> In Air] upon receiving Event 6
+- Transition 7: [Following -> Idle] upon receiving Event 9
+- Transition 8: [In Air -> Landed] upon receiving Event 11
+- Transition 9: [Landed -> Disarmed] upon receiving Event 12
+- Transition 10: [Disarmed -> Idle] upon receiving Event 13
+
+C code:
+
+```c
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/action/action.h>
+#include <mavsdk/plugins/follow_me/follow_me.h>
+#include <mavsdk/plugins/telemetry/telemetry.h>
+#include <chrono>
+#include <future>
+#include <iostream>
+#include <memory>
+#include <thread>
+
+#include "fake_location_provider.h"
+
+// Define states
+enum State {
+    STATE_IDLE,
+    STATE_SYSTEM_READY,
+    STATE_ARMED,
+    STATE_IN_AIR,
+    STATE_FOLLOWING,
+    STATE_LANDED,
+    STATE_DISARMED
+};
+
+// Define events
+enum Event {
+    EVENT_NEW_SYSTEM_DISCOVERED,
+    EVENT_TELEMETRY_HEALTH_OK,
+    EVENT_ARMING_SUCCESS,
+    EVENT_SET_RATE_POSITION_SUCCESS,
+    EVENT_TAKEOFF_SUCCESS,
+    EVENT_SET_FOLLOW_ME_CONFIG_SUCCESS,
+    EVENT_LOCATION_UPDATES_REQUESTED,
+    EVENT_LOCATION_PROVIDER_NOT_RUNNING,
+    EVENT_STOP_FOLLOW_ME_SUCCESS,
+    EVENT_LAND_SUCCESS,
+    EVENT_IN_AIR_STATUS_FALSE,
+    EVENT_ARMED_STATUS_FALSE
+};
+
+// Transition function
+State transition(State current_state, Event event)
+{
+    State next_state = current_state;
+
+    switch (current_state) {
+        case STATE_IDLE:
+            if (event == EVENT_NEW_SYSTEM_DISCOVERED) {
+                next_state = STATE_SYSTEM_READY;
+            }
+            break;
+
+        case STATE_SYSTEM_READY:
+            if (event == EVENT_TELEMETRY_HEALTH_OK) {
+                next_state = STATE_ARMED;
+            }
+            break;
+
+        case STATE_ARMED:
+            if (event == EVENT_ARMING_SUCCESS) {
+                next_state = STATE_SYSTEM_READY;
+            }
+            break;
+
+        case STATE_IN_AIR:
+            if (event == EVENT_SET_RATE_POSITION_SUCCESS) {
+                next_state = STATE_FOLLOWING;
+            }
+            break;
+
+        case STATE_FOLLOWING:
+            if (event == EVENT_TAKEOFF_SUCCESS) {
+                next_state = STATE_IN_AIR;
+            } else if (event == EVENT_LOCATION_PROVIDER_NOT_RUNNING) {
+                next_state = STATE_IDLE;
+            }
+            break;
+
+        case STATE_LANDED:
+            if (event == EVENT_IN_AIR_STATUS_FALSE) {
+                next_state = STATE_DISARMED;
+            }
+            break;
+
+        case STATE_DISARMED:
+            if (event == EVENT_ARMED_STATUS_FALSE) {
+                next_state = STATE_IDLE;
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    return next_state;
+}
+
+int main(int argc, char** argv)
+{
+    // State variable
+    State current_state = STATE_IDLE;
+
+    // State machine loop
+    while (true) {
+        switch (current_state) {
+            case STATE_IDLE:
+                // Wait for new system discovery event
+                if (event == EVENT_NEW_SYSTEM_DISCOVERED) {
+                    // Handle event logic
+
+                    // Transition to next state
+                    current_state = transition(current_state, EVENT_NEW_SYSTEM_DISCOVERED);
+                }
+                break;
+
+            case STATE_SYSTEM_READY:
+                // Wait for telemetry health OK event
+                if (event == EVENT_TELEMETRY_HEALTH_OK) {
+                    // Handle event logic
+
+                    // Transition to next state
+                    current_state = transition(current_state, EVENT_TELEMETRY_HEALTH_OK);
+                }
+                break;
+
+            case STATE_ARMED:
+                // Wait for arming success event
+                if (event == EVENT_ARMING_SUCCESS) {
+                    // Handle event logic
+
+                    // Transition to next state
+                    current_state = transition(current_state, EVENT_ARMING_SUCCESS);
+                }
+                break;
+
+            case STATE_IN_AIR:
+                // Wait for set rate position success event
+                if (event == EVENT_SET_RATE_POSITION_SUCCESS) {
+                    // Handle event logic
+
+                    // Transition to next state
+                    current_state = transition(current_state, EVENT_SET_RATE_POSITION_SUCCESS);
+                }
+                break;
+
+            case STATE_FOLLOWING:
+                // Wait for takeoff success or location provider not running event
+                if (event == EVENT_TAKEOFF_SUCCESS) {
+                    // Handle event logic
+
+                    // Transition to next state
+                    current_state = transition(current_state, EVENT_TAKEOFF_SUCCESS);
+                } else if (event == EVENT_LOCATION_PROVIDER_NOT_RUNNING) {
+                    // Handle event logic
+
+                    // Transition to next state
+                    current_state = transition(current_state, EVENT_LOCATION_PROVIDER_NOT_RUNNING);
+                }
+                break;
+
+            case STATE_LANDED:
+                // Wait for in air status false event
+                if (event == EVENT_IN_AIR_STATUS_FALSE) {
+                    // Handle event logic
+
+                    // Transition to next state
+                    current_state = transition(current_state, EVENT_IN_AIR_STATUS_FALSE);
+                }
+                break;
+
+            case STATE_DISARMED:
+                // Wait for armed status false event
+                if (event == EVENT_ARMED_STATUS_FALSE) {
+                    // Handle event logic
+
+                    // Transition to next state
+                    current_state = transition(current_state, EVENT_ARMED_STATUS_FALSE);
+                }
+                break;
+        }
+    }
+
+    return 0;
+}
+```

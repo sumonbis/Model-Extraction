@@ -1,0 +1,141 @@
+P Code:
+```p
+var current_state: State = WaitingToDiscoverSystem;
+
+fun handle_event(event: Event) {
+    state_machine_transition(current_state, event);
+}
+
+fun state_machine_transition(current_state: State, event: Event) {
+    switch current_state {
+        case WaitingToDiscoverSystem:
+            handle_state_waiting_to_discover_system(event);
+        case DiscoveredAutopilot:
+            handle_state_discovered_autopilot(event);
+        case SystemReady:
+            handle_state_system_ready(event);
+        case CreatingAndUploadingMission:
+            handle_state_creating_and_uploading_mission(event);
+        case UploadingMission:
+            handle_state_uploading_mission(event);
+        case Arming:
+            handle_state_arming(event);
+        case Armed:
+            handle_state_armed(event);
+        case PausingMission:
+            handle_state_pausing_mission(event);
+        case MissionPaused:
+            handle_state_mission_paused(event);
+        case CommandingRTL:
+            handle_state_commanding_rtl(event);
+        case CommandedRTL:
+            handle_state_commanded_rtl(event);
+        case Disarmed:
+            handle_state_disarmed(event);
+    }
+}
+
+fun handle_state_waiting_to_discover_system(event: Event) {
+    switch event {
+        case NewSystemDiscovered:
+            current_state = DiscoveredAutopilot;
+            output "Transition: Waiting to discover system -> Discovered autopilot";
+    }
+}
+
+fun handle_state_discovered_autopilot(event: Event) {
+    switch event {
+        case HealthAllOK:
+            current_state = SystemReady;
+            output "Transition: Discovered autopilot -> System ready";
+    }
+}
+
+fun handle_state_system_ready(event: Event) {
+    switch event {
+        case MissionStatusUpdate:
+            current_state = CreatingAndUploadingMission;
+            output "Transition: System ready -> Creating and uploading mission";
+    }
+}
+
+fun handle_state_creating_and_uploading_mission(event: Event) {
+    switch event {
+        case TelemetryArmed:
+            current_state = UploadingMission;
+            output "Transition: Creating and uploading mission -> Uploading mission";
+    }
+}
+
+fun handle_state_uploading_mission(event: Event) {
+    switch event {
+        case MissionStatusUpdate:
+            current_state = Arming;
+            output "Transition: Uploading mission -> Arming";
+    }
+}
+
+fun handle_state_arming(event: Event) {
+    switch event {
+        case MissionStatusUpdate:
+            current_state = Armed;
+            output "Transition: Arming -> Armed";
+    }
+}
+
+fun handle_state_armed(event: Event) {
+    switch event {
+        case PausingMission:
+            current_state = PausingMission;
+            output "Transition: Armed -> Pausing mission";
+    }
+}
+
+fun handle_state_pausing_mission(event: Event) {
+    switch event {
+        case MissionStatusUpdate:
+            current_state = MissionPaused;
+            output "Transition: Pausing mission -> Mission paused";
+    }
+}
+
+fun handle_state_mission_paused(event: Event) {
+    switch event {
+        case CommandRTL:
+            current_state = CommandingRTL;
+            output "Transition: Mission paused -> Commanding RTL";
+    }
+}
+
+fun handle_state_commanding_rtl(event: Event) {
+    switch event {
+        case CommandedRTL:
+            current_state = CommandedRTL;
+            output "Transition: Commanding RTL -> Commanded RTL";
+    }
+}
+
+fun handle_state_commanded_rtl(event: Event) {
+    switch event {
+        case TelemetryDisarmed:
+            current_state = Disarmed;
+            output "Transition: Commanded RTL -> Disarmed";
+    }
+}
+
+fun handle_state_disarmed(event: Event) {
+    // No more transitions from disarmed state
+}
+
+// Simulate events
+handle_event(NewSystemDiscovered);
+handle_event(HealthAllOK);
+handle_event(MissionStatusUpdate);
+handle_event(TelemetryArmed);
+handle_event(MissionStatusUpdate);
+handle_event(PausingMission);
+handle_event(MissionStatusUpdate);
+handle_event(CommandRTL);
+handle_event(CommandedRTL);
+handle_event(TelemetryDisarmed);
+```

@@ -1,0 +1,119 @@
+P Code:
+
+```p
+namespace mavlink
+{
+    broadcast message DiscoverySystem {};
+}
+
+message MissionImported {};
+
+message MissionUploaded {};
+
+message VehicleArmed {};
+
+message MissionStarted {};
+
+message MissionEnded {};
+
+machine MainMachine {
+    state Idle {
+        on DiscoverySystem => Discovered;
+    }
+
+    state Discovered {
+        on MissionImported => MissionImporting;
+    }
+
+    state MissionImporting {
+        on MissionUploaded => MissionUploading;
+    }
+
+    state MissioinUploading {
+        on VehicleArmed => VehicleArming;
+    }
+
+    state VehicleArming {
+        on MissionStarted => MissionStarting;
+    }
+
+    state MissionStarting {
+        on MissionEnded => MissionInProgress;
+    }
+
+    state MissionInProgress {
+        on MissionEnded => MissionCompleted;
+    }
+
+    state MissionCompleted {}
+}
+
+service SubscribeNewSystemDiscovered {
+    request void {};
+    response Stream<DiscoverySystem> {};
+}
+
+service PublishMissionImported {
+    request void {};
+    response MissionImported {};
+}
+
+service PublishMissionUploaded {
+    request void {};
+    response MissionUploaded {};
+}
+
+service PublishVehicleArmed {
+    request void {};
+    response VehicleArmed {};
+}
+
+service PublishMissionStarted {
+    request void {};
+    response MissionStarted {};
+}
+
+service PublishMissionEnded {
+    request void {};
+    response MissionEnded {};
+}
+
+service PublishMissionCompleted {
+    request void {};
+    response void {};
+}
+
+component Mavsdk {
+    service SubscribeNewSystemDiscovered subscribe_new_system_discovered;
+    service PublishMissionImported publish_mission_imported;
+    service PublishMissionUploaded publish_mission_uploaded;
+    service PublishVehicleArmed publish_vehicle_armed;
+    service PublishMissionStarted publish_mission_started;
+    service PublishMissionEnded publish_mission_ended;
+    service PublishMissionCompleted publish_mission_completed;
+}
+
+component MainComponent {
+    Mavsdk mavsdk;
+
+    machine MainMachine;
+
+    composition {
+        mavsdk.subscribe_new_system_discovered -> MainMachine.DiscoverySystem;
+        MainMachine.Discovered -> mavsdk.publish_mission_imported;
+        MainMachine.MissionImporting -> mavsdk.publish_mission_uploaded;
+        MainMachine.MissionUploading -> mavsdk.publish_vehicle_armed;
+        MainMachine.VehicleArming -> mavsdk.publish_mission_started;
+        MainMachine.MissionStarting -> mavsdk.publish_mission_ended;
+        MainMachine.MissionInProgress -> mavsdk.publish_mission_ended;
+    }
+}
+
+function main() {
+    MainComponent mainComponent;
+
+    run mainComponent;
+}
+```
+
+Note: The P code is a High-level State Transition System description of the C++ code. It models the different states, events, and transitions based on the provided state machine description. However, some details of the C++ code, such as specific functions and variables, are not captured in the P code. The provided P code serves as a starting point and may need further customization based on the specific requirements of your system.

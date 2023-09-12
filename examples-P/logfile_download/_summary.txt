@@ -1,0 +1,207 @@
+State Machine Description:
+
+States:
+1. Initial State: The program starts in this state.
+2. Discovering System: The program is waiting to discover a system.
+3. Connected: The program has successfully connected to a system.
+4. Downloading Log Files: The program is downloading log files.
+5. Removing Log Files: The program is removing log files (optional).
+
+Events:
+1. New System Discovered: This event occurs when a new system is discovered.
+2. Connection Failed: This event occurs when the connection to a system fails.
+3. Get Entries Success: This event occurs when the log files entries are successfully obtained.
+4. Get Entries Failure: This event occurs when obtaining log files entries fails.
+5. Download Failure: This event occurs when downloading a log file fails.
+
+Transitions:
+1. Initial State -> Discovering System: When the program starts, it transitions to the Discovering System state.
+2. Discovering System -> Connected: When a new system is discovered, the program transitions to the Connected state.
+3. Discovering System -> Initial State: If no autopilot system is found within 3 seconds, the program transitions back to the Initial State.
+4. Connected -> Downloading Log Files: If the log files entries are successfully obtained, the program transitions to the Downloading Log Files state.
+5. Connected -> Initial State: If obtaining log files entries fails, the program transitions back to the Initial State.
+6. Downloading Log Files -> Downloading Log Files: If there are more log files to download, the program stays in the Downloading Log Files state.
+7. Downloading Log Files -> Removing Log Files: If all log files are successfully downloaded and the remove_log_files flag is set, the program transitions to the Removing Log Files state.
+8. Downloading Log Files -> Initial State: If downloading a log file fails, the program transitions back to the Initial State.
+9. Removing Log Files -> Initial State: After removing all log files, the program transitions back to the Initial State.
+
+C Code:
+```c
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/log_files/log_files.h>
+
+#include <chrono>
+#include <functional>
+#include <future>
+#include <iostream>
+#include <iomanip>
+#include <cstring>
+#include <thread>
+
+using namespace mavsdk;
+using std::chrono::seconds;
+using std::this_thread::sleep_for;
+
+enum state_t {
+    INITIAL_STATE,
+    DISCOVERING_SYSTEM,
+    CONNECTED,
+    DOWNLOADING_LOG_FILES,
+    REMOVING_LOG_FILES
+};
+
+enum event_t {
+    NEW_SYSTEM_DISCOVERED,
+    CONNECTION_FAILED,
+    GET_ENTRIES_SUCCESS,
+    GET_ENTRIES_FAILURE,
+    DOWNLOAD_FAILURE
+};
+
+state_t state = INITIAL_STATE;
+
+void handle_event(event_t event)
+{
+    switch (state) {
+        case INITIAL_STATE:
+            if (event == NEW_SYSTEM_DISCOVERED) {
+                state = DISCOVERING_SYSTEM;
+            }
+            break;
+        case DISCOVERING_SYSTEM:
+            if (event == NEW_SYSTEM_DISCOVERED) {
+                state = CONNECTED;
+            } else if (event == CONNECTION_FAILED) {
+                state = INITIAL_STATE;
+            }
+            break;
+        case CONNECTED:
+            if (event == GET_ENTRIES_SUCCESS) {
+                state = DOWNLOADING_LOG_FILES;
+            } else if (event == GET_ENTRIES_FAILURE) {
+                state = INITIAL_STATE;
+            }
+            break;
+        case DOWNLOADING_LOG_FILES:
+            if (event == GET_ENTRIES_SUCCESS) {
+                state = DOWNLOADING_LOG_FILES;
+            } else if (event == DOWNLOAD_FAILURE) {
+                state = INITIAL_STATE;
+            } else if (event == GET_ENTRIES_FAILURE && remove_log_files) {
+                state = REMOVING_LOG_FILES;
+            }
+            break;
+        case REMOVING_LOG_FILES:
+            if (event == GET_ENTRIES_SUCCESS) {
+                state = DOWNLOADING_LOG_FILES;
+            } else {
+                state = INITIAL_STATE;
+            }
+            break;
+    }
+}
+
+void usage(const std::string& bin_name)
+{
+    std::cerr << "Usage : " << bin_name << " <connection_url> [--rm]\n"
+              << '\n'
+              << "Connection URL format should be :\n"
+              << " For TCP : tcp://[server_host][:server_port]\n"
+              << " For UDP : udp://[bind_host][:bind_port]\n"
+              << " For Serial : serial:///path/to/serial/dev[:baudrate]\n"
+              << "For example, to connect to the simulator use URL: udp://:14540\n"
+              << '\n'
+              << "To remove log files after all downloads completed,\n"
+              << "please add the --rm argument" << std::endl;
+}
+
+std::shared_ptr<System> get_system(Mavsdk& mavsdk)
+{
+    std::cerr << "Waiting to discover system...\n";
+    auto prom = std::promise<std::shared_ptr<System>>{};
+    auto fut = prom.get_future();
+
+    // We wait for new systems to be discovered, once we find one that has an
+    // autopilot, we decide to use it.
+    mavsdk.subscribe_on_new_system([&mavsdk, &prom]() {
+        auto system = mavsdk.systems().back();
+
+        // Unsubscribe again as we only want to find one system.
+        mavsdk.subscribe_on_new_system(nullptr);
+        prom.set_value(system);
+    });
+
+    // We usually receive heartbeats at 1Hz, therefore we should find a
+    // system after around 3 seconds max, surely.
+    if (fut.wait_for(seconds(3)) == std::future_status::timeout) {
+        std::cerr << "No autopilot found.\n";
+        return {};
+    }
+
+    // Get discovered system now.
+    return fut.get();
+}
+
+int main(int argc, char** argv)
+{
+    if (argc > 3) {
+        usage(argv[0]);
+        return 1;
+    }
+
+    /* parse arguments */
+    bool remove_log_files = false;
+
+    for (int i = 2; i < argc; ++i) {
+        if (argv[i] == "--rm") {
+            remove_log_files = true;
+        }
+    }
+
+    Mavsdk mavsdk;
+    ConnectionResult connection_result = mavsdk.add_any_connection(argv[1]);
+
+    if (connection_result != ConnectionResult::Success) {
+        std::cerr << "Connection failed: " << connection_result << std::endl;
+        return 1;
+    }
+
+    auto system = get_system(mavsdk);
+    if (!system) {
+        return 1;
+    }
+
+    // Instantiate plugins.
+
+    auto log_files = LogFiles{system};
+
+    auto get_entries_result = log_files.get_entries();
+    if (get_entries_result.first == LogFiles::Result::Success) {
+        bool download_failure = false;
+        for (auto entry : get_entries_result.second) {
+            std::cerr << "Got log file with ID " << entry.id << " and date " << entry.date
+                      << std::endl;
+            auto result =
+                log_files.download_log_file(entry, std::string("log-") + entry.date + ".ulg");
+            if (result.first != LogFiles::Result::Success) {
+                download_failure = true;
+                std::cerr << "LogFiles::download_log_file failed: " << result.first << std::endl;
+            }
+        }
+        if (!download_failure && remove_log_files) {
+            /*
+             * If you want to be sure the log has been deleted, call get_entries again
+             * to make sure there are no log files present anymore
+             *
+             * TODO: provide a more reliable solution
+             */
+            log_files.erase_all_log_files();
+        }
+    } else {
+        std::cerr << "LogFiles::get_entries failed: " << get_entries_result.first << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
+```

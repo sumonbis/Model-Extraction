@@ -1,0 +1,82 @@
+Pseudocode translation:
+
+```
+// States
+GROUND_STATION_STATE
+AUTOPILOT_STATE
+
+// Events
+CONNECTION_SUCCESS_EVENT
+CONNECTION_TIMEOUT_EVENT
+NEW_SYSTEM_DISCOVERED_EVENT
+TAKEOFF_SUCCESS_EVENT
+
+// Variables
+current_state = GROUND_STATION_STATE
+
+// Functions
+transition_to(state)
+    current_state = state
+
+on_event(event)
+    switch (current_state):
+        case GROUND_STATION_STATE:
+            switch (event):
+                case CONNECTION_SUCCESS_EVENT:
+                    transition_to(AUTOPILOT_STATE)
+                    break
+                case CONNECTION_TIMEOUT_EVENT:
+                    // No transition, stay in the same state
+                    break
+        case AUTOPILOT_STATE:
+            switch (event):
+                case NEW_SYSTEM_DISCOVERED_EVENT:
+                    // No transition, stay in the same state
+                    break
+                case TAKEOFF_SUCCESS_EVENT:
+                    // No transition, stay in the same state
+                    break
+
+// Main function
+main()
+{
+    // ...
+
+    // Transition from GroundStation to Autopilot upon ConnectionSuccess
+    if (result == CONNECTION_SUCCESS) {
+        on_event(CONNECTION_SUCCESS_EVENT)
+        print("Connected autopilot server side!")
+    } else {
+        // Transition from GroundStation to GroundStation upon ConnectionTimeout
+        on_event(CONNECTION_TIMEOUT_EVENT)
+    }
+
+    // ...
+
+    // Transition from Autopilot to Autopilot upon NewSystemDiscovered
+    mavsdkTester.subscribe_on_new_system(
+        lambda {
+            print("Discovered MAVSDK GCS")
+            system = mavsdkTester.systems().back()
+            prom.set_value(system)
+            on_event(NEW_SYSTEM_DISCOVERED_EVENT)
+        }
+    )
+
+    // ...
+
+    // Transition from Autopilot to Autopilot upon TakeoffSuccess
+    actionServer.subscribe_takeoff(
+        lambda(result, takeoff) {
+            if (result == ActionServer::Result::Success) {
+                position.relative_altitude_m = 10
+                on_event(TAKEOFF_SUCCESS_EVENT)
+            }
+        }
+    )
+
+    // ...
+}
+```
+
+The P code follows the state machine description and represents the state transitions as required. Note that P is a modeling language and requires specific syntax to compile and execute. The provided code is a pseudocode representation of the state machine in the P language.

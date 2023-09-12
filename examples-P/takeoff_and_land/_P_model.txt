@@ -1,0 +1,49 @@
+state Current_State {
+    Init
+};
+state Ready_to_Arm_State {
+    New_System_Discovered
+};
+state Armed_State {
+    Altitude_Ready
+};
+state Takeoff_State {
+    Arm_Vehicle
+};
+state Hover_State {
+    Takeoff_Vehicle
+};
+state Landing_State {
+    Hovering_Time_Elapsed
+};
+state Landed_State {
+    Land_Vehicle, Vehicle_in_Air, Auto_Disarm_Timer_Elapsed
+};
+state Finished_State {
+    Init
+};
+
+transition Init_to_Ready_to_Arm {
+    New_System_Discovered => Ready_to_Arm_State
+};
+transition Ready_to_Arm_to_Armed {
+    Altitude_Ready => Armed_State
+};
+transition Armed_to_Takeoff {
+    Arm_Vehicle => Takeoff_State
+};
+transition Takeoff_to_Hover {
+    Takeoff_Vehicle => Hover_State
+};
+transition Hover_to_Landing {
+    Hovering_Time_Elapsed => Landing_State
+};
+transition Landing_to_Landed {
+    Land_Vehicle => Landed_State
+};
+transition Landed_to_Landed {
+    Vehicle_in_Air => Landed_State
+};
+transition Landed_to_Finished {
+    Auto_Disarm_Timer_Elapsed => Finished_State
+};

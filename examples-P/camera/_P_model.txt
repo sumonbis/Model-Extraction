@@ -1,0 +1,113 @@
+P Code:
+```
+  const Initializing: state;
+  const Discovering: state;
+  const CameraFound: state;
+  const SwitchingMode: state;
+  const PhotoMode: state;
+  const TakingPhoto: state;
+  const PhotoTaken: state;
+  const Exiting: state;
+
+  const Initialize: event;
+  const SystemDiscovered: event;
+  const SwitchMode: event;
+  const ModeSwitched: event;
+  const TakePhoto: event;
+  const PhotoTaken: event;
+  const Timeout: event;
+
+  var state: state = Initializing;
+
+  function handle_event(event: event) -> void {
+    if state = Initializing and event = Initialize then
+        state := Discovering
+    else if state = Discovering and event = SystemDiscovered then
+        state := CameraFound
+    else if state = Discovering and event = Timeout then
+        state := Exiting
+    else if state = CameraFound and event = SwitchMode then
+        state := SwitchingMode
+    else if state = SwitchingMode and event = ModeSwitched then
+        state := PhotoMode
+    else if state = PhotoMode and event = TakePhoto then
+        state := TakingPhoto
+    else if state = TakingPhoto and event = PhotoTaken then
+        state := PhotoTaken
+  };
+  
+  function usage(bin_name: string) -> void {
+    print("Usage: " + bin_name + " <connection_url>")
+    print("Connection URL format should be:")
+    print("For TCP: tcp://[server_host][:server_port]")
+    print("For UDP: udp://[bind_host][:bind_port]")
+    print("For Serial: serial:///path/to/serial/dev[:baudrate]")
+    print("For example, to connect to the simulator use URL: udp://:14540")
+  };
+  
+  function main(argc: int, argv: []string) -> int {
+    if argc != 2 then
+        usage(argv[0]);
+        return 1;
+    end
+  
+    var mavsdk: Mavsdk;
+    var connection_result: ConnectionResult = mavsdk.add_any_connection(argv[1]);
+  
+    if connection_result != ConnectionResult.Success then
+        print("Connection failed: " + connection_result);
+        return 1;
+    end
+  
+    print("Waiting to discover system...");
+  
+    var prom: promise[shared_ptr[System]] = promise();
+    var fut: future[shared_ptr[System]] = prom.get_future();
+  
+    mavsdk.subscribe_on_new_system(function() -> void {
+        var system: Auto = mavsdk.systems().back();
+  
+        if system.has_camera() then
+            print("Discovered camera");
+  
+            mavsdk.subscribe_on_new_system(nil);
+            prom.set_value(system);
+            handle_event(SystemDiscovered);
+        end
+    });
+  
+    if fut.wait_for(seconds(3)) = future_status::timeout then
+        print("No camera found, exiting.");
+        handle_event(Timeout);
+        return 1;
+    end
+  
+    var system: shared_ptr[System] = fut.get();
+  
+    var telemetry: Telemetry = Telemetry(system);
+    var camera: Camera = Camera(system);
+  
+    var mode_result: Camera::Result = camera.set_mode(Camera::Mode.Photo);
+    if mode_result != Camera::Result.Success then
+        print("Could not switch to Photo mode: " + mode_result);
+        return 1;
+    end
+  
+    camera.subscribe_capture_info(function(capture_info: Camera::CaptureInfo) -> void {
+        print("Image captured, stored at: " + capture_info.file_url);
+        handle_event(PhotoTaken);
+    });
+  
+    var photo_result: Camera::Result = camera.take_photo();
+    if photo_result != Camera::Result.Success then
+        print("Taking Photo failed: " + mode_result);
+        return 1;
+    end
+  
+    sleep_for(seconds(2));
+  
+    handle_event(TakePhoto);
+  
+    return 0;
+  };
+```

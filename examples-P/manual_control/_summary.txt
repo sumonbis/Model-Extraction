@@ -1,0 +1,149 @@
+State Machine Description:
+- There are two main states in the state machine: "Connected" and "Disconnected".
+- The events in the state machine are as follows:
+  - "Joystick Removed" event: Occurs when the joystick is physically disconnected from the system.
+  - "Joystick Added" event: Occurs when a new joystick is added to the system.
+  - "Quit" event: Occurs when the program is terminated.
+  - "Button Pressed" event: Occurs when a button on the joystick is pressed.
+  - "Button Released" event: Occurs when a button on the joystick is released.
+  - "Axis Motion" event: Occurs when an axis on the joystick is moved.
+
+State Machine Transitions:
+1. Initial State: Disconnected
+   - Event: Joystick Added
+   - Transition: Connect to the joystick and move to the Connected state.
+
+2. Connected State
+   - Event: Joystick Removed
+   - Transition: Disconnect from the joystick and move to the Disconnected state.
+
+   - Event: Quit
+   - Transition: Disconnect from the joystick, deinitialize SDL, and raise the SIGINT signal to terminate the program.
+
+   - Event: Button Pressed or Button Released or Axis Motion
+   - Transition: Update the state of the joystick and continue to stay in the Connected state.
+
+3. Disconnected State
+   - Event: Joystick Added
+   - Transition: Connect to the joystick and move to the Connected state.
+
+C Code:
+```cpp
+#include "joystick.h"
+
+#include <cmath>
+#include <csignal>
+#include <iostream>
+#include <memory>
+
+enum class State {
+    Connected,
+    Disconnected
+};
+
+enum class Event {
+    JoystickRemoved,
+    JoystickAdded,
+    Quit,
+    ButtonPressed,
+    ButtonReleased,
+    AxisMotion
+};
+
+State current_state = State::Disconnected;
+
+void process_event(Event event)
+{
+    switch (current_state) {
+        case State::Connected:
+            switch (event) {
+                case Event::JoystickRemoved:
+                    std::cout << "joystick removed\n";
+                    Joystick::disconnect();
+                    current_state = State::Disconnected;
+                    break;
+
+                case Event::Quit:
+                    Joystick::disconnect();
+                    Joystick::deinit();
+                    raise(SIGINT);
+                    current_state = State::Disconnected;
+                    break;
+
+                case Event::ButtonPressed:
+                case Event::ButtonReleased:
+                case Event::AxisMotion:
+                    // Update the state of the joystick.
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+
+        case State::Disconnected:
+            switch (event) {
+                case Event::JoystickAdded:
+                    Joystick::connect();
+                    current_state = State::Connected;
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+    }
+}
+
+int main()
+{
+    // Initialize SDL and create joystick.
+    std::unique_ptr<Joystick> joystick = Joystick::create();
+
+    // Start the poll loop.
+    joystick->start_poll_loop();
+
+    // Process events according to the state machine.
+    while (true) {
+        SDL_Event event;
+        SDL_WaitEventTimeout(&event, 100);
+
+        switch (event.type) {
+            case SDL_JOYDEVICEREMOVED:
+                process_event(Event::JoystickRemoved);
+                break;
+
+            case SDL_JOYDEVICEADDED:
+                process_event(Event::JoystickAdded);
+                break;
+
+            case SDL_QUIT:
+                process_event(Event::Quit);
+                break;
+
+            case SDL_JOYBUTTONDOWN:
+                process_event(Event::ButtonPressed);
+                break;
+
+            case SDL_JOYBUTTONUP:
+                process_event(Event::ButtonReleased);
+                break;
+
+            case SDL_JOYAXISMOTION:
+                process_event(Event::AxisMotion);
+                break;
+
+            default:
+                break;
+        }
+        
+        // Print values if needed.
+        joystick->print_values();
+    }
+
+    // Stop the poll loop and clean up.
+    joystick->stop_poll_loop();
+
+    return 0;
+}
+```

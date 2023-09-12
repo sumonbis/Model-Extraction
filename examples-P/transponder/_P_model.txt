@@ -1,0 +1,108 @@
+P Code:
+```
+// State declarations
+state Initializing, Discovering, SystemDiscovered, SettingRate, MonitorActivity, Finished;
+
+// Event declarations
+event Start, SystemDiscovered, RateSet, ActivityMonitored, Timeout;
+
+// Transition declarations
+transition Discovering, SystemDiscovered, SettingRate, MonitorActivity, Timeout;
+
+state = Initializing;
+
+handle_event(event)
+{
+  if(state == Initializing AND event == Start)
+  {
+    print("Waiting to discover system...\n");
+    state = Discovering;
+  }
+  else if(state == Discovering AND event == SystemDiscovered)
+  {
+    print("Discovered autopilot\n");
+    state = SystemDiscovered;
+  }
+  else if(state == Discovering AND event == Timeout)
+  {
+    print("No autopilot found.\n");
+    state = Finished;
+  }
+  else if(state == SystemDiscovered)
+  {
+    state = SettingRate;
+  }
+  else if(state == SettingRate AND event == RateSet)
+  {
+    print("Setting transponder subscription\n");
+    state = MonitorActivity;
+  }
+  else if(state == MonitorActivity AND event == ActivityMonitored)
+  {
+    print("Finished...\n");
+    state = Finished;
+  }
+}
+
+usage(bin_name)
+{
+  // Print usage
+}
+
+get_system(mavsdk)
+{
+  // Get system
+}
+
+main(argc, argv)
+{
+  if (argc != 2) {
+      usage(argv[0]);
+      return 1;
+  }
+
+  mavsdk = Mavsdk();
+
+  connection_result = mavsdk.add_any_connection(argv[1]);
+  if (connection_result != Success) {
+      print("Connection failed: " + connection_result + '\n');
+      return 1;
+  }
+
+  system = get_system(mavsdk);
+  if (!system) {
+      return 1;
+  }
+
+  transponder = Transponder(system);
+
+  print("Setting transponder update rate\n");
+  set_rate_result = transponder.set_rate_transponder(1.0);
+  if (set_rate_result != Success) {
+      print("Setting rate failed:" + set_rate_result + '\n');
+      return 1;
+  }
+
+  print("Setting transponder subscription\n");
+  transponder.subscribe_transponder(adsbVehicle) {
+      print("ICAO Address: " + adsbVehicle.icao_address + '\n'
+                + "Latitude: " + String(adsbVehicle.latitude_deg) + " deg\n"
+                + "Longitude: " + String(adsbVehicle.longitude_deg) + " deg\n"
+                + "Absolute Altitude: " + String(adsbVehicle.absolute_altitude_m) + " m\n"
+                + "Heading: " + String(adsbVehicle.heading_deg) + " deg\n"
+                + "Horizontal Velocity: " + String(adsbVehicle.horizontal_velocity_m_s) + " m/s\n"
+                + "Vertical Velocity: " + String(adsbVehicle.vertical_velocity_m_s) + " m/s\n"
+                + "Call Sign: " + adsbVehicle.callsign + '\n'
+                + "Emitter Type: " + adsbVehicle.emitter_type + '\n'
+                + "Squawk: " + adsbVehicle.squawk + '\n');
+  };
+
+  sleep_for(60);
+
+  handle_event(Timeout);
+
+  return 0;
+}
+```
+
+In the P code, the state machine is defined using state, event, and transition declarations. The handle_event function handles the events and changes the state accordingly. The main function implements the logic of the C code using the state machine.

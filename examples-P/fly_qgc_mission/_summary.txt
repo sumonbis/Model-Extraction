@@ -1,0 +1,204 @@
+State machine description:
+- State 1: Waiting for system discovery
+- State 2: System discovered
+- State 3: System ready
+- State 4: Importing mission from mission plan
+- State 5: Mission imported
+- State 6: Uploading mission
+- State 7: Mission uploaded
+- State 8: Arming
+- State 9: Armed
+- State 10: Starting mission
+- State 11: Mission in progress
+- State 12: Mission completed
+- State 13: Commanding RTL
+- State 14: RTL commanded
+
+Events:
+- Event 1: New system discovered
+- Event 2: Telemetry health check passed
+- Event 3: Mission plan imported successfully
+- Event 4: Mission plan upload completed
+- Event 5: Arm command successful
+- Event 6: Mission started successfully
+- Event 7: Mission in progress (mission progress update)
+- Event 8: Mission completed
+- Event 9: Command RTL successful
+
+State transitions:
+- Transition 1: From state 1 to state 2 on Event 1
+- Transition 2: From state 2 to state 3 on Event 2
+- Transition 3: From state 3 to state 4 on Event 3
+- Transition 4: From state 4 to state 5 on Event 3
+- Transition 5: From state 5 to state 6 on Event 4
+- Transition 6: From state 6 to state 7 on Event 4
+- Transition 7: From state 7 to state 8 on Event 5
+- Transition 8: From state 8 to state 9 on Event 5
+- Transition 9: From state 9 to state 10 on Event 6
+- Transition 10: From state 10 to state 11 on Event 6
+- Transition 11: From state 11 to state 12 on Event 8
+- Transition 12: From state 12 to state 13 on Event 8
+- Transition 13: From state 13 to state 14 on Event 9
+
+C code:
+```c
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/action/action.h>
+#include <mavsdk/plugins/mission_raw/mission_raw.h>
+#include <mavsdk/plugins/telemetry/telemetry.h>
+
+#include <chrono>
+#include <functional>
+#include <future>
+#include <iostream>
+#include <memory>
+#include <thread>
+
+using namespace mavsdk;
+using std::chrono::seconds;
+using std::this_thread::sleep_for;
+
+enum State {
+    STATE_WAITING_FOR_SYSTEM_DISCOVERY,
+    STATE_SYSTEM_DISCOVERED,
+    STATE_SYSTEM_READY,
+    STATE_IMPORTING_MISSION,
+    STATE_MISSION_IMPORTED,
+    STATE_UPLOADING_MISSION,
+    STATE_MISSION_UPLOADED,
+    STATE_ARMING,
+    STATE_ARMED,
+    STATE_STARTING_MISSION,
+    STATE_MISSION_IN_PROGRESS,
+    STATE_MISSION_COMPLETED,
+    STATE_COMMANDING_RTL,
+    STATE_RTL_COMMANDED
+};
+
+enum Event {
+    EVENT_NEW_SYSTEM_DISCOVERED,
+    EVENT_TELEMETRY_HEALTH_CHECK_PASSED,
+    EVENT_MISSION_PLAN_IMPORTED_SUCCESSFULLY,
+    EVENT_MISSION_PLAN_UPLOAD_COMPLETED,
+    EVENT_ARM_COMMAND_SUCCESSFUL,
+    EVENT_MISSION_STARTED_SUCCESSFULLY,
+    EVENT_MISSION_IN_PROGRESS,
+    EVENT_MISSION_COMPLETED,
+    EVENT_COMMAND_RTL_SUCCESSFUL
+};
+
+int main(int argc, char** argv)
+{
+    // State variable
+    State state = STATE_WAITING_FOR_SYSTEM_DISCOVERY;
+
+    // Create Mavsdk object and add connection
+    Mavsdk mavsdk;
+    // ...
+
+    while (true) {
+        switch (state) {
+            case STATE_WAITING_FOR_SYSTEM_DISCOVERY:
+                // Handle events
+                if (event == EVENT_NEW_SYSTEM_DISCOVERED) {
+                    state = STATE_SYSTEM_DISCOVERED;
+                }
+                break;
+
+            case STATE_SYSTEM_DISCOVERED:
+                // Handle events
+                if (event == EVENT_TELEMETRY_HEALTH_CHECK_PASSED) {
+                    state = STATE_SYSTEM_READY;
+                }
+                break;
+
+            case STATE_SYSTEM_READY:
+                // Handle events
+                if (event == EVENT_MISSION_PLAN_IMPORTED_SUCCESSFULLY) {
+                    state = STATE_IMPORTING_MISSION;
+                }
+                break;
+
+            case STATE_IMPORTING_MISSION:
+                // Handle events
+                if (event == EVENT_MISSION_PLAN_IMPORTED_SUCCESSFULLY) {
+                    state = STATE_MISSION_IMPORTED;
+                }
+                break;
+
+            case STATE_MISSION_IMPORTED:
+                // Handle events
+                if (event == EVENT_MISSION_PLAN_UPLOAD_COMPLETED) {
+                    state = STATE_UPLOADING_MISSION;
+                }
+                break;
+
+            case STATE_UPLOADING_MISSION:
+                // Handle events
+                if (event == EVENT_MISSION_PLAN_UPLOAD_COMPLETED) {
+                    state = STATE_MISSION_UPLOADED;
+                }
+                break;
+
+            case STATE_MISSION_UPLOADED:
+                // Handle events
+                if (event == EVENT_ARM_COMMAND_SUCCESSFUL) {
+                    state = STATE_ARMING;
+                }
+                break;
+
+            case STATE_ARMING:
+                // Handle events
+                if (event == EVENT_ARM_COMMAND_SUCCESSFUL) {
+                    state = STATE_ARMED;
+                }
+                break;
+
+            case STATE_ARMED:
+                // Handle events
+                if (event == EVENT_MISSION_STARTED_SUCCESSFULLY) {
+                    state = STATE_STARTING_MISSION;
+                }
+                break;
+
+            case STATE_STARTING_MISSION:
+                // Handle events
+                if (event == EVENT_MISSION_STARTED_SUCCESSFULLY) {
+                    state = STATE_MISSION_IN_PROGRESS;
+                }
+                break;
+            
+            case STATE_MISSION_IN_PROGRESS:
+                // Handle events
+                if (event == EVENT_MISSION_IN_PROGRESS) {
+                    // ...
+                }
+                else if (event == EVENT_MISSION_COMPLETED) {
+                    state = STATE_MISSION_COMPLETED;
+                }
+                break;
+
+            case STATE_MISSION_COMPLETED:
+                // Handle events
+                if (event == EVENT_COMMAND_RTL_SUCCESSFUL) {
+                    state = STATE_COMMANDING_RTL;
+                }
+                break;
+
+            case STATE_COMMANDING_RTL:
+                // Handle events
+                if (event == EVENT_COMMAND_RTL_SUCCESSFUL) {
+                    state = STATE_RTL_COMMANDED;
+                }
+                break;
+            
+            case STATE_RTL_COMMANDED:
+                // Handle events
+                // ...
+                break;
+        }
+    }
+
+    return 0;
+}
+```

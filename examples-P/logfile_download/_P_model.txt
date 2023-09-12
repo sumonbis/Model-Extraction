@@ -1,0 +1,118 @@
+Machine P {
+    States:
+        InitialState,
+        DiscoveringSystem,
+        Connected,
+        DownloadingLogFiles,
+        RemovingLogFiles
+
+    Events:
+        NewSystemDiscovered,
+        ConnectionFailed,
+        GetEntriesSuccess,
+        GetEntriesFailure,
+        DownloadFailure
+
+    OnEnter InitialState {
+        std::cerr << "Waiting to discover system...\n";
+        Mavsdk mavsdk;
+        ConnectionResult connection_result = mavsdk.add_any_connection(argv[1]);
+
+        if (connection_result != ConnectionResult::Success) {
+            std::cerr << "Connection failed: " << connection_result << std::endl;
+            return 1;
+        }
+
+        auto system = get_system(mavsdk);
+        if (!system) {
+            return 1;
+        }
+    }
+
+    OnExit InitialState {
+    }
+
+    OnEnter DiscoveringSystem {
+    }
+
+    OnExit DiscoveringSystem {
+    }
+
+    OnEnter Connected {
+        auto get_entries_result = log_files.get_entries();
+        if (get_entries_result.first == LogFiles::Result::Success) {
+            bool download_failure = false;
+            for (auto entry : get_entries_result.second) {
+                std::cerr << "Got log file with ID " << entry.id << " and date " << entry.date
+                          << std::endl;
+                auto result =
+                    log_files.download_log_file(entry, std::string("log-") + entry.date + ".ulg");
+                if (result.first != LogFiles::Result::Success) {
+                    download_failure = true;
+                    std::cerr << "LogFiles::download_log_file failed: " << result.first << std::endl;
+                }
+            }
+            if (!download_failure && remove_log_files) {
+                log_files.erase_all_log_files();
+            }
+        } else {
+            std::cerr << "LogFiles::get_entries failed: " << get_entries_result.first << std::endl;
+            return 1;
+        }
+    }
+
+    OnExit Connected {
+    }
+
+    OnEnter DownloadingLogFiles {
+    }
+
+    OnExit DownloadingLogFiles {
+    }
+
+    OnEnter RemovingLogFiles {
+    }
+
+    OnExit RemovingLogFiles {
+    }
+
+    Transition {
+        InitialState -> DiscoveringSystem when NEW_SYSTEM_DISCOVERED
+    }
+
+    Transition {
+        DiscoveringSystem -> Connected when NEW_SYSTEM_DISCOVERED
+    }
+
+    Transition {
+        DiscoveringSystem -> InitialState when CONNECTION_FAILED
+    }
+
+    Transition {
+        Connected -> DownloadingLogFiles when GET_ENTRIES_SUCCESS
+    }
+
+    Transition {
+        Connected -> InitialState when GET_ENTRIES_FAILURE
+    }
+
+    Transition {
+        DownloadingLogFiles -> DownloadingLogFiles when GET_ENTRIES_SUCCESS
+    }
+
+    Transition {
+        DownloadingLogFiles -> RemovingLogFiles when GET_ENTRIES_FAILURE && remove_log_files
+    }
+
+    Transition {
+        DownloadingLogFiles -> InitialState when DOWNLOAD_FAILURE
+    }
+
+    Transition {
+        RemovingLogFiles -> DownloadingLogFiles when GET_ENTRIES_SUCCESS
+    }
+
+    Transition {
+        RemovingLogFiles -> InitialState
+    }
+}

@@ -1,0 +1,250 @@
+State Machine Description:
+- States: 
+  - Waiting to discover system
+  - Discovered autopilot
+  - System ready
+  - Creating and uploading mission
+  - Uploading mission
+  - Arming
+  - Armed
+  - Pausing mission
+  - Mission paused
+  - Commanding RTL
+  - Commanded RTL
+  - Disarmed
+
+- Events:
+  - New system discovered
+  - Health all OK
+  - Mission status update
+  - Pausing mission
+  - Command RTL
+  - Telemetry armed
+
+- Transitions:
+  - Waiting to discover system -> Discovered autopilot (on new system discovered)
+  - Discovered autopilot -> System ready (on health all OK)
+  - System ready -> Creating and uploading mission
+  - Creating and uploading mission -> Uploading mission
+  - Uploading mission -> Arming (on mission upload success)
+  - Arming -> Armed (on arm success)
+  - Armed -> Pausing mission (on mission progress >= 2)
+  - Pausing mission -> Mission paused (on pause mission success)
+  - Mission paused -> Commanding RTL (after 5 seconds)
+  - Commanding RTL -> Commanded RTL (on return to launch success)
+  - Commanded RTL -> Disarmed (on telemetry disarmed)
+
+C Code:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
+
+// Define states
+typedef enum {
+    STATE_WAITING_TO_DISCOVER_SYSTEM,
+    STATE_DISCOVERED_AUTOPILOT,
+    STATE_SYSTEM_READY,
+    STATE_CREATING_AND_UPLOADING_MISSION,
+    STATE_UPLOADING_MISSION,
+    STATE_ARMING,
+    STATE_ARMED,
+    STATE_PAUSING_MISSION,
+    STATE_MISSION_PAUSED,
+    STATE_COMMANDING_RTL,
+    STATE_COMMANDED_RTL,
+    STATE_DISARMED
+} State;
+
+// Define events
+typedef enum {
+    EVENT_NEW_SYSTEM_DISCOVERED,
+    EVENT_HEALTH_ALL_OK,
+    EVENT_MISSION_STATUS_UPDATE,
+    EVENT_PAUSING_MISSION,
+    EVENT_COMMAND_RTL,
+    EVENT_TELEMETRY_ARMED
+} Event;
+
+// Declare state machine functions
+void handle_state_waiting_to_discover_system(Event event);
+void handle_state_discovered_autopilot(Event event);
+void handle_state_system_ready(Event event);
+void handle_state_creating_and_uploading_mission(Event event);
+void handle_state_uploading_mission(Event event);
+void handle_state_arming(Event event);
+void handle_state_armed(Event event);
+void handle_state_pausing_mission(Event event);
+void handle_state_mission_paused(Event event);
+void handle_state_commanding_rtl(Event event);
+void handle_state_commanded_rtl(Event event);
+void handle_state_disarmed(Event event);
+
+// Declare state machine transition function
+void state_machine_transition(State current_state, Event event);
+
+// Define current state variable
+State current_state = STATE_WAITING_TO_DISCOVER_SYSTEM;
+
+// Define event handling function
+void handle_event(Event event)
+{
+    state_machine_transition(current_state, event);
+}
+
+// Implementation of state machine functions
+
+void handle_state_waiting_to_discover_system(Event event)
+{
+    if (event == EVENT_NEW_SYSTEM_DISCOVERED) {
+        current_state = STATE_DISCOVERED_AUTOPILOT;
+        printf("Transition: Waiting to discover system -> Discovered autopilot\n");
+    }
+}
+
+void handle_state_discovered_autopilot(Event event)
+{
+    if (event == EVENT_HEALTH_ALL_OK) {
+        current_state = STATE_SYSTEM_READY;
+        printf("Transition: Discovered autopilot -> System ready\n");
+    }
+}
+
+void handle_state_system_ready(Event event)
+{
+    if (event == EVENT_MISSION_STATUS_UPDATE) {
+        current_state = STATE_CREATING_AND_UPLOADING_MISSION;
+        printf("Transition: System ready -> Creating and uploading mission\n");
+    }
+}
+
+void handle_state_creating_and_uploading_mission(Event event)
+{
+    if (event == EVENT_TELEMETRY_ARMED) {
+        current_state = STATE_UPLOADING_MISSION;
+        printf("Transition: Creating and uploading mission -> Uploading mission\n");
+    }
+}
+
+void handle_state_uploading_mission(Event event)
+{
+    if (event == EVENT_MISSION_STATUS_UPDATE) {
+        current_state = STATE_ARMING;
+        printf("Transition: Uploading mission -> Arming\n");
+    }
+}
+
+void handle_state_arming(Event event)
+{
+    if (event == EVENT_MISSION_STATUS_UPDATE) {
+        current_state = STATE_ARMED;
+        printf("Transition: Arming -> Armed\n");
+    }
+}
+
+void handle_state_armed(Event event)
+{
+    if (event == EVENT_PAUSING_MISSION) {
+        current_state = STATE_PAUSING_MISSION;
+        printf("Transition: Armed -> Pausing mission\n");
+    }
+}
+
+void handle_state_pausing_mission(Event event)
+{
+    if (event == EVENT_MISSION_STATUS_UPDATE) {
+        current_state = STATE_MISSION_PAUSED;
+        printf("Transition: Pausing mission -> Mission paused\n");
+    }
+}
+
+void handle_state_mission_paused(Event event)
+{
+    if (event == EVENT_COMMAND_RTL) {
+        current_state = STATE_COMMANDING_RTL;
+        printf("Transition: Mission paused -> Commanding RTL\n");
+    }
+}
+
+void handle_state_commanding_rtl(Event event)
+{
+    if (event == EVENT_COMMANDED_RTL) {
+        current_state = STATE_COMMANDED_RTL;
+        printf("Transition: Commanding RTL -> Commanded RTL\n");
+    }
+}
+
+void handle_state_commanded_rtl(Event event)
+{
+    if (event == EVENT_TELEMETRY_ARMED) {
+        current_state = STATE_DISARMED;
+        printf("Transition: Commanded RTL -> Disarmed\n");
+    }
+}
+
+void handle_state_disarmed(Event event)
+{
+    // No more transitions from disarmed state
+}
+
+void state_machine_transition(State current_state, Event event)
+{
+    switch (current_state) {
+        case STATE_WAITING_TO_DISCOVER_SYSTEM:
+            handle_state_waiting_to_discover_system(event);
+            break;
+        case STATE_DISCOVERED_AUTOPILOT:
+            handle_state_discovered_autopilot(event);
+            break;
+        case STATE_SYSTEM_READY:
+            handle_state_system_ready(event);
+            break;
+        case STATE_CREATING_AND_UPLOADING_MISSION:
+            handle_state_creating_and_uploading_mission(event);
+            break;
+        case STATE_UPLOADING_MISSION:
+            handle_state_uploading_mission(event);
+            break;
+        case STATE_ARMING:
+            handle_state_arming(event);
+            break;
+        case STATE_ARMED:
+            handle_state_armed(event);
+            break;
+        case STATE_PAUSING_MISSION:
+            handle_state_pausing_mission(event);
+            break;
+        case STATE_MISSION_PAUSED:
+            handle_state_mission_paused(event);
+            break;
+        case STATE_COMMANDING_RTL:
+            handle_state_commanding_rtl(event);
+            break;
+        case STATE_COMMANDED_RTL:
+            handle_state_commanded_rtl(event);
+            break;
+        case STATE_DISARMED:
+            handle_state_disarmed(event);
+            break;
+    }
+}
+
+int main(void)
+{
+    // Simulate events
+    handle_event(EVENT_NEW_SYSTEM_DISCOVERED);
+    handle_event(EVENT_HEALTH_ALL_OK);
+    handle_event(EVENT_MISSION_STATUS_UPDATE);
+    handle_event(EVENT_TELEMETRY_ARMED);
+    handle_event(EVENT_MISSION_STATUS_UPDATE);
+    handle_event(EVENT_PAUSING_MISSION);
+    handle_event(EVENT_MISSION_STATUS_UPDATE);
+    handle_event(EVENT_COMMAND_RTL);
+    handle_event(EVENT_COMMANDED_RTL);
+    handle_event(EVENT_TELEMETRY_ARMED);
+
+    return 0;
+}
+```

@@ -1,0 +1,166 @@
+State machine description:
+
+States:
+1. Disconnected
+- Initial state when the system is not connected to any autopilot.
+
+2. Connecting
+- The system is attempting to establish a connection to an autopilot.
+
+3. Connected
+- The system has established a connection to an autopilot.
+
+4. Ready
+- The system is ready to perform offboard control.
+
+Events:
+1. Disconnected
+- The connection to the autopilot is lost.
+
+2. Connected
+- The connection to the autopilot is established.
+
+3. SystemReady
+- The system is ready to perform offboard control.
+
+4. OffboardCompleted
+- Offboard control has been successfully completed.
+
+5. OffboardFailed
+- Offboard control has failed to complete.
+
+Transitions:
+1. Disconnected -> Connecting
+- When the system is initially disconnected, it transitions to the connecting state.
+
+2. Connecting -> Connected
+- When the connection to the autopilot is successfully established, it transitions to the connected state.
+
+3. Connected -> Ready
+- When the system is ready to perform offboard control, it transitions to the ready state.
+
+4. Ready -> Connected
+- If the connection to the autopilot is lost while in the ready state, it transitions back to the connected state.
+
+5. Ready -> OffboardCompleted
+- When offboard control has been successfully completed, it transitions to the offboard completed state.
+
+6. Ready -> OffboardFailed
+- If offboard control fails to complete, it transitions to the offboard failed state.
+
+C code:
+
+```c
+#include <stdio.h>
+#include <stdbool.h>
+
+enum State {
+    DISCONNECTED,
+    CONNECTING,
+    CONNECTED,
+    READY,
+    OFFBOARD_COMPLETED,
+    OFFBOARD_FAILED
+};
+
+enum Event {
+    DISCONNECTED_EVENT,
+    CONNECTED_EVENT,
+    SYSTEM_READY_EVENT,
+    OFFBOARD_COMPLETED_EVENT,
+    OFFBOARD_FAILED_EVENT
+};
+
+enum State current_state = DISCONNECTED;
+
+void transition(enum Event event) {
+    switch (current_state) {
+        case DISCONNECTED:
+            if (event == CONNECTING_EVENT) {
+                current_state = CONNECTING;
+            }
+            break;
+        case CONNECTING:
+            if (event == CONNECTED_EVENT) {
+                current_state = CONNECTED;
+            }
+            break;
+        case CONNECTED:
+            if (event == SYSTEM_READY_EVENT) {
+                current_state = READY;
+            }
+            break;
+        case READY:
+            if (event == CONNECTED_EVENT) {
+                current_state = CONNECTED;
+            } else if (event == OFFBOARD_COMPLETED_EVENT) {
+                current_state = OFFBOARD_COMPLETED;
+            } else if (event == OFFBOARD_FAILED_EVENT) {
+                current_state = OFFBOARD_FAILED;
+            }
+            break;
+        case OFFBOARD_COMPLETED:
+        case OFFBOARD_FAILED:
+            // No transitions from these states
+            break;
+    }
+}
+
+int main() {
+    enum Event event;
+    
+    while (true) {
+        // Run the event loop and handle events
+        switch (current_state) {
+            case DISCONNECTED:
+                // Handle disconnected state
+                // ...
+                // Transition to connecting state
+                event = CONNECTING_EVENT;
+                transition(event);
+                break;
+            case CONNECTING:
+                // Handle connecting state
+                // ...
+                // Transition to connected state
+                event = CONNECTED_EVENT;
+                transition(event);
+                break;
+            case CONNECTED:
+                // Handle connected state
+                // ...
+                // Transition to ready state
+                event = SYSTEM_READY_EVENT;
+                transition(event);
+                break;
+            case READY:
+                // Handle ready state
+                // ...
+                // Transition to connected state on connection loss
+                event = CONNECTED_EVENT;
+                transition(event);
+                
+                // Transition to offboard completed state
+                event = OFFBOARD_COMPLETED_EVENT;
+                transition(event);
+                
+                // Transition to offboard failed state
+                event = OFFBOARD_FAILED_EVENT;
+                transition(event);
+                
+                break;
+            case OFFBOARD_COMPLETED:
+                // Handle offboard completed state
+                // ...
+                break;
+            case OFFBOARD_FAILED:
+                // Handle offboard failed state
+                // ...
+                break;
+        }
+    }
+    
+    return 0;
+}
+```
+Note: This is a simplified state machine implementation and may require additional code to handle events and actions specific to each state.

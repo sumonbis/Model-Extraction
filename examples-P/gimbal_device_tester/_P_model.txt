@@ -1,0 +1,21 @@
+The equivalent P code representation of the state machine is as follows:
+
+```p
+type State = enum { Idle, Testing }
+type Event = enum { StartTest, StopTest }
+
+var current_state: State = Idle
+
+procedure handle_event(event: Event)
+begin
+    if current_state == Idle and event == StartTest then
+        current_state := Testing
+        start_gimbal_testing()
+    else if current_state == Testing and event == StopTest then
+        current_state := Idle
+        stop_gimbal_testing()
+    end
+end
+```
+
+Please note that the `start_gimbal_testing` and `stop_gimbal_testing` procedures need to be implemented separately according to your specific requirements.

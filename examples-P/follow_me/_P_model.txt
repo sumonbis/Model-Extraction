@@ -1,0 +1,70 @@
+The translated P code is as follows:
+
+```P
+const STATE_IDLE = 1;
+const STATE_SYSTEM_READY = 2;
+const STATE_ARMED = 3;
+const STATE_IN_AIR = 4;
+const STATE_FOLLOWING = 5;
+const STATE_LANDED = 6;
+const STATE_DISARMED = 7;
+
+const EVENT_NEW_SYSTEM_DISCOVERED = 1;
+const EVENT_TELEMETRY_HEALTH_OK = 2;
+const EVENT_ARMING_SUCCESS = 3;
+const EVENT_SET_RATE_POSITION_SUCCESS = 4;
+const EVENT_TAKEOFF_SUCCESS = 5;
+const EVENT_SET_FOLLOW_ME_CONFIG_SUCCESS = 6;
+const EVENT_LOCATION_UPDATES_REQUESTED = 7;
+const EVENT_LOCATION_PROVIDER_NOT_RUNNING = 8;
+const EVENT_STOP_FOLLOW_ME_SUCCESS = 9;
+const EVENT_LAND_SUCCESS = 10;
+const EVENT_IN_AIR_STATUS_FALSE = 11;
+const EVENT_ARMED_STATUS_FALSE = 12;
+
+automaton DroneStateMachine {
+    states {
+        Idle,
+        SystemReady,
+        Armed,
+        InAir,
+        Following,
+        Landed,
+        Disarmed
+    }
+
+    events {
+        NewSystemDiscovered,
+        TelemetryHealthOk,
+        ArmingSuccess,
+        SetRatePositionSuccess,
+        TakeoffSuccess,
+        SetFollowMeConfigSuccess,
+        LocationUpdatesRequested,
+        LocationProviderNotRunning,
+        StopFollowMeSuccess,
+        LandSuccess,
+        InAirStatusFalse,
+        ArmedStatusFalse
+    }
+
+    transitions {
+        Idle -> SystemReady { NewSystemDiscovered }
+        SystemReady -> Armed { TelemetryHealthOk }
+        Armed -> SystemReady { ArmingSuccess }
+        SystemReady -> InAir { SetRatePositionSuccess }
+        InAir -> Following { TakeoffSuccess }
+        Following -> InAir { SetFollowMeConfigSuccess }
+        Following -> Idle { LocationProviderNotRunning }
+        InAir -> Landed { LandSuccess }
+        Landed -> Disarmed { InAirStatusFalse }
+        Disarmed -> Idle { ArmedStatusFalse }
+    }
+}
+
+-- Initial state
+initialstate Idle;
+
+```
+
+Note: The P code provided here represents only the state machine description and does not include the implementation of event handling and transition logic. You will need to complete the implementation in the P language based on your requirements.

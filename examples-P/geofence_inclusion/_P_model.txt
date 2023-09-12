@@ -1,0 +1,80 @@
+The translated P code follows:
+
+```
+state Waiting {
+    action on_entry() {
+        prints("Waiting to discover system...\n");
+    }
+
+    event NewSystemDiscovered {
+        guard none();
+        action {
+            prints("Discovered autopilot\n");
+            cancel_event();
+        }
+        target DiscoveredAutopilot;
+    }
+}
+
+state DiscoveredAutopilot {
+    event SystemHealthOk {
+        guard none();
+        action {
+            unsubscription from NewSystemDiscovered;
+            set_target_system(get_system(mavsdk));
+        }
+        target SystemReady;
+    }
+}
+
+state SystemReady {
+    event None {
+        guard none();
+        action none();
+        target CreatingAndUploadingGeofence;
+    }
+}
+
+state CreatingAndUploadingGeofence {
+    event None {
+        guard none();
+        action {
+            prints("System ready\n");
+            prints("Creating and uploading geofence\n");
+        }
+        target End;
+    }
+}
+
+state End {
+    action none();
+    target End;
+}
+
+state_machine {
+    initial_state Waiting;
+    state Waiting;
+    state DiscoveredAutopilot;
+    state SystemReady;
+    state CreatingAndUploadingGeofence;
+    state End;
+
+    transition Waiting {
+        discovered(NewSystemDiscovered) => DiscoveredAutopilot
+    }
+
+    transition DiscoveredAutopilot {
+        always() => SystemReady
+    }
+
+    transition SystemReady {
+        always() => CreatingAndUploadingGeofence
+    }
+
+    transition CreatingAndUploadingGeofence {
+        always() => End
+    }
+}
+```
+
+Please note that the P language syntax may differ depending on the specific P modeling tools being used.

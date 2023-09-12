@@ -1,0 +1,77 @@
+State Machine Description:
+
+States:
+1. Initialization
+2. FTPServerSetup
+3. Running
+
+Events:
+- Start
+- ConnectionSetupSuccess
+- FTPServerSetupComplete
+
+Transitions:
+1. Initialization -> FTPServerSetup:
+   - Event: ConnectionSetupSuccess
+   - Action: Set up FTP server
+
+2. FTPServerSetup -> Running:
+   - Event: FTPServerSetupComplete
+   - Action: None
+
+3. Running:
+   - No events or actions needed as the program stays in this state indefinitely.
+
+P Code:
+
+```cpp
+def usage(program_name):
+    print("Usage: {} <remote_address> <port> <root_directory>".format(program_name))
+
+framework MavsdkFramework
+{
+    action Initialize():
+        print("Initializing Mavsdk library")
+        mavsdk.setup_udp_remote(remote_address, int(port))
+
+    action SetupFTPServer():
+        print("Setting up FTP server with root directory {}".format(root_directory))
+        ftp_server.set_root_directory(root_directory)
+
+    transition Initialization --> FTPServerSetup:
+        event ConnectionSetupSuccess
+        action SetupFTPServer()
+
+    transition FTPServerSetup --> Running:
+        event FTPServerSetupComplete
+
+    transition Running --> Running
+}
+
+program MAVLinkFTPServerProgram(remote_address, port, root_directory):
+
+    state Initialization
+    state FTPServerSetup
+    state Running
+
+    event Start
+
+    action usage(program_name):
+        print("Usage: {} <remote_address> <port> <root_directory>".format(program_name))
+
+    Initialize(remote_address, port):
+
+    on Initialize:
+        transition Initialization --> FTPServerSetup
+
+    on ConnectionSetupSuccess:
+        transition Initialization --> FTPServerSetup
+
+    on FTPServerSetupComplete:
+        transition FTPServerSetup --> Running
+
+    on Start:
+        transition Initialization --> FTPServerSetup
+
+    on 1s:
+        transition Running --> Running

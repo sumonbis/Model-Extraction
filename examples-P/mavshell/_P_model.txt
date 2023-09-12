@@ -1,0 +1,110 @@
+P Code:
+```p
+type State is Idle | AutopilotDiscovered
+
+type Event is ConnectionEstablished | AutopilotDiscovered | ExitCommandReceived
+
+type System is record
+    shared : bool
+end
+
+type Shell is record
+    system : System
+end
+
+type ProgramState is record
+    state : State
+    mavsdk : Mavsdk
+    system : System
+end
+
+var program_state : ProgramState
+
+procedure run_interactive_shell(shell : Shell)
+    var state : State
+    state := AutopilotDiscovered
+
+    while true do
+        var command : string
+        read(command)
+
+        if command = "exit" then
+            // Transition to Idle state upon receiving ExitCommandReceived event.
+            state := Idle
+            exit
+        end
+
+        send(shell, command)
+        // System remains in AutopilotDiscovered state and continues running the interactive shell.
+        state := AutopilotDiscovered
+    end
+
+    writeln()
+end
+
+procedure get_system()
+    writeln("Waiting to discover system...")
+    program_state.mavsdk.subscribe_on_new_system(lambda
+        var system : System
+        system := mavsdk.systems.back()
+
+        if system.has_autopilot then
+            writeln("Discovered autopilot")
+
+            // Unsubscribe again as we only want to find one system.
+            mavsdk.subscribe_on_new_system(None)
+            program_state.system := system
+            program_state.state := AutopilotDiscovered
+        end
+    end)
+
+    if wait program_state.fut for 3 seconds then
+        writeln("No autopilot found.")
+        program_state.system := None
+        program_state.state := Idle
+    else
+        writeln("Autopilot found.")
+    end
+end
+
+procedure main(argc : int, argv : string[])
+    if argc != 2 then
+        usage(argv[0])
+        exit 1
+    end
+
+    program_state.mavsdk := Mavsdk()
+
+    connection_result := add_any_connection(program_state.mavsdk, argv[1])
+
+    if connection_result != ConnectionResult.Success then
+        writeln("Connection failed: ", connection_result)
+        exit 1
+    end
+
+    get_system()
+
+    if program_state.system = None then
+        exit 1
+    end
+
+    run_interactive_shell(program_state.system)
+
+    exit 0
+end
+
+procedure usage(bin_name : string)
+    writeln("Usage : ", bin_name, " <connection_url>")
+    writeln("Connection URL format should be :")
+    writeln(" For TCP : tcp://[server_host][:server_port]")
+    writeln(" For UDP : udp://[bind_host][:bind_port]")
+    writeln(" For Serial : serial:///path/to/serial/dev[:baudrate]")
+    writeln("For example, to connect to the simulator use URL: udp://:14540")
+end
+
+// Declare Mavsdk and ConnectionResult types and functions.
+
+// Declare Mavsdk and ConnectionResult types and functions.
+
+// Declare Mavsdk and ConnectionResult types and functions.
+```

@@ -1,0 +1,205 @@
+State Machine Description:
+
+States:
+1. Idle: Initial state, waiting for systems to be discovered.
+2. Discovered: All systems have been discovered.
+3. MissionImporting: Importing mission items from QGC plan.
+4. MissionUploading: Uploading mission to the vehicle.
+5. VehicleArming: Arming the vehicle.
+6. MissionStarting: Starting the mission.
+7. MissionInProgress: Mission is in progress.
+8. MissionCompleted: Mission is completed.
+
+Events:
+1. NewSystemDiscovered: A new system is discovered by the SDK.
+2. MissionImported: Mission items are successfully imported from the QGC plan.
+3. MissionUploaded: Mission is successfully uploaded to the vehicle.
+4. VehicleArmed: Vehicle is successfully armed.
+5. MissionStarted: Mission is successfully started.
+6. MissionEnded: Mission ends with vehicle being disarmed.
+
+Transitions:
+1. On NewSystemDiscovered:
+   - Transition from Idle to Discovered state.
+   - Transition from Discovered to MissionImporting state.
+
+2. On MissionImported:
+   - Transition from MissionImporting to MissionUploading state.
+
+3. On MissionUploaded:
+   - Transition from MissionUploading to VehicleArming state.
+
+4. On VehicleArmed:
+   - Transition from VehicleArming to MissionStarting state.
+
+5. On MissionStarted:
+   - Transition from MissionStarting to MissionInProgress state.
+
+6. On MissionEnded:
+   - Transition from MissionInProgress to MissionCompleted state.
+
+C Code:
+
+```cpp
+#include <mavsdk/mavsdk.h>
+#include <mavsdk/plugins/action/action.h>
+#include <mavsdk/plugins/mission_raw/mission_raw.h>
+#include <mavsdk/plugins/telemetry/telemetry.h>
+
+#include <cstdint>
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <functional>
+#include <future>
+#include <memory>
+#include <string>
+#include <ctime>
+#include <fstream>
+
+using namespace mavsdk;
+using std::this_thread::sleep_for;
+using std::chrono::seconds;
+
+enum State {
+    Idle,
+    Discovered,
+    MissionImporting,
+    MissionUploading,
+    VehicleArming,
+    MissionStarting,
+    MissionInProgress,
+    MissionCompleted
+};
+
+static void complete_mission(std::string qgc_plan, std::shared_ptr<System> system);
+
+static std::string getCurrentTimeString()
+{
+    time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::string s(30, '\0');
+    strftime(&s[0], s.size(), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+    return s;
+}
+
+int main(int argc, char* argv[])
+{
+    State state = Idle;
+
+    // ... Rest of the code ...
+
+    mavsdk.subscribe_on_new_system([&mavsdk, &num_systems_discovered, &state]() {
+        const auto systems = mavsdk.systems();
+
+        if (systems.size() > num_systems_discovered) {
+            std::cout << "Discovered system\n";
+            num_systems_discovered = systems.size();
+
+            if (state == Idle) {
+                state = Discovered;
+            }
+        }
+    });
+
+    // ... Rest of the code ...
+
+    for (auto system : mavsdk.systems()) {
+        std::thread t(&complete_mission, argv[planFile_provided], system);
+        threads.push_back(
+            std::move(t)); // Instead of copying, move t into the vector (less expensive)
+        planFile_provided += 1;
+        sleep_for(seconds(1));
+
+        if (state == Discovered) {
+            state = MissionImporting;
+        }
+    }
+
+    while (state != MissionCompleted) {
+        switch (state) {
+            case MissionImporting:
+                // Import mission from QGC plan
+                // ...
+
+                if (import_res.first == MissionRaw::Result::Success) {
+                    state = MissionUploading;
+                }
+
+                break;
+
+            case MissionUploading:
+                // Upload mission to the vehicle
+                // ...
+
+                if (upload_result == MissionRaw::Result::Success) {
+                    state = VehicleArming;
+                }
+
+                break;
+
+            case VehicleArming:
+                // Arm the vehicle
+                // ...
+
+                if (arm_result == Action::Result::Success) {
+                    state = MissionStarting;
+                }
+
+                break;
+
+            case MissionStarting:
+                // Start the mission
+                // ...
+
+                if (start_result == MissionRaw::Result::Success) {
+                    state = MissionInProgress;
+                }
+
+                break;
+
+            case MissionInProgress:
+                // Wait for mission to end
+                // ...
+
+                if (!telemetry.armed()) {
+                    state = MissionCompleted;
+                }
+
+                break;
+        }
+
+        sleep_for(seconds(1));
+    }
+
+    // ... Rest of the code ...
+
+    return 0;
+}
+
+void complete_mission(std::string qgc_plan, std::shared_ptr<System> system)
+{
+    // ... Rest of the code ...
+
+    while (telemetry.health_all_ok() != true) {
+        // Wait for vehicle to be ready to arm
+        // ...
+    }
+
+    // Import mission items from QGC plan
+    // ...
+
+    // Upload mission to the vehicle
+    // ...
+
+    // Arm the vehicle
+    // ...
+
+    // Start the mission
+    // ...
+
+    // Wait for mission to end
+    // ...
+
+    // ... Rest of the code ...
+}
+```
