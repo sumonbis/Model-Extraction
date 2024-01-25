@@ -1,0 +1,148 @@
+translates to:
+
+```p
+state WAIT_FOR_CONNECTION;
+state DISCOVER_SYSTEM;
+state ARMING;
+state TAKEOFF;
+state HOVER;
+state LANDING;
+state CHECK_LANDED;
+state FINISHED;
+
+event CONNECTION_SUCCESS;
+event CONNECTION_FAILURE;
+event SYSTEM_DISCOVERED;
+event ARM_SUCCESS;
+event ARM_FAILURE;
+event TAKEOFF_SUCCESS;
+event TAKEOFF_FAILURE;
+event HOVER_TIMEOUT;
+event LAND_SUCCESS;
+event LAND_FAILURE;
+event CHECK_LANDED_SUCCESS;
+event CHECK_LANDED_FAILURE;
+
+action handle_event(current_state: int, event: int) {
+    do
+        :: WAIT_FOR_CONNECTION ->
+          if(event == CONNECTION_SUCCESS) {
+              current_state = DISCOVER_SYSTEM;
+          } else if(event == CONNECTION_FAILURE) {
+              // Handle failure
+          };
+    [] DISCOVER_SYSTEM ->
+          if(event == SYSTEM_DISCOVERED) {
+              current_state = ARMING;
+          };
+    [] ARMING ->
+          if(event == ARM_SUCCESS) {
+              current_state = TAKEOFF;
+          } else if(event == ARM_FAILURE) {
+              // Handle failure
+          };
+    [] TAKEOFF ->
+          if(event == TAKEOFF_SUCCESS) {
+              current_state = HOVER;
+          } else if(event == TAKEOFF_FAILURE) {
+              // Handle failure
+          };
+    [] HOVER ->
+          if(event == HOVER_TIMEOUT) {
+              current_state = LANDING;
+          };
+    [] LANDING ->
+          if(event == LAND_SUCCESS) {
+              current_state = CHECK_LANDED;
+          } else if(event == LAND_FAILURE) {
+              // Handle failure
+          };
+    [] CHECK_LANDED ->
+          if(event == CHECK_LANDED_SUCCESS) {
+              current_state = FINISHED;
+          } else if(event == CHECK_LANDED_FAILURE) {
+              // Handle failure
+          };
+    od;
+}
+
+state current_state = WAIT_FOR_CONNECTION;
+do
+    :: current_state != FINISHED ->
+        d_step {
+            // Event handling based on current state
+            do
+                :: current_state == WAIT_FOR_CONNECTION -> {
+                    // Wait for connection success or failure event
+                    do
+                        :: event == CONNECTION_SUCCESS -> handle_event(current_state, event);
+                        :: event == CONNECTION_FAILURE -> handle_event(current_state, event);
+                    od;
+                };
+                :: current_state == DISCOVER_SYSTEM -> {
+                    // Wait for system discovery event
+                    do
+                        :: event == SYSTEM_DISCOVERED -> handle_event(current_state, event);
+                    od;
+                };
+                :: current_state == ARMING -> {
+                    // Wait for arm success or failure event
+                    do
+                        :: event == ARM_SUCCESS -> handle_event(current_state, event);
+                        :: event == ARM_FAILURE -> handle_event(current_state, event);
+                    od;
+                };
+                :: current_state == TAKEOFF -> {
+                    // Wait for takeoff success or failure event
+                    do
+                        :: event == TAKEOFF_SUCCESS -> handle_event(current_state, event);
+                        :: event == TAKEOFF_FAILURE -> handle_event(current_state, event);
+                    od;
+                };
+                :: current_state == HOVER -> {
+                    // Wait for hover timeout event
+                    do
+                        :: event == HOVER_TIMEOUT -> handle_event(current_state, event);
+                    od;
+                };
+                :: current_state == LANDING -> {
+                    // Wait for land success or failure event
+                    do
+                        :: event == LAND_SUCCESS -> handle_event(current_state, event);
+                        :: event == LAND_FAILURE -> handle_event(current_state, event);
+                    od;
+                };
+                :: current_state == CHECK_LANDED -> {
+                    // Wait for check landed success or failure event
+                    do
+                        :: event == CHECK_LANDED_SUCCESS -> handle_event(current_state, event);
+                        :: event == CHECK_LANDED_FAILURE -> handle_event(current_state, event);
+                    od;
+                };
+            od;
+        };
+od;
+
+WAIT_FOR_CONNECTION = 0;
+DISCOVER_SYSTEM = 1;
+ARMING = 2;
+TAKEOFF = 3;
+HOVER = 4;
+LANDING = 5;
+CHECK_LANDED = 6;
+FINISHED = 7;
+
+CONNECTION_SUCCESS = 0;
+CONNECTION_FAILURE = 1;
+SYSTEM_DISCOVERED = 2;
+ARM_SUCCESS = 3;
+ARM_FAILURE = 4;
+TAKEOFF_SUCCESS = 5;
+TAKEOFF_FAILURE = 6;
+HOVER_TIMEOUT = 7;
+LAND_SUCCESS = 8;
+LAND_FAILURE = 9;
+CHECK_LANDED_SUCCESS = 10;
+CHECK_LANDED_FAILURE = 11;
+
+```

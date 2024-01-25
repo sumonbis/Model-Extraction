@@ -126,7 +126,15 @@ def truncate_to_token_limit(text, token_limit):
     return truncated_text
 
 def summarize_to_state_machine(file_name):
-    arch_cmd = 'Write a state machine description and that in the C code for the following source code. Identify the states, events, and transitions using sender and receiver:\n'
+    arch_cmd = 'Write a state machine description using the following formal grammar for the source code bellow. Identify the states, transitions, actions and populate the grammar \ngrammaer:\n<state_machine> ::= <states> <transitions>\n<states> ::= "States:" <state_list>\n<state_list> ::= <state_name> ("," <state_list>)?\n<state_name> ::= <identifier>\n<transitions> ::= "Transitions:" <transition_list>\n<transition_list> ::= <transition> ("," <transition_list>)?\n<transition> ::= <state_name> " -> " <state_name> " [ " <action> " ]"\n<action> ::= <identifier>\n\nsource code:\n'
+    code = load_query(file_name)
+    code = truncate_to_token_limit(code, 3000)
+    print('Generating summary ...')
+    arch_desc = get_answer(arch_cmd + code)
+    return arch_desc
+
+def summarize_to_state_machine(file_name):
+    arch_cmd = 'Write a state machine description in C for the following source code. Then explain the mapping between the source code and the generated C code. \n'
     code = load_query(file_name)
     code = truncate_to_token_limit(code, 3000)
     print('Generating summary ...')
