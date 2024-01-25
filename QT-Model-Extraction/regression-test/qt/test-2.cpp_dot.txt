@@ -1,0 +1,12 @@
+digraph signal_slot_connections {
+    Repeater0 [label="No man,0"]
+    Repeater1 [label=",0"]
+    Repeater2 [label=",0"]
+
+    Repeater0 -> Repeater1 [label="connect"]
+    Repeater1 -> Repeater2 [label="connect"]
+    Repeater0 -> Repeater2 [label="connect"]
+    Repeater1 -> Repeater2 [label="connect"]
+    Repeater1 -> Repeater2 [label="connect"]
+    Repeater2 -> Repeater1 [label="disconnect"]
+}

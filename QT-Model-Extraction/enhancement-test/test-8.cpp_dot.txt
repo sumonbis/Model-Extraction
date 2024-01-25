@@ -1,0 +1,17 @@
+digraph signal_slots {
+	node [shape=box];
+	
+	Repeater_0 [label="0\nNo man"];
+	Repeater_1 [label="1\n"];
+	Repeater_2 [label="2\n"];
+	Repeater_3 [label="3\n"];
+	Repeater_4 [label="4\n"];
+	Repeater_4999 [label="4999\n"];
+	
+	Repeater_0 -> Repeater_1 [label="connect"];
+	Repeater_1 -> Repeater_2 [label="connect"];
+	Repeater_2 -> Repeater_3 [label="connect"];
+	Repeater_3 -> Repeater_4 [label="connect"];
+	Repeater_4 -> Repeater_4999 [label="connect"];
+	Repeater_4999 -> Repeater_0 [label="connect"];
+}

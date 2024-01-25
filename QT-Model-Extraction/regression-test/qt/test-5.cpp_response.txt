@@ -1,0 +1,26 @@
+The signal-slot connections between objects in the code are as follows:
+
+- a(signalRetransmit) -> b(simpleRetransmit)
+- b(signalRetransmit) -> c(simpleRetransmit)
+- c(signalRetransmit) -> d(simpleRetransmit)
+- d(signalRetransmit) -> e(simpleRetransmit)
+- e(signalRetransmit) -> f(simpleRetransmit)
+- f(signalRetransmit) -> g(simpleRetransmit)
+- g(signalRetransmit) -> h(simpleRetransmit)
+- a(signalRetransmit) -> h(simpleRetransmit)
+
+The graph in DOT language representing these connections is:
+
+```
+digraph SignalSlotConnections {
+    "a (0, 'a')" -> "b (0, 'b')" [label="connect"];
+    "b (0, 'b')" -> "c (0, 'c')" [label="connect"];
+    "c (0, 'c')" -> "d (0, 'd')" [label="connect"];
+    "d (0, 'd')" -> "e (0, 'e')" [label="connect"];
+    "e (0, 'e')" -> "f (0, 'f')" [label="connect"];
+    "f (0, 'f')" -> "g (0, 'g')" [label="connect"];
+    "g (0, 'g')" -> "h (0, 'h')" [label="connect"];
+    "a (0, 'a')" -> "h (0, 'h')" [label="connect"];
+    "a (0, 'a')" -> "b (0, 'b')" [label="disconnect"];
+}
+```

@@ -1,0 +1,15 @@
+The signal-slot connections between the objects can be represented as a graph in DOT language as follows:
+
+```
+digraph {
+    "Repeater a\nValue: 0" -> "Repeater b\nValue: 0" [label="connect"];
+    "Repeater b\nValue: 0" -> "Repeater c\nValue: 0" [label="connect"];
+    "Repeater c\nValue: 0" -> "Repeater d\nValue: 0" [label="connect"];
+    "Repeater e\nValue: 0" -> "Repeater f\nValue: 0" [label="connect"];
+    "Repeater f\nValue: 0" -> "Repeater g\nValue: 0" [label="connect"];
+    "Repeater g\nValue: 0" -> "Repeater h\nValue: 0" [label="connect"];
+    "Repeater d\nValue: 0" -> "Repeater e\nValue: 0" [label="connect"];
+}
+```
+
+Note: I have excluded the connections that use the `disconnect` method from the graph as they are not explicitly mentioned in the code provided.

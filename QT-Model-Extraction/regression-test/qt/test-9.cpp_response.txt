@@ -1,0 +1,17 @@
+The signal-slot connections between the objects can be represented using the following graph in DOT language:
+
+```
+digraph Connections {
+    "Repeater(0,\"a\")\nValue: 0" -> "Repeater(0,\"a\")\nValue: 0" [label="connect"];
+    "Repeater(0,\"a\")\nValue: 0" -> "Repeater(0,\"a\")\nValue: 0" [label="connect"];
+    "Repeater(0,\"a\")\nValue: 0" -> "Repeater(0,\"a\")\nValue: 0" [label="connect"];
+    "Repeater(0,\"a\")\nValue: 0" -> "Repeater(0,\"a\")\nValue: 0" [label="connect"];
+}
+```
+
+Explanation:
+- The object "Repeater(0,\"a\")\nValue: 0" is connected to itself using the signal and slot "signalRetransmit" and "secondaryRetransmit" respectively.
+- The object "Repeater(0,\"a\")\nValue: 0" is also connected to itself using the signal and slot "signalSecondaryRetransmit" and "tertiaryRetransmit" respectively.
+- Each connection is represented by the "connect" label.
+
+Note: The other signal-slot connections mentioned in the code are not present in the provided function `regression_test_9()`, so they are not included in the graph.

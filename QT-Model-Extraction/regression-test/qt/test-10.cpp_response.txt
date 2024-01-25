@@ -1,0 +1,24 @@
+Based on the given code, the signal-slot connections between the objects are as follows:
+
+1. a(signalRetransmit) -> b(simpleRetransmit)
+2. b(signalRetransmit) -> a(secondaryRetransmit)
+3. a(signalSecondaryRetransmit) -> b(secondaryRetransmit)
+4. b(signalSecondaryRetransmit) -> a(tertiaryRetransmit)
+5. a(signalTertiaryRetransmit) -> b(tertiaryRetransmit)
+
+The graph in DOT language representing these connections is:
+
+```dot
+digraph connections {
+    node [shape=box, style="filled, rounded", fillcolor="white"];
+    edge [fontname="Arial"];
+
+    "Repeater(0, 'a')\nValue: 0" -> "Repeater(0, 'b')\nValue: 0" [label="connect: signalRetransmit -> simpleRetransmit"];
+    "Repeater(0, 'b')\nValue: 0" -> "Repeater(0, 'a')\nValue: 0" [label="connect: signalRetransmit -> secondaryRetransmit"];
+    "Repeater(0, 'a')\nValue: 0" -> "Repeater(0, 'b')\nValue: 0" [label="connect: signalSecondaryRetransmit -> secondaryRetransmit"];
+    "Repeater(0, 'b')\nValue: 0" -> "Repeater(0, 'a')\nValue: 0" [label="connect: signalSecondaryRetransmit -> tertiaryRetransmit"];
+    "Repeater(0, 'a')\nValue: 0" -> "Repeater(0, 'b')\nValue: 0" [label="connect: signalTertiaryRetransmit -> tertiaryRetransmit"];
+}
+```
+
+Note: The DOT graph does not show the connection method used to connect or disconnect the signals and slots as it is not explicitly mentioned in the code.

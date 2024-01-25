@@ -1,0 +1,8 @@
+digraph SignalSlotConnections {
+    node [shape = record];
+
+    b [label = "b | Value: 0"];
+    
+    b -> b [label = "connect(signalRetransmit(), simpleRetransmit())"];
+    b -> b [label = "connect(signalIncrement(), simpleIncrement())"];
+}
