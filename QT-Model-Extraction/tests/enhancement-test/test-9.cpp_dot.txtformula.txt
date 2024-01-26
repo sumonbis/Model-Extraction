@@ -1,0 +1,37 @@
+model m of Graph
+{
+    "Repeater[0]" is Node (0).
+    "Repeater[1]" is Node (1).
+    "Repeater[4989]" is Node (4989).
+    "Repeater[4990]" is Node (4990).
+    "Repeater[4991]" is Node (4991).
+    "Repeater[4992]" is Node (4992).
+    "Repeater[4993]" is Node (4993).
+    "Repeater[4994]" is Node (4994).
+    "Repeater[4995]" is Node (4995).
+    "Repeater[4996]" is Node (4996).
+    "Repeater[4997]" is Node (4997).
+    "Repeater[4998]" is Node (4998).
+    "Repeater[4999]" is Node (4999).
+    "a" is Node (2).
+    "b" is Node (3).
+    "c" is Node (4).
+
+    Edge ("Repeater[0]", "Repeater[1]").
+    Edge ("Repeater[1]", "Repeater[2]").
+    Edge ("Repeater[4989]", "Repeater[4990]").
+    Edge ("Repeater[4990]", "Repeater[4991]").
+    Edge ("Repeater[4991]", "Repeater[4992]").
+    Edge ("Repeater[4992]", "Repeater[4993]").
+    Edge ("Repeater[4993]", "Repeater[4994]").
+    Edge ("Repeater[4994]", "Repeater[4995]").
+    Edge ("Repeater[4995]", "Repeater[4996]").
+    Edge ("Repeater[4996]", "Repeater[4997]").
+    Edge ("Repeater[4997]", "Repeater[4998]").
+    Edge ("Repeater[4998]", "Repeater[4999]").
+    Edge ("Repeater[4999]", "Repeater[0]").
+    Edge ("Repeater[0]", "a").
+    Edge ("a", "b").
+    Edge ("b", "c").
+    Edge ("c", "Repeater[4999]").
+}

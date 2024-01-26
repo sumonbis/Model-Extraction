@@ -1,0 +1,13 @@
+domain Graph
+{
+  Node ::= new (id: Integer).
+  Edge ::= new (src: Node, dst: Node).
+
+  x is Node(1).
+  y is Node(2).
+  z is Node(3).
+
+  Edge(x, y).
+  Edge(y, z).
+  Edge(z, x).
+}

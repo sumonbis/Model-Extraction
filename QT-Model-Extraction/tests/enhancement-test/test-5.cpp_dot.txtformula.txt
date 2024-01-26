@@ -1,0 +1,14 @@
+model m of Graph
+{
+    Node1 is Node(1).
+    Node2 is Node(2).
+    Node3 is Node(3).
+    Node4 is Node(4).
+    Node5 is Node(5).
+
+    Edge(Node1, Node2).
+    Edge(Node2, Node3).
+    Edge(Node3, Node4).
+    Edge(Node4, Node5).
+    Edge(Node5, Node3).
+}

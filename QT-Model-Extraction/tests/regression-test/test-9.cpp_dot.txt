@@ -1,0 +1,5 @@
+digraph G {
+    "a" [label="Repeater: a"];
+    "a" -> "a" [label="connect"];
+    "a" -> "a" [label="connect"];
+}

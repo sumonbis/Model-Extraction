@@ -1,0 +1,13 @@
+model m of Graph
+{
+    "Repeater[0]" is Node(1).
+    "Repeater[1]" is Node(2).
+    "Repeater[2]" is Node(3).
+    "Repeater[4998]" is Node(4).
+    "Repeater[4999]" is Node(5).
+    
+    Edge("Repeater[0]", "Repeater[1]").
+    Edge("Repeater[1]", "Repeater[2]").
+    Edge("Repeater[4998]", "Repeater[4999]").
+    Edge("Repeater[4999]", "Repeater[0]").
+}

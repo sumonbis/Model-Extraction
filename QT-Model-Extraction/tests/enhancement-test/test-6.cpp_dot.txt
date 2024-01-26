@@ -1,0 +1,8 @@
+digraph {
+    "a" -> "b" [label="connect: signalRetransmit -> simpleRetransmit"]
+    "b" -> "c" [label="connect: signalRetransmit -> simpleRetransmit"]
+    "c" -> "d" [label="connect: signalRetransmit -> simpleRetransmit"]
+    "d" -> "e" [label="connect: signalRetransmit -> simpleRetransmit"]
+    "e" -> "c" [label="connect: signalRetransmit -> simpleRetransmit"]
+    "b" -> "c" [label="disconnect: signalRetransmit -> simpleRetransmit"]
+}

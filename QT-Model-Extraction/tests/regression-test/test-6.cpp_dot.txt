@@ -1,0 +1,18 @@
+digraph signal_slot_connections {
+    "a" -> "b" [label="connect"];
+    "a" -> "c" [label="connect"];
+    "a" -> "e" [label="connect"];
+    "a" -> "g" [label="connect"];
+    "b" -> "c" [label="connect"];
+    "c" -> "d" [label="connect"];
+    "d" -> "e" [label="connect"];
+    "e" -> "f" [label="connect"];
+    "f" -> "g" [label="connect"];
+    "g" -> "h" [label="connect"];
+    "h" -> "a" [label="connect"];
+    "a" -> "b" [label="disconnect"];
+    "a" -> "c" [label="disconnect"];
+    "a" -> "e" [label="disconnect"];
+    "a" -> "g" [label="disconnect"];
+    "h" -> "a" [label="connect"];
+}

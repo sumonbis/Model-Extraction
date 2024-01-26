@@ -1,0 +1,7 @@
+digraph SignalSlotConnections {
+    "a" -> "b" [label="signalRetransmit -> simpleRetransmit"];
+    "b" -> "a" [label="signalRetransmit -> secondaryRetransmit"];
+    "a" -> "b" [label="signalSecondaryRetransmit -> secondaryRetransmit"];
+    "b" -> "a" [label="signalSecondaryRetransmit -> tertiaryRetransmit"];
+    "a" -> "b" [label="signalTertiaryRetransmit -> tertiaryRetransmit"];
+}

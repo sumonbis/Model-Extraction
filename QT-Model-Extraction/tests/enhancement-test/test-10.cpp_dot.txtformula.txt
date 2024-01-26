@@ -1,0 +1,15 @@
+domain Graph
+{
+  Node ::= new (id: Integer).
+  Edge ::= new (src: Node, dst: Node).
+
+  model m of Graph
+  {
+    a is Node(1).
+
+    Edge(a, a).
+    Edge(a, a).
+    Edge(a, a).
+    Edge(a, a).
+  }
+}

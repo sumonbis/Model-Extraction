@@ -1,0 +1,24 @@
+domain Graph
+{
+  Node ::= new (id: Integer).
+  Edge ::= new (src: Node, dst: Node).
+
+  path  ::=  (src: Node, dst: Node).
+  cycle ::= (src: Node).
+  len   ::= (src: Node, dst: Node, size: Integer).
+
+
+  path(x, y) :- x is Node, y is Node, Edge(x, y).
+  path(x, z) :- x is Node, y is Node, z is Node,
+		path(x, y), path(y, z).
+
+  cycle(x) :- x is Node, path(x, x).
+
+  len(n1, n2, x) :- n1 is Node, n2 is Node, Edge(n1, n2), x = 1.
+  len(n1, n3, y) :- n1 is Node, n2 is Node, n3 is Node, Edge(n2, n3), len(n1, n2, x), y = x + 1, n2 != n3.
+
+  lenExceeded :- len(_, _, x), x > 3.
+
+  conforms no cycle(x).
+  conforms no lenExceeded.
+}

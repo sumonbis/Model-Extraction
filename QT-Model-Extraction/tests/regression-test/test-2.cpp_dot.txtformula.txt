@@ -1,0 +1,9 @@
+model m of Graph
+{
+    x is Node(1).
+    y is Node(2).
+    z is Node(3).
+
+    Edge(x, y).
+    Edge(y, z).
+}

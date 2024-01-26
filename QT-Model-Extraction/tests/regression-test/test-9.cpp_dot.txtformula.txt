@@ -1,0 +1,8 @@
+model m of Graph
+{
+    a is Node(1).
+    a1 is Node(2).
+
+    Edge(a, a).
+    Edge(a, a).
+}

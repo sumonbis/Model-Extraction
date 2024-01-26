@@ -1,0 +1,11 @@
+digraph G {
+  "a" -> "b" [label="connect"];
+  "b" -> "c" [label="connect"];
+  "c" -> "d" [label="connect"];
+  "d" -> "e" [label="connect"];
+  "e" -> "f" [label="connect"];
+  "f" -> "g" [label="connect"];
+  "g" -> "h" [label="connect"];
+  "a" -> "b" [label="disconnect"];
+  "h" -> "a" [label="connect"];
+}

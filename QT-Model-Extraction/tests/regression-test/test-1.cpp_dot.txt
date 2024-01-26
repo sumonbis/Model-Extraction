@@ -1,0 +1,7 @@
+digraph signalSlotConnections {
+    node [shape=box];
+    a [label="Repeater (a)"];
+    
+    a -> a [label="connect(signalRetransmit, signalRetransmit)"];
+    a -> a [label="connect(signalIncrement, signalIncrement)"];
+}

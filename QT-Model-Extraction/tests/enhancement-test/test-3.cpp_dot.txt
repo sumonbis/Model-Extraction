@@ -1,0 +1,5 @@
+digraph G {
+    "a" -> "b" [label="connect signalRetransmit() -> simpleRetransmit()"];
+    "b" -> "c" [label="connect signalRetransmit() -> simpleRetransmit()"];
+    "c" -> "a" [label="connect signalRetransmit() -> simpleRetransmit()"];
+}

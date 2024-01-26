@@ -1,0 +1,15 @@
+digraph Connections {
+    node [shape=box];
+    
+    a [label="a (Repeater)"];
+    b [label="b (Repeater)"];
+    c [label="c (Repeater)"];
+    d [label="d (Repeater)"];
+    e [label="e (Repeater)"];
+    
+    a -> b [label="signalRetransmit() --> simpleRetransmit()\n(connect)"];
+    b -> c [label="signalRetransmit() --> simpleRetransmit()\n(connect)"];
+    c -> d [label="signalRetransmit() --> simpleRetransmit()\n(connect)"];
+    d -> e [label="signalRetransmit() --> simpleRetransmit()\n(connect)"];
+    e -> c [label="signalRetransmit() --> simpleRetransmit()\n(connect)"];
+}

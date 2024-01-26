@@ -1,0 +1,15 @@
+model m of Graph
+{
+    b is Node(1).
+    c is Node(2).
+    d is Node(3).
+    e is Node(4).
+    a is Node(5).
+
+    Edge(b, c).
+    Edge(c, d).
+    Edge(d, e).
+    Edge(e, a).
+    Edge(a, e).
+    Edge(e, a).
+}

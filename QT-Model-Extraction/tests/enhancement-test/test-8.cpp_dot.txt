@@ -1,0 +1,6 @@
+digraph QTConnections {
+    "Repeater[0]" -> "Repeater[1]" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "Repeater[1]" -> "Repeater[2]" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "Repeater[4998]" -> "Repeater[4999]" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "Repeater[4999]" -> "Repeater[0]" [label="connect(signalRetransmit, simpleRetransmit)"];
+}

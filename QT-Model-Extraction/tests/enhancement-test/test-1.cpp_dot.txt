@@ -1,0 +1,4 @@
+digraph SignalSlots {
+    "a" [shape=rectangle]
+    "a" -> "a" [label="signalRetransmit()->simpleRetransmit()"]
+}

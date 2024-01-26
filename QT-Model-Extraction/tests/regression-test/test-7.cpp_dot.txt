@@ -1,0 +1,12 @@
+digraph signal_slot_connections {
+    "a" -> "b" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "a" -> "c" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "a" -> "e" [label="connect(signalSecondaryRetransmit, simpleRetransmit)"];
+    "a" -> "g" [label="connect(signalSecondaryRetransmit, simpleRetransmit)"];
+    "b" -> "c" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "c" -> "d" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "d" -> "e" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "e" -> "f" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "f" -> "g" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "g" -> "h" [label="connect(signalRetransmit, simpleRetransmit)"];
+}

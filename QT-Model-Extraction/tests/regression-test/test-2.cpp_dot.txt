@@ -1,0 +1,5 @@
+digraph G {
+    "Repeater b" [label="Repeater b"];
+    "Repeater b" -> "Repeater b" [label="connect(signalRetransmit(), simpleRetransmit())"];
+    "Repeater b" -> "Repeater b" [label="connect(signalIncrement(), simpleIncrement())"];
+}

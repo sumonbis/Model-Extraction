@@ -1,0 +1,5 @@
+digraph SignalSlotConnections {
+    "Repeater a" -> "Repeater b" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "Repeater b" -> "Repeater c" [label="connect(signalRetransmit, simpleRetransmit)"];
+    "Repeater c" -> "Repeater a" [label="connect(signalRetransmit, simpleRetransmit)"];
+}

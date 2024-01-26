@@ -1,0 +1,7 @@
+digraph G {
+    "a" [label="a"]
+    "a" -> "a" [label="signalRetransmit\n(connect)"]
+    "a" -> "a" [label="signalSecondaryRetransmit\n(connect)"]
+    "a" -> "a" [label="signalTertiaryRetransmit\n(connect)"]
+    "a" -> "a" [label="simpleRetransmit\n(disconnect)"]
+}

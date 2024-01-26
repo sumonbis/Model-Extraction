@@ -1,8 +1,0 @@
-digraph connections {
-    node [shape=box]
-    "Repeater a (0)" -> "Repeater b (0)" [label="connect"]
-    "Repeater b (0)" -> "Repeater c (0)" [label="connect"]
-    "Repeater c (0)" -> "Repeater d (0)" [label="connect"]
-    "Repeater d (0)" -> "Repeater e (0)" [label="connect"]
-    "Repeater e (0)" -> "Repeater a (0)" [label="connect"]
-}

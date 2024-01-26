@@ -1,4 +1,0 @@
-digraph SignalSlotConnections {
-  "Repeater(0, 'a')\nValue: 0" -> "Repeater(0, 'a')\nValue: 0" [label="connect"]
-  "Repeater(0, 'a')\nValue: 0" -> "Repeater(0, 'a')\nValue: 0" [label="connect"]
-}

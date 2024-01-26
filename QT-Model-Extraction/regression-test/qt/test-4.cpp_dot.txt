@@ -1,5 +1,0 @@
-digraph Connections {
-    "a (0, 'a')" [label="0, 'a'"]
-    "b (0, 'b')" [label="0, 'b'"]
-    "a (0, 'a')" -> "b (0, 'b')" [label="connect"]
-}

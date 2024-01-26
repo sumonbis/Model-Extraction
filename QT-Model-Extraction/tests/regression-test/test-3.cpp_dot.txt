@@ -1,0 +1,4 @@
+digraph signal_slot_connections {
+    "b [Repeater]" -> "b [Repeater]" [label="connect: signalIncrement() -> simpleIncrement()"];
+    "b [Repeater]" -> "b [Repeater]" [label="connect: signalRetransmit() -> simpleRetransmit()"];
+}

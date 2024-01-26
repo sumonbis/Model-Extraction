@@ -1,0 +1,7 @@
+digraph SignalSlotConnections {
+	"Repeater_a [0] (a)" -> "Repeater_b [0] (b)" [label="connect"];
+	"Repeater_b [0] (b)" -> "Repeater_c [0] (c)" [label="connect"];
+	"Repeater_c [0] (c)" -> "Repeater_d [0] (d)" [label="connect"];
+	"Repeater_d [0] (d)" -> "Repeater_e [0] (e)" [label="connect"];
+	"Repeater_e [0] (e)" -> "Repeater_c [0] (c)" [label="connect"];
+}
